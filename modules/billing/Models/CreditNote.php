@@ -26,31 +26,24 @@ class CreditNote extends Model
     protected $fillable = [
         "invoice_id",
         "issuer",
+        "recipient",
         "date",
         "status",
         "subtotal",
         "taxes",
         "total",
-        "contact_id",
-        "contact_name",
-        "vat_number",
-        "email",
-        "phone",
-        "street",
-        "street_number",
-        "city",
-        "zipcode",
-        "country"
+        "contact_id"
     ];
 
     protected $casts = [
         'subtotal' => 'float',
         'taxes' => 'json',
         'total' => 'float',
-        'issuer' => 'json'
+        'issuer' => 'json',
+        'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'contact_name', 'email'];
+    protected array $searchable = ['date', 'subtotal', 'total', 'contact_name', 'email', 'date']; // TODO search on recipient
 
     protected static function boot()
     {
@@ -62,13 +55,13 @@ class CreditNote extends Model
             }
 
             if(!$credit_note->issuer){
-                $credit_note->issuer = Meta::getValue('credit_note_default_issuer');
+                $credit_note->issuer = Meta::getValue('credit_note_default_issuer'); // TODO UPDATE FORM Billing_...
             }
         });
 
         static::updating(function($credit_note){
             if ($credit_note->isDirty('status') && $credit_note->getOriginal('status') === 'draft') {
-                $requiredFields = ['issuer', 'total', 'contact_name', 'street', 'street_number', 'city', 'zipcode', 'country'];
+                $requiredFields = ['issuer', 'recipient', 'total'];
 
                 foreach ($requiredFields as $field) {
                     if (empty($credit_note->$field)) {

@@ -4,7 +4,7 @@ namespace Diji\Billing\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreInvoiceRequest extends FormRequest
+class StoreSelfInvoiceRequest extends FormRequest
 {
     public function authorize(): bool
     {

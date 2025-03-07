@@ -4,11 +4,11 @@ namespace Diji\Billing\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreInvoiceRequest extends FormRequest
+class UpdateSelfInvoiceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return true; // Set to false if only authorized users can update suppliers
     }
 
     public function rules(): array
@@ -40,14 +40,13 @@ class StoreInvoiceRequest extends FormRequest
             'contact_id' => 'nullable|exists:contacts,id',
 
             'date' => 'sometimes|date',
-            'due_date' => 'nullable|date',
-            'payment_date' => 'nullable|date',
-            'subtotal' => 'nullable|numeric',
-            'taxes' => 'nullable|array',
-            "taxes.*" => 'numeric',
-            'total' => 'nullable|numeric',
+            'due_date' => 'sometimes|nullable|date',
+            'payment_date' => 'sometimes|nullable|date',
+            'subtotal' => 'sometimes|nullable|numeric',
+            'taxes' => 'sometimes|nullable|array',
+            'total' => 'sometimes|nullable|numeric',
             'items' => 'sometimes|nullable|array',
-            'items.*.' => (new StoreBillingItemRequest())->rules()
+            'items.*.' => (new UpdateBillingItemRequest())->rules()
         ];
     }
 }

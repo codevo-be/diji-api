@@ -26,7 +26,19 @@ return new class extends Migration
 
         if (Schema::hasTable('invoices')) {
             Schema::table('invoices', function (Blueprint $table) {
-                $table->foreignId('contact_id')->nullable()->constrained('contacts')->nullOnDelete();
+                $table->foreignId('contact_id')->after("recipient")->nullable()->constrained('contacts')->nullOnDelete();
+            });
+        }
+
+        if (Schema::hasTable('self_invoices')) {
+            Schema::table('self_invoices', function (Blueprint $table) {
+                $table->foreignId('contact_id')->after("recipient")->nullable()->constrained('contacts')->nullOnDelete();
+            });
+        }
+
+        if (Schema::hasTable('credit_notes')) {
+            Schema::table('credit_notes', function (Blueprint $table) {
+                $table->foreignId('contact_id')->after("recipient")->nullable()->constrained('contacts')->nullOnDelete();
             });
         }
     }

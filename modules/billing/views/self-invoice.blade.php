@@ -57,7 +57,7 @@
     <div style="margin-top:40px; margin-bottom: 100px;">
         <div style="margin-bottom: 60px;">
             <h2 style="font-size:36px; font-weight: bold;">
-                <span style="">Note de crédit </span>
+                <span style="">Autofacturation</span>
                 <span style="color: #A5A5A5;">{!! $identifier !!}</span>
             </h2>
 

@@ -6,7 +6,7 @@ use Diji\Contact\Resources\ContactResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CreditNoteResource extends JsonResource
+class SelfInvoiceResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,11 +20,13 @@ class CreditNoteResource extends JsonResource
             'id'                        => $this->id,
             'identifier'                => $this->identifier,
             'identifier_number'         => $this->identifier_number,
-            'invoice_id'                => $this->invoice_id,
             'status'                    => $this->status,
             'issuer'                    => $this->issuer,
             'recipient'                 => $this->recipient,
             'date'                      => $this->date,
+            'due_date'                  => $this->due_date,
+            'payment_date'              => $this->payment_date,
+            'structured_communication'  => $this->structured_communication, // todo format with +++
             'subtotal'                  => $this->subtotal,
             'taxes'                     => $this->taxes,
             'total'                     => $this->total,

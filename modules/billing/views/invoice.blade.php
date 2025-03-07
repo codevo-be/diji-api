@@ -10,25 +10,44 @@
                 <td style="width: 50%">
                     <h1 style="font-weight: 700; font-size: 14px;">{!! $issuer["name"] !!}</h1>
                     <p style=" font-size: 14px;">
-                        {!! $issuer["address"] !!}
+                        {!! $issuer["street"] !!} {!! $issuer["street_number"] !!}
+                    </p>
+                    <p style=" font-size: 14px;">
+                        {!! $issuer["zipcode"] !!} {!! $issuer["city"] !!}
+                    </p>
+
+                    <p style=" font-size: 14px;">
+                        {!! $issuer["country"] !!}
                     </p>
 
                     @if(isset($issuer["vat_number"]))
                         <p style="margin-top: 10px; font-size: 14px;">TVA {!! $issuer["vat_number"] !!}</p>
                     @endif
+
+                    <p style=" font-size: 14px;">
+                        {!! $issuer["phone"] !!} {!! $issuer["email"] !!}
+                    </p>
                 </td>
                 <td style="width: 50%">
-                    <h1 style="font-weight: bold; font-size: 14px;">{!! $contact_name !!}</h1>
+                    <h1 style="font-weight: 700; font-size: 14px;">{!! $recipient["name"] !!}</h1>
                     <p style=" font-size: 14px;">
-                        {!! $street !!} {!! $street_number !!}
+                        {!! $recipient["street"] !!} {!! $recipient["street_number"] !!}
                     </p>
                     <p style=" font-size: 14px;">
-                        {!! $zipcode !!} {!! $city !!}
+                        {!! $recipient["zipcode"] !!} {!! $recipient["city"] !!}
                     </p>
 
-                    @if(isset($vat_number))
-                        <p style="margin-top: 10px; font-size: 14px;">TVA {!! $vat_number !!}</p>
+                    <p style=" font-size: 14px;">
+                        {!! $recipient["country"] !!}
+                    </p>
+
+                    @if(isset($recipient["vat_number"]))
+                        <p style="margin-top: 10px; font-size: 14px;">TVA {!! $recipient["vat_number"] !!}</p>
                     @endif
+
+                    <p style=" font-size: 14px;">
+                        {!! $recipient["phone"] !!} {!! $recipient["email"] !!}
+                    </p>
                 </td>
             </tr>
             </tbody>

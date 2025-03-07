@@ -22,6 +22,7 @@ class InvoiceResource extends JsonResource
             'identifier_number'         => $this->identifier_number,
             'status'                    => $this->status,
             'issuer'                    => $this->issuer,
+            'recipient'                 => $this->recipient,
             'date'                      => $this->date,
             'due_date'                  => $this->due_date,
             'payment_date'              => $this->payment_date,
@@ -30,15 +31,6 @@ class InvoiceResource extends JsonResource
             'taxes'                     => $this->taxes,
             'total'                     => $this->total,
             'contact_id'                => $this->contact_id,
-            'contact_name'              => $this->contact_name,
-            'vat_number'                => $this->vat_number,
-            'email'                     => $this->email,
-            'phone'                     => $this->phone,
-            'street'                    => $this->street,
-            'street_number'             => $this->street_number,
-            'city'                      => $this->city,
-            'zipcode'                   => $this->zipcode,
-            'country'                   => $this->country,
 
             // Relations
             'contact' => new ContactResource($this->whenLoaded('contact')),

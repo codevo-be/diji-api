@@ -16,30 +16,36 @@ class UpdateCreditNoteRequest extends FormRequest
         return [
             'status' => 'sometimes', // todo enum
             'invoice_id' => 'sometimes|nullable|exists:invoices,id',
+
             'issuer' => 'sometimes|array',
             'issuer.name' => 'required_with:issuer|string',
+            'issuer.vat_number' => 'sometimes|string',
+            'issuer.phone' => 'sometimes|string',
+            'issuer.email' => 'sometimes|string|email',
+            'issuer.iban' => 'required_with:issuer|string',
             'issuer.street' => 'required_with:issuer|string',
             'issuer.street_number' => 'required_with:issuer|string',
             'issuer.city' => 'required_with:issuer|string',
             'issuer.zipcode' => 'required_with:issuer|string',
             'issuer.country' => 'required_with:issuer|string',
-            'issuer.vat_number' => 'sometimes|string',
-            'issuer.iban' => 'required_with:issuer|string',
+
+            'recipient' => 'sometimes|array',
+            'recipient.name' => 'required_with:recipient|string',
+            'recipient.vat_number' => 'sometimes|string',
+            'recipient.street' => 'required_with:recipient|string',
+            'recipient.street_number' => 'required_with:recipient|string',
+            'recipient.city' => 'required_with:recipient|string',
+            'recipient.zipcode' => 'required_with:recipient|string',
+            'recipient.country' => 'required_with:recipient|string',
+
+            'contact_id' => 'nullable|exists:contacts,id',
+
             'date' => 'sometimes|date',
             'due_date' => 'sometimes|nullable|date',
             'payment_date' => 'sometimes|nullable|date',
             'subtotal' => 'sometimes|nullable|numeric',
             'taxes' => 'sometimes|nullable|array',
             'total' => 'sometimes|nullable|numeric',
-            'contact_name' => 'sometimes|nullable|string',
-            'vat_number' => 'sometimes|nullable|string|max:12',
-            'email' => 'sometimes|nullable|email|max:150',
-            'phone' => 'sometimes|nullable|string|max:150',
-            'street' => 'sometimes|nullable|string',
-            'street_number' => 'sometimes|nullable|string|max:100',
-            'city' => 'sometimes|nullable|string',
-            'zipcode' => 'sometimes|nullable|string|max:50',
-            'country' => 'sometimes|nullable|string|max:2',
             'items' => 'sometimes|nullable|array',
             'items.*.' => (new UpdateBillingItemRequest())->rules()
         ];

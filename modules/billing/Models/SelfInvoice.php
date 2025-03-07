@@ -7,10 +7,9 @@ use App\Traits\AutoloadRelationships;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-class Invoice extends Model
+class SelfInvoice extends Model
 {
     public const STATUS_DRAFT = "draft";
     public const STATUS_PENDING = "pending";
@@ -47,7 +46,7 @@ class Invoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'email', 'date']; // TODO searc hon recipient
+    protected array $searchable = ['date', 'subtotal', 'total', 'email', 'date']; // TODO RECIPIENT
 
     protected static function boot()
     {
