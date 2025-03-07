@@ -16,6 +16,10 @@ class ContactController extends Controller
     {
         $query = Contact::query();
 
+        if($request->filled('email')){
+            $query->where("email", $request->email);
+        }
+
         return ContactResource::collection($query->get())->response();
     }
 
