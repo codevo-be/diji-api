@@ -21,10 +21,10 @@ Route::group([
 
         /* Self Invoice */
         Route::resource("/self-invoices", Diji\Billing\Http\Controllers\SelfInvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
-        Route::resource("/self-invoices/{self-invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource("/self-invoices/{self_invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);
-        Route::get("/self-invoices/{self-invoice}/pdf", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "pdf"]);
-        Route::post("/self-invoices/{self-invoice}/email", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "email"]);
+        Route::get("/self-invoices/{self_invoice}/pdf", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "pdf"]);
+        Route::post("/self-invoices/{self_invoice}/email", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "email"]);
 
         /* Options */
 
