@@ -29,18 +29,6 @@ return new class extends Migration
                 $table->foreignId('contact_id')->after("recipient")->nullable()->constrained('contacts')->nullOnDelete();
             });
         }
-
-        if (Schema::hasTable('self_invoices')) {
-            Schema::table('self_invoices', function (Blueprint $table) {
-                $table->foreignId('contact_id')->after("recipient")->nullable()->constrained('contacts')->nullOnDelete();
-            });
-        }
-
-        if (Schema::hasTable('credit_notes')) {
-            Schema::table('credit_notes', function (Blueprint $table) {
-                $table->foreignId('contact_id')->after("recipient")->nullable()->constrained('contacts')->nullOnDelete();
-            });
-        }
     }
 
     /**
@@ -48,13 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('invoices')) {
-            Schema::table('invoices', function (Blueprint $table) {
-                $table->dropForeign(['contact_id']);
-                $table->dropColumn('contact_id');
-            });
-        }
 
-        Schema::dropIfExists('invoices');
     }
 };

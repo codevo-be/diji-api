@@ -17,11 +17,11 @@ class UpdateCreditNoteRequest extends FormRequest
             'status' => 'sometimes', // todo enum
             'invoice_id' => 'sometimes|nullable|exists:invoices,id',
 
-            'issuer' => 'sometimes|array',
+            'issuer' => 'sometimes|array|nullable',
             'issuer.name' => 'required_with:issuer|string',
-            'issuer.vat_number' => 'sometimes|string',
-            'issuer.phone' => 'sometimes|string',
-            'issuer.email' => 'sometimes|string|email',
+            'issuer.vat_number' => 'sometimes|string|nullable',
+            'issuer.phone' => 'sometimes|string|nullable',
+            'issuer.email' => 'sometimes|string|email|nullable',
             'issuer.iban' => 'required_with:issuer|string',
             'issuer.street' => 'required_with:issuer|string',
             'issuer.street_number' => 'required_with:issuer|string',
@@ -31,14 +31,15 @@ class UpdateCreditNoteRequest extends FormRequest
 
             'recipient' => 'sometimes|array',
             'recipient.name' => 'required_with:recipient|string',
-            'recipient.vat_number' => 'sometimes|string',
+            'recipient.vat_number' => 'sometimes|string|nullable',
+            'recipient.email' => 'sometimes|string|email|nullable',
             'recipient.street' => 'required_with:recipient|string',
             'recipient.street_number' => 'required_with:recipient|string',
             'recipient.city' => 'required_with:recipient|string',
             'recipient.zipcode' => 'required_with:recipient|string',
             'recipient.country' => 'required_with:recipient|string',
 
-            'contact_id' => 'nullable|exists:contacts,id',
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
 
             'date' => 'sometimes|date',
             'due_date' => 'sometimes|nullable|date',

@@ -55,7 +55,7 @@ class CreditNote extends Model
             }
 
             if(!$credit_note->issuer){
-                $credit_note->issuer = Meta::getValue('credit_note_default_issuer'); // TODO UPDATE FORM Billing_...
+                $credit_note->issuer = Meta::getValue('tenant_billing_details');
             }
         });
 

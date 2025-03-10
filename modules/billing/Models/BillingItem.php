@@ -4,6 +4,7 @@ namespace Diji\Billing\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BillingItem extends Model
 {
