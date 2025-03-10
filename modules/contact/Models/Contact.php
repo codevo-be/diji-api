@@ -45,10 +45,10 @@ class Contact extends Model
 
     private function setDisplayName()
     {
-        if ($this->vat_number) {
+        if(!empty($this->company_name)){
             return $this->company_name;
-        } else {
-            return "{$this->firstname} {$this->lastname}";
         }
+
+        return trim("{$this->firstname} {$this->lastname}");
     }
 }
