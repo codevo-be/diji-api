@@ -25,7 +25,12 @@
                     @endif
 
                     <p style=" font-size: 14px;">
-                        {!! $issuer["phone"] !!} {!! $issuer["email"] !!}
+                        @if(isset($issuer["phone"]))
+                            {!! $issuer["phone"] !!}
+                        @endif
+                        @if(isset($issuer["email"]))
+                            {!! $issuer["email"] !!}
+                        @endif
                     </p>
                 </td>
                 <td style="width: 50%">

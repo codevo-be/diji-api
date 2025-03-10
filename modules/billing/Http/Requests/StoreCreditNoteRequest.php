@@ -17,7 +17,7 @@ class StoreCreditNoteRequest extends FormRequest
             'status' => 'sometimes', // todo enum
             'invoice_id' => 'sometimes|exists:invoices,id',
 
-            'issuer' => 'sometimes|array',
+            'issuer' => 'sometimes|array|nullable',
             'issuer.name' => 'required_with:issuer|string',
             'issuer.vat_number' => 'sometimes|string',
             'issuer.phone' => 'sometimes|string',
@@ -29,7 +29,7 @@ class StoreCreditNoteRequest extends FormRequest
             'issuer.zipcode' => 'required_with:issuer|string',
             'issuer.country' => 'required_with:issuer|string',
 
-            'recipient' => 'sometimes|array',
+            'recipient' => 'sometimes|array|nullable',
             'recipient.name' => 'required_with:recipient|string',
             'recipient.vat_number' => 'sometimes|string',
             'recipient.street' => 'required_with:recipient|string',
