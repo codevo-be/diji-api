@@ -5,6 +5,7 @@ namespace Diji\Billing\Resources;
 use Diji\Contact\Resources\ContactResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceResource extends JsonResource
 {
@@ -28,7 +29,7 @@ class InvoiceResource extends JsonResource
             'payment_date'              => $this->payment_date,
             'structured_communication'  => $this->structured_communication, // todo format with +++
             'subtotal'                  => $this->subtotal,
-            'taxes'                     => $this->taxes,
+            'taxes'                     => (object) $this->taxes,
             'total'                     => $this->total,
             'contact_id'                => $this->contact_id,
 
