@@ -18,9 +18,9 @@ class StoreInvoiceRequest extends FormRequest
 
             'issuer' => 'sometimes|array|nullable',
             'issuer.name' => 'required_with:issuer|string',
-            'issuer.vat_number' => 'sometimes|string',
-            'issuer.phone' => 'sometimes|string',
-            'issuer.email' => 'sometimes|string|email',
+            'issuer.vat_number' => 'sometimes|string|nullable',
+            'issuer.phone' => 'sometimes|string|nullable',
+            'issuer.email' => 'sometimes|string|email|nullable',
             'issuer.iban' => 'required_with:issuer|string',
             'issuer.street' => 'required_with:issuer|string',
             'issuer.street_number' => 'required_with:issuer|string',
@@ -30,7 +30,7 @@ class StoreInvoiceRequest extends FormRequest
 
             'recipient' => 'sometimes|array|nullable',
             'recipient.name' => 'required_with:recipient|string',
-            'recipient.vat_number' => 'sometimes|string',
+            'recipient.vat_number' => 'sometimes|string|nullable',
             'recipient.street' => 'required_with:recipient|string',
             'recipient.street_number' => 'required_with:recipient|string',
             'recipient.city' => 'required_with:recipient|string',
