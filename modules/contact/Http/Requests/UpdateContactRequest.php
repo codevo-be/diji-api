@@ -20,7 +20,12 @@ class UpdateContactRequest extends FormRequest
             'phone' => 'sometimes|nullable|string|max:150',
             'company_name' => 'sometimes|nullable|string|required_with:vat_number',
             'vat_number' => 'sometimes|nullable|string|max:12',
-            'contact_id' => 'nullable|exists:contacts,id',
+            'billing_address' => 'sometimes|array|nullable',
+            'billing_address.street' => 'required_with:billing_address|string',
+            'billing_address.street_number' => 'required_with:billing_address|string',
+            'billing_address.city' => 'required_with:billing_address|string',
+            'billing_address.zipcode' => 'required_with:billing_address|string',
+            'billing_address.country' => 'required_with:billing_address|string',
         ];
     }
 }

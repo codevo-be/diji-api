@@ -17,6 +17,11 @@ class Contact extends Model
         "phone",
         "company_name",
         "vat_number",
+        "billing_address"
+    ];
+
+    protected $casts = [
+        'billing_address' => 'json'
     ];
 
     protected array $searchable = ['display_name', 'email', 'vat_number'];
