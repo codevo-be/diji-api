@@ -46,7 +46,7 @@ class SelfInvoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'email', 'date']; // TODO RECIPIENT
+    protected array $searchable = ['date', 'subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {
@@ -62,7 +62,7 @@ class SelfInvoice extends Model
             }
 
             if(!$invoice->issuer){
-                $invoice->issuer = Meta::getValue('invoice_default_issuer');
+                $invoice->issuer = Meta::getValue('tenant_billing_details');
             }
         });
 

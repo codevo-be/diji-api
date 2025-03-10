@@ -43,7 +43,7 @@ class CreditNote extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'contact_name', 'email', 'date']; // TODO search on recipient
+    protected array $searchable = ['date', 'subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {
@@ -55,7 +55,7 @@ class CreditNote extends Model
             }
 
             if(!$credit_note->issuer){
-                $credit_note->issuer = Meta::getValue('credit_note_default_issuer'); // TODO UPDATE FORM Billing_...
+                $credit_note->issuer = Meta::getValue('tenant_billing_details');
             }
         });
 
