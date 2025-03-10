@@ -51,7 +51,12 @@
                     @endif
 
                     <p style=" font-size: 14px;">
-                        {!! $recipient["phone"] !!} {!! $recipient["email"] !!}
+                        @if(isset($recipient["phone"]))
+                            {!! $recipient["phone"] !!}
+                        @endif
+                        @if(isset($recipient["email"]))
+                            {!! $recipient["email"] !!}
+                        @endif
                     </p>
                 </td>
             </tr>
