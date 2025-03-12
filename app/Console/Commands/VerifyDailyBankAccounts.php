@@ -37,8 +37,6 @@ class VerifyDailyBankAccounts extends Command
         foreach ($tenants as $tenant){
             tenancy()->initialize($tenant->id);
 
-            $email_to_admin = Meta::getValue("nordigen_admin_email");
-
             $account = NordigenAccount::latest()->first();
             $daysLeft = $account ? Carbon::now()->diffInDays(Carbon::parse($account->account_expires_at)) : 0;
 
@@ -47,7 +45,7 @@ class VerifyDailyBankAccounts extends Command
                 $nordigen_institution_id = \App\Models\Meta::getValue('nordigen_institution_id');
                 $response = $nordigenService->createRequisition($nordigen_institution_id);
 
-                Notification::route('mail', $tenant->users->first()->email)
+                Notification::route('mail', Meta::getValue("nordigen_admin_email"))
                     ->notify(new RequisitionExpirationNotification($daysLeft, $response["link"]));
             }
         }
