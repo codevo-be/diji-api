@@ -7,10 +7,12 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Models\CreditNote;
+use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Resources\CreditNoteResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 class CreditNoteController extends Controller
 {
@@ -24,6 +26,10 @@ class CreditNoteController extends Controller
 
         if($request->filled('status')){
             $query->where("status", $request->status);
+        }
+
+        if($request->filled('date')){
+            $query->where("date", $request->date);
         }
 
         return CreditNoteResource::collection($query->get())->response();
@@ -118,6 +124,59 @@ class CreditNoteController extends Controller
             ]);
         }
 
+
+        return response()->noContent();
+    }
+
+    public function batchDestroy(Request $request): \Illuminate\Http\Response
+    {
+        $request->validate([
+            'credit_note_ids' => 'required|array',
+            'credit_note_ids.*' => 'integer|exists:credit_notes,id',
+        ]);
+
+        $credit_notes = CreditNote::whereIn('id', $request->credit_note_ids)->get();
+
+        foreach ($credit_notes as $credit_note) {
+            try{
+                $credit_note->delete();
+            }catch (\Exception $e){
+                continue;
+            }
+        }
+
+        return response()->noContent();
+    }
+
+    public function batchUpdate(Request $request)
+    {
+        $request->validate([
+            'credit_note_ids' => 'required|array',
+            'credit_note_ids.*' => 'integer|exists:credit_notes,id',
+            'data' => 'required|array'
+        ]);
+
+        $failedInvoices = [];
+
+        $credit_notes = CreditNote::whereIn('id', $request->credit_note_ids)->get();
+
+        foreach ($credit_notes as $credit_note) {
+            $credit_note->fill($request->data);
+
+            try {
+                $credit_note->save();
+            } catch (ValidationException $e) {
+                $failedInvoices[$credit_note->id] = $e->errors();
+                continue;
+            }
+        }
+
+        if (!empty($failedInvoices)) {
+            return response()->json([
+                'message' => 'Some invoices failed to update.',
+                'errors' => $failedInvoices
+            ], 422);
+        }
 
         return response()->noContent();
     }

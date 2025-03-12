@@ -11,6 +11,7 @@ use Diji\Billing\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Stancl\Tenancy\Tenancy;
 
 class InvoiceController extends Controller
@@ -25,6 +26,10 @@ class InvoiceController extends Controller
 
         if($request->filled('status')){
             $query->where("status", $request->status);
+        }
+
+        if($request->filled('date')){
+            $query->where("date", $request->date);
         }
 
         return InvoiceResource::collection($query->get())->response();
@@ -95,6 +100,39 @@ class InvoiceController extends Controller
             }catch (\Exception $e){
                 continue;
             }
+        }
+
+        return response()->noContent();
+    }
+
+    public function batchUpdate(Request $request)
+    {
+        $request->validate([
+            'invoice_ids' => 'required|array',
+            'invoice_ids.*' => 'integer|exists:invoices,id',
+            'data' => 'required|array'
+        ]);
+
+        $failedInvoices = [];
+
+        $invoices = Invoice::whereIn('id', $request->invoice_ids)->get();
+
+        foreach ($invoices as $invoice) {
+            $invoice->fill($request->data);
+
+            try {
+                $invoice->save();
+            } catch (ValidationException $e) {
+                $failedInvoices[$invoice->id] = $e->errors();
+                continue;
+            }
+        }
+
+        if (!empty($failedInvoices)) {
+            return response()->json([
+                'message' => 'Some invoices failed to update.',
+                'errors' => $failedInvoices
+            ], 422);
         }
 
         return response()->noContent();
