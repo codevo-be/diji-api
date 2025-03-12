@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Meta;
 use Diji\Billing\Models\NordigenAccount;
 use Diji\Billing\Notifications\RequisitionExpirationNotification;
 use Diji\Billing\Services\NordigenService;
@@ -36,7 +37,7 @@ class VerifyDailyBankAccounts extends Command
         foreach ($tenants as $tenant){
             tenancy()->initialize($tenant->id);
 
-            $email_to_admin = $tenant->users()->first()->email;
+            $email_to_admin = Meta::getValue("nordigen_admin_email");
 
             $account = NordigenAccount::latest()->first();
             $daysLeft = $account ? Carbon::now()->diffInDays(Carbon::parse($account->account_expires_at)) : 0;
