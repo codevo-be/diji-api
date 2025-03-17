@@ -2,7 +2,9 @@
 
 @section("content")
     <div>
-        <img style="width: 200px; margin-bottom:30px;" src="" alt="logo gvt"/>
+        @if($logo)
+            <img style="width: 200px; margin-bottom:30px;" src={!! $logo !!} />
+        @endif
 
         <table style="width: 100%;">
             <tbody>
@@ -25,7 +27,12 @@
                     @endif
 
                     <p style=" font-size: 14px;">
-                        {!! $issuer["phone"] !!} {!! $issuer["email"] !!}
+                        @if(isset($issuer["phone"]))
+                            {!! $issuer["phone"] !!}
+                        @endif
+                        @if(isset($issuer["email"]))
+                            {!! $issuer["email"] !!}
+                        @endif
                     </p>
                 </td>
                 <td style="width: 50%">
@@ -46,7 +53,12 @@
                     @endif
 
                     <p style=" font-size: 14px;">
-                        {!! $recipient["phone"] !!} {!! $recipient["email"] !!}
+                        @if(isset($recipient["phone"]))
+                            {!! $recipient["phone"] !!}
+                        @endif
+                        @if(isset($recipient["email"]))
+                            {!! $recipient["email"] !!}
+                        @endif
                     </p>
                 </td>
             </tr>

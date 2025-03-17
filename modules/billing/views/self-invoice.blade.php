@@ -2,7 +2,9 @@
 
 @section("content")
     <div>
-        <img style="width: 200px; margin-bottom:30px;" src="" alt="logo gvt"/>
+        @if($logo)
+            <img style="width: 200px; margin-bottom:30px;" src={!! $logo !!} />
+        @endif
 
         <table style="width: 100%;">
             <tbody>
