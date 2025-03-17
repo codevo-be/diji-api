@@ -31,6 +31,7 @@ class StoreCreditNoteRequest extends FormRequest
 
             'recipient' => 'sometimes|array|nullable',
             'recipient.name' => 'required_with:recipient|string',
+            'recipient.email' => 'sometimes|string|email|nullable',
             'recipient.vat_number' => 'sometimes|string|nullable',
             'recipient.street' => 'required_with:recipient|string',
             'recipient.street_number' => 'required_with:recipient|string',
@@ -38,7 +39,7 @@ class StoreCreditNoteRequest extends FormRequest
             'recipient.zipcode' => 'required_with:recipient|string',
             'recipient.country' => 'required_with:recipient|string',
 
-            'contact_id' => 'nullable|exists:contacts,id',
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
 
             'date' => 'sometimes|date',
             'subtotal' => 'nullable|numeric',

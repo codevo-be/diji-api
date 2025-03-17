@@ -3,6 +3,7 @@
 namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Meta;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
@@ -89,7 +90,10 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', $credit_note->toArray());
+        $pdf = PDF::loadView('billing::credit-note', [
+            ...$credit_note->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+        ]);
 
         return $pdf->stream("note-de-credit-$credit_note->identifier_number.pdf");
     }
@@ -98,7 +102,10 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', $credit_note->toArray());
+        $pdf = PDF::loadView('billing::credit-note', [
+            ...$credit_note->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+        ]);
 
         try {
             Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf) {

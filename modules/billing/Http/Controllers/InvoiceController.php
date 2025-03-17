@@ -3,6 +3,7 @@
 namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Meta;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
@@ -142,7 +143,10 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::invoice', $invoice->toArray());
+        $pdf = PDF::loadView('billing::invoice', [
+            ...$invoice->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+        ]);
 
         return $pdf->stream("invoice-$invoice->identifier_number.pdf");
     }

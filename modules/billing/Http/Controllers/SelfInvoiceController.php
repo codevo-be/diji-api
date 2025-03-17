@@ -3,6 +3,7 @@
 namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Meta;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\StoreSelfInvoiceRequest;
@@ -93,7 +94,10 @@ class SelfInvoiceController extends Controller
     {
         $self_invoice = SelfInvoice::findOrFail($self_invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::self-invoice', $self_invoice->toArray());
+        $pdf = PDF::loadView('billing::self-invoice', [
+            ...$self_invoice->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+        ]);
 
         return $pdf->stream("autofacturation-$self_invoice->identifier_number.pdf");
     }
