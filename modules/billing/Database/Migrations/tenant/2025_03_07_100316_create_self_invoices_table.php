@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('status', \Diji\Billing\Models\Invoice::STATUSES)->default(\Diji\Billing\Models\Invoice::STATUS_DRAFT);
             $table->json('issuer')->nullable();
             $table->json('recipient')->nullable();
+            $table->foreignId('contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->date("date");
             $table->date("due_date")->nullable();
             $table->date("payment_date")->nullable();

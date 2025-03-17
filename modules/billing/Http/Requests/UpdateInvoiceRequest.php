@@ -37,7 +37,7 @@ class UpdateInvoiceRequest extends FormRequest
             'recipient.zipcode' => 'sometimes|string|nullable',
             'recipient.country' => 'sometimes|string|nullable',
 
-            'contact_id' => 'nullable|exists:contacts,id',
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
 
             'date' => 'sometimes|date',
             'due_date' => 'sometimes|nullable|date',
