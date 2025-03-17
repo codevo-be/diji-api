@@ -28,7 +28,7 @@ class SelfInvoiceResource extends JsonResource
             'payment_date'              => $this->payment_date,
             'structured_communication'  => $this->structured_communication, // todo format with +++
             'subtotal'                  => $this->subtotal,
-            'taxes'                     => $this->taxes,
+            'taxes'                     => (object) $this->taxes,
             'total'                     => $this->total,
             'contact_id'                => $this->contact_id,
 

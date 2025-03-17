@@ -26,7 +26,7 @@ class CreditNoteResource extends JsonResource
             'recipient'                 => $this->recipient,
             'date'                      => $this->date,
             'subtotal'                  => $this->subtotal,
-            'taxes'                     => $this->taxes,
+            'taxes'                     => (object) $this->taxes,
             'total'                     => $this->total,
             'contact_id'                => $this->contact_id,
 

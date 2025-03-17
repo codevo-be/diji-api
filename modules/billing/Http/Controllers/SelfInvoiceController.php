@@ -16,6 +16,7 @@ use Diji\Billing\Resources\SelfInvoiceResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Stancl\Tenancy\Tenancy;
 
 class SelfInvoiceController extends Controller
@@ -30,6 +31,10 @@ class SelfInvoiceController extends Controller
 
         if($request->filled('status')){
             $query->where("status", $request->status);
+        }
+
+        if($request->filled('date')){
+            $query->where("date", $request->date);
         }
 
         return SelfInvoiceResource::collection($query->get())->response();
@@ -85,26 +90,6 @@ class SelfInvoiceController extends Controller
         return response()->noContent();
     }
 
-    public function batchDestroy(Request $request): \Illuminate\Http\Response
-    {
-        $request->validate([
-            'self_invoice_ids' => 'required|array',
-            'semf_invoice_ids.*' => 'integer|exists:self_invoices,id',
-        ]);
-
-        $self_invoices = SelfInvoice::whereIn('id', $request->self_invoice_ids)->get();
-
-        foreach ($self_invoices as $self_invoice) {
-            try{
-                $self_invoice->delete();
-            }catch (\Exception $e){
-                continue;
-            }
-        }
-
-        return response()->noContent();
-    }
-
     public function pdf(Request $request, int $self_invoice_id)
     {
         $self_invoice = SelfInvoice::findOrFail($self_invoice_id)->load('items');
@@ -147,6 +132,59 @@ class SelfInvoiceController extends Controller
             ]);
         }
 
+
+        return response()->noContent();
+    }
+
+    public function batchDestroy(Request $request): \Illuminate\Http\Response
+    {
+        $request->validate([
+            'self_invoice_ids' => 'required|array',
+            'self_invoice_ids.*' => 'integer|exists:self_invoices,id',
+        ]);
+
+        $self_invoices = SelfInvoice::whereIn('id', $request->self_invoice_ids)->get();
+
+        foreach ($self_invoices as $self_invoice) {
+            try{
+                $self_invoice->delete();
+            }catch (\Exception $e){
+                continue;
+            }
+        }
+
+        return response()->noContent();
+    }
+
+    public function batchUpdate(Request $request)
+    {
+        $request->validate([
+            'self_invoice_ids' => 'required|array',
+            'self_invoice_ids.*' => 'integer|exists:self_invoices,id',
+            'data' => 'required|array'
+        ]);
+
+        $failedInvoices = [];
+
+        $self_invoices = SelfInvoice::whereIn('id', $request->self_invoice_ids)->get();
+
+        foreach ($self_invoices as $self_invoice) {
+            $self_invoice->fill($request->data);
+
+            try {
+                $self_invoice->save();
+            } catch (ValidationException $e) {
+                $failedInvoices[$self_invoice->id] = $e->errors();
+                continue;
+            }
+        }
+
+        if (!empty($failedInvoices)) {
+            return response()->json([
+                'message' => 'Some invoices failed to update.',
+                'errors' => $failedInvoices
+            ], 422);
+        }
 
         return response()->noContent();
     }

@@ -7,19 +7,24 @@ Route::group([
 ], function () {
     Route::middleware(["auth:api","auth.tenant"])->group(function(){
         /* Invoice */
+        Route::delete("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchDestroy"]);
+        Route::put("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchUpdate"]);
         Route::resource("/invoices", Diji\Billing\Http\Controllers\InvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/invoices/{invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::delete("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchDestroy"]);
         Route::get("/invoices/{invoice}/pdf", [\Diji\Billing\Http\Controllers\InvoiceController::class, "pdf"]);
         Route::post("/invoices/{invoice}/email", [\Diji\Billing\Http\Controllers\InvoiceController::class, "email"]);
 
         /* Credit note */
+        Route::delete("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchDestroy"]);
+        Route::put("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchUpdate"]);
         Route::resource("/credit-notes", Diji\Billing\Http\Controllers\CreditNoteController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/credit-notes/{credit_note}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get("/credit-notes/{credit_note}/pdf", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "pdf"]);
         Route::post("/credit-notes/{credit_note}/email", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "email"]);
 
         /* Self Invoice */
+        Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);
+        Route::put("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchUpdate"]);
         Route::resource("/self-invoices", Diji\Billing\Http\Controllers\SelfInvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/self-invoices/{self_invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);

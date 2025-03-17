@@ -17,6 +17,11 @@ class Contact extends Model
         "phone",
         "company_name",
         "vat_number",
+        "billing_address"
+    ];
+
+    protected $casts = [
+        'billing_address' => 'json'
     ];
 
     protected array $searchable = ['display_name', 'email', 'vat_number'];
@@ -40,10 +45,10 @@ class Contact extends Model
 
     private function setDisplayName()
     {
-        if ($this->vat_number) {
+        if(!empty($this->company_name)){
             return $this->company_name;
-        } else {
-            return "{$this->firstname} {$this->lastname}";
         }
+
+        return trim("{$this->firstname} {$this->lastname}");
     }
 }
