@@ -100,6 +100,7 @@ class SelfInvoiceController extends Controller
         ]);
 
         return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=autofacturation-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf",
         ]);
     }

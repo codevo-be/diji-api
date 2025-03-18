@@ -96,6 +96,7 @@ class CreditNoteController extends Controller
         ]);
 
         return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=note-de-credit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
         ]);
     }

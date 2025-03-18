@@ -137,5 +137,12 @@
             </table>
         </div>
 
+        <div style="margin-top: 100px;">
+            <p style="margin-top:10px; font-size: 14px;">
+                Veuillez payer le montant de <strong>{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total) !!}</strong> sur le compte <strong>{!! $issuer['iban'] !!}</strong> avant le <strong>{!! \Illuminate\Support\Carbon::parse($due_date)->format('d/m/Y') !!}</strong> en mentionnant la référence <strong>{!! \Diji\Billing\Helpers\Invoice::formatStructuredCommunication($structured_communication) !!}</strong>
+            </p>
+            <p  style="margin-top:10px; font-size: 14px;">Merci de votre confiance !</p>
+        </div>
+
     </div>
 @endsection

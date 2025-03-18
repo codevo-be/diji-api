@@ -149,6 +149,7 @@ class InvoiceController extends Controller
         ]);
 
         return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf",
         ]);
     }
