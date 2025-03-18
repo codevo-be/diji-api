@@ -124,6 +124,10 @@ class SelfInvoiceController extends Controller
                     $message->cc($request->cc);
                 }
 
+                if(env('EMAIL_COPY_DEV')){
+                    $message->bcc('maxime@codevo.be');
+                }
+
                 $message->attachData($pdf->output(), "aa.pdf", [
                     "mime" => 'application/pdf'
                 ]);
