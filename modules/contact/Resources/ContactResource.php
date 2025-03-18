@@ -24,6 +24,7 @@ class ContactResource extends JsonResource
             'phone'                     => $this->phone,
             'company_name'              => $this->company_name,
             'vat_number'                => $this->vat_number,
+            'iban'                      => $this->iban,
             'billing_address'           => $this->billing_address,
         ];
     }

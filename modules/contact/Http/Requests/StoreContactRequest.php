@@ -20,6 +20,7 @@ class StoreContactRequest extends FormRequest
             'phone' => 'nullable|string|max:150',
             'company_name' => 'nullable|string|required_with:vat_number',
             'vat_number' => 'nullable|string|max:12',
+            'iban' => 'nullable|string',
             'billing_address' => 'array|nullable',
             'billing_address.street' => 'string|nullable',
             'billing_address.street_number' => 'string|nullable',

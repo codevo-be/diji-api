@@ -31,6 +31,8 @@ class UpdateInvoiceRequest extends FormRequest
             'recipient' => 'sometimes|array|nullable',
             'recipient.name' => 'sometimes|string|nullable',
             'recipient.vat_number' => 'sometimes|string|nullable',
+            'recipient.phone' => 'sometimes|string|nullable',
+            'recipient.email' => 'sometimes|string|nullable|email',
             'recipient.street' => 'sometimes|string|nullable',
             'recipient.street_number' => 'sometimes|string|nullable',
             'recipient.city' => 'sometimes|string|nullable',

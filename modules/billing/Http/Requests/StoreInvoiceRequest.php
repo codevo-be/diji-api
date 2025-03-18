@@ -31,6 +31,7 @@ class StoreInvoiceRequest extends FormRequest
             'recipient' => 'sometimes|array|nullable',
             'recipient.name' => 'required_with:recipient|string',
             'recipient.email' => 'sometimes|string|email|nullable',
+            'recipient.phone' => 'sometimes|string|nullable',
             'recipient.vat_number' => 'sometimes|string|nullable',
             'recipient.street' => 'required_with:recipient|string',
             'recipient.street_number' => 'required_with:recipient|string',

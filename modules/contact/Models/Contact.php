@@ -17,6 +17,7 @@ class Contact extends Model
         "phone",
         "company_name",
         "vat_number",
+        "iban",
         "billing_address"
     ];
 
@@ -24,7 +25,7 @@ class Contact extends Model
         'billing_address' => 'json'
     ];
 
-    protected array $searchable = ['display_name', 'email', 'vat_number'];
+    protected array $searchable = ['display_name', 'email', 'vat_number', 'iban'];
 
     protected static function boot()
     {

@@ -20,6 +20,7 @@ class UpdateContactRequest extends FormRequest
             'phone' => 'sometimes|nullable|string|max:150',
             'company_name' => 'sometimes|nullable|string|required_with:vat_number',
             'vat_number' => 'sometimes|nullable|string|max:12',
+            'iban' => 'sometimes|nullable|string',
             'billing_address' => 'sometimes|array|nullable',
             'billing_address.street' => 'string|nullable',
             'billing_address.street_number' => 'string|nullable',
