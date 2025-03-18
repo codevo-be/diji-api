@@ -62,7 +62,7 @@ class SelfInvoice extends Model
             }
 
             if(!$invoice->issuer){
-                $invoice->issuer = Meta::getValue('tenant_billing_details');
+                $invoice->recipient = Meta::getValue('tenant_billing_details');
             }
         });
 
