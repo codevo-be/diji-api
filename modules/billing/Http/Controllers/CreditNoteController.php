@@ -95,7 +95,9 @@ class CreditNoteController extends Controller
             "logo" => Meta::getValue('tenant_billing_details')["logo"]
         ]);
 
-        return $pdf->stream("note-de-credit-$credit_note->identifier_number.pdf");
+        return response($pdf->output(), 200, [
+            'Content-Disposition' => "attachment; filename=note-de-credit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
+        ]);
     }
 
     public function email(Request $request, int $credit_note_id)

@@ -99,7 +99,9 @@ class SelfInvoiceController extends Controller
             "logo" => Meta::getValue('tenant_billing_details')["logo"]
         ]);
 
-        return $pdf->stream("autofacturation-$self_invoice->identifier_number.pdf");
+        return response($pdf->output(), 200, [
+            'Content-Disposition' => "attachment; filename=autofacturation-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf",
+        ]);
     }
 
     public function email(Request $request, int $self_invoice_id)

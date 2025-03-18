@@ -11,7 +11,7 @@ return [
 
     'allowed_headers' => ['*'], // Autoriser tous les en-têtes
 
-    'exposed_headers' => ['Set-Cookie'],
+    'exposed_headers' => ['Set-Cookie', 'Content-Disposition'],
 
     'max_age' => 0,
 

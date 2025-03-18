@@ -148,7 +148,9 @@ class InvoiceController extends Controller
             "logo" => Meta::getValue('tenant_billing_details')["logo"]
         ]);
 
-        return $pdf->stream("invoice-$invoice->identifier_number.pdf");
+        return response($pdf->output(), 200, [
+            'Content-Disposition' => "attachment; filename=facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf",
+        ]);
     }
 
     public function email(Request $request, int $invoice_id)
