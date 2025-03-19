@@ -145,7 +145,7 @@ class InvoiceController extends Controller
 
         $pdf = PDF::loadView('billing::invoice', [
             ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null
         ]);
 
         return response($pdf->output(), 200, [
@@ -158,7 +158,10 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::invoice', $invoice->toArray());
+        $pdf = PDF::loadView('billing::invoice', [
+            ...$invoice->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null
+        ]);
 
         try {
             Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf) {

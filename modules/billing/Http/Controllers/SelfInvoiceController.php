@@ -109,7 +109,10 @@ class SelfInvoiceController extends Controller
     {
         $self_invoice = SelfInvoice::findOrFail($self_invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::self-invoice', $self_invoice->toArray());
+        $pdf = PDF::loadView('billing::self-invoice', [
+            ...$self_invoice->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+        ]);
 
         try {
             Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf) {
