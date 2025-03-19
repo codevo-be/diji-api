@@ -113,7 +113,7 @@ class CreditNoteController extends Controller
         try {
             Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf) {
                 $tenant = tenant();
-                $message->from([env('MAIL_FROM_ADDRESS'), $tenant->name]);
+                $message->from(env('MAIL_FROM_ADDRESS'), $tenant->name);
                 $message->to($request->to);
 
                 if($request->subject){
