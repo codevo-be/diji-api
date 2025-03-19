@@ -23,7 +23,11 @@
                     </p>
 
                     @if(isset($issuer["vat_number"]))
-                        <p style="margin-top: 10px; font-size: 14px;">TVA {!! $issuer["vat_number"] !!}</p>
+                        <p style="margin-top: 10px; font-size: 14px;">TVA : {!! $issuer["vat_number"] !!}</p>
+                    @endif
+
+                    @if(isset($issuer["iban"]))
+                        <p style="margin-top: 10px; font-size: 14px;">CB/Compte banquaire : {!! $issuer["iban"] !!}</p>
                     @endif
 
                     <p style=" font-size: 14px;">
