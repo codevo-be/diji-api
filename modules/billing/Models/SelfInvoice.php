@@ -46,7 +46,7 @@ class SelfInvoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
+    protected array $searchable = ['date', 'subtotal', 'total', 'date', 'issuer->name', 'issuer->vat_number', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {

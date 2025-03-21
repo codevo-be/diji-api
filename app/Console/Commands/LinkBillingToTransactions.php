@@ -4,8 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\Tenant;
 use Diji\Billing\Models\Invoice;
+use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Models\Transaction;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class LinkBillingToTransactions extends Command
 {
@@ -43,6 +45,9 @@ class LinkBillingToTransactions extends Command
                         'model_id' => $invoice->id,
                         'model_type' => Invoice::class
                     ]);
+
+                    Log::channel('transaction')->info("Tenant : $tenant->name");
+                    Log::channel('transaction')->info("Invocie payed : " . $invoice->id);
                 }
             }
         }

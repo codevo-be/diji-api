@@ -8,6 +8,7 @@ use Diji\Billing\Notifications\RequisitionExpirationNotification;
 use Diji\Billing\Services\NordigenService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class VerifyDailyBankAccounts extends Command
@@ -47,6 +48,9 @@ class VerifyDailyBankAccounts extends Command
 
                 Notification::route('mail', Meta::getValue("nordigen_admin_email"))
                     ->notify(new RequisitionExpirationNotification($daysLeft, $response["link"]));
+
+                Log::channel('transaction')->info("Tenant : $tenant->name");
+                Log::channel('transaction')->info("Account disabled : " . $daysLeft . "Email send !");
             }
         }
     }

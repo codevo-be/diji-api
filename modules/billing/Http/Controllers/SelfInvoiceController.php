@@ -96,7 +96,7 @@ class SelfInvoiceController extends Controller
 
         $pdf = PDF::loadView('billing::self-invoice', [
             ...$self_invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
         ]);
 
         return response($pdf->output(), 200, [
@@ -111,7 +111,7 @@ class SelfInvoiceController extends Controller
 
         $pdf = PDF::loadView('billing::self-invoice', [
             ...$self_invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"]
+            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
         ]);
 
         try {

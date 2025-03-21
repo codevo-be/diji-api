@@ -53,7 +53,8 @@ class FetchDailyTransactions extends Command
                     ]);
                 }
             }catch (\Exception $e){
-                Log::info($e->getMessage());
+                Log::channel('transaction')->info("Tenant : $tenant->name");
+                Log::channel('transaction')->info($e->getMessage());
             }
         }
     }
