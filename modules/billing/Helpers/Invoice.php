@@ -41,6 +41,7 @@ class Invoice {
             $recipient,
             $iban,
             "EUR" . PricingHelper::formatCurrency($amount),
+            $structured_communication,
             $structured_communication
         ]);
 
