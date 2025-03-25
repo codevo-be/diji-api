@@ -14,6 +14,10 @@ Route::group([
         Route::get("/invoices/{invoice}/pdf", [\Diji\Billing\Http\Controllers\InvoiceController::class, "pdf"]);
         Route::post("/invoices/{invoice}/email", [\Diji\Billing\Http\Controllers\InvoiceController::class, "email"]);
 
+        /* Recurring invoice */
+        Route::resource("/recurring-invoices", Diji\Billing\Http\Controllers\RecurringInvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+        Route::resource("/recurring-invoices/{invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
+
         /* Credit note */
         Route::delete("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchDestroy"]);
         Route::put("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchUpdate"]);
