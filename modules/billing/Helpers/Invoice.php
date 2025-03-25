@@ -48,7 +48,7 @@ class Invoice {
             'version'      => 10,
             'outputType'   => "png",
             'eccLevel'     => EccLevel::H,
-            'scale'        => 1,
+            'scale'        => 10,
             'imageBase64'  => true
         ]);
 
