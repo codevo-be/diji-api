@@ -7,6 +7,7 @@ use App\Traits\AutoloadRelationships;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class RecurringInvoice extends Model
@@ -58,7 +59,7 @@ class RecurringInvoice extends Model
 
         static::updating(function($invoice){
             if ($invoice->isDirty('status') && $invoice->getOriginal('status') === 'draft') {
-                $requiredFields = ['issuer', 'recipient', 'total'];
+                $requiredFields = ['issuer', 'recipient', 'total', 'next_run_at'];
 
                 foreach ($requiredFields as $field) {
                     if (empty($invoice->$field)) {
@@ -68,6 +69,8 @@ class RecurringInvoice extends Model
                     }
                 }
             }
+
+            $invoice->next_run_at = self::generateNexRunDate($invoice);
         });
 
         static::deleting(function ($invoice) {
@@ -87,5 +90,41 @@ class RecurringInvoice extends Model
     public function contact()
     {
         return $this->belongsTo(\Diji\Contact\Models\Contact::class, 'contact_id');
+    }
+
+    public static function generateNexRunDate(Invoice $invoice): ?Carbon
+    {
+        $startDate = Carbon::parse($invoice->start_date);
+        $now = Carbon::now();
+
+        $nextRun = $startDate->copy();
+
+        switch ($invoice->frequency) {
+            case 'daily':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addDay();
+                }
+                break;
+            case 'weekly':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addWeek();
+                }
+                break;
+            case 'monthly':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addMonth();
+                }
+                break;
+            case 'yearly':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addYear();
+                }
+                break;
+            default:
+                $nextRun = null;
+                break;
+        }
+
+        return $nextRun;
     }
 }

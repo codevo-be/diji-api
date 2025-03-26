@@ -16,7 +16,7 @@ Route::group([
 
         /* Recurring invoice */
         Route::resource("/recurring-invoices", Diji\Billing\Http\Controllers\RecurringInvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
-        Route::resource("/recurring-invoices/{invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource("/recurring-invoices/{recurring_invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
 
         /* Credit note */
         Route::delete("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchDestroy"]);
