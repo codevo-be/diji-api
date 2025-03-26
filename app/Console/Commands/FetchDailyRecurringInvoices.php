@@ -42,8 +42,7 @@ class FetchDailyRecurringInvoices extends Command
                 $recurring_invoices = RecurringInvoice::where('status', RecurringInvoice::STATUS_ACTIVE)->get();
 
                 foreach ($recurring_invoices as $recurring_invoice){
-                    // remove ->addDay()
-                    if (Carbon::parse($recurring_invoice->next_run_at)->startOfDay()->lessThanOrEqualTo(Carbon::today()->addDay())) {
+                    if (Carbon::parse($recurring_invoice->next_run_at)->startOfDay()->lessThanOrEqualTo(Carbon::today())) {
 
                         DB::beginTransaction();
 
