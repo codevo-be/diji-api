@@ -3,7 +3,7 @@
 @section("content")
     <div>
         @if($logo)
-            <img style="height: 120px; margin-bottom:30px;" src={!! $logo !!} />
+            <img style="max-width:240px; object-fit: contain; height: 120px; margin-bottom:30px;" src={!! $logo !!} />
         @endif
 
         <table style="width: 100%;">
