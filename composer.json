@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "chillerlan/php-qrcode": "^5.0",
         "laravel/framework": "^11.9",
         "laravel/passport": "^12.4",
         "laravel/tinker": "^2.9",
@@ -25,8 +26,8 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "diji\\Billing\\": "modules/billing",
-            "diji\\Contact\\": "modules/contact"
+            "Diji\\Billing\\": "modules/billing",
+            "Diji\\Contact\\": "modules/contact"
         }
     },
     "autoload-dev": {

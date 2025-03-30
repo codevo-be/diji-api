@@ -145,7 +145,8 @@ class InvoiceController extends Controller
 
         $pdf = PDF::loadView('billing::invoice', [
             ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null
+            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
+            "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->recipient["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication)
         ]);
 
         return response($pdf->output(), 200, [
