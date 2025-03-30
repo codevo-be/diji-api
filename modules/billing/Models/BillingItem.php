@@ -11,7 +11,8 @@ class BillingItem extends Model
     public const MODEL_TYPES = [
         "invoice" => Invoice::class,
         "credit_note" => CreditNote::class,
-        "self_invoice" => SelfInvoice::class
+        "self_invoice" => SelfInvoice::class,
+        "recurring_invoice" => RecurringInvoice::class
     ];
 
     protected $fillable = ["position", "model_type", "model_id", "name", "quantity", "vat", "cost", "retail"];

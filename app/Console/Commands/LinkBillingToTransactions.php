@@ -45,9 +45,6 @@ class LinkBillingToTransactions extends Command
                         'model_id' => $invoice->id,
                         'model_type' => Invoice::class
                     ]);
-
-                    Log::channel('transaction')->info("Tenant : $tenant->name");
-                    Log::channel('transaction')->info("Invocie payed : " . $invoice->id);
                 }
             }
         }
