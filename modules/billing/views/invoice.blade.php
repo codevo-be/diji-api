@@ -147,7 +147,7 @@
             </table>
         </div>
 
-        <div style="margin-top: 100px;">
+        <div style="margin-top: 40px;">
             @if($qrcode)
                 <img style="width: 120px; height: 120px;" src="{!! $qrcode !!}"/>
             @endif
