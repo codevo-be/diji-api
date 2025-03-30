@@ -7,31 +7,30 @@ use App\Traits\AutoloadRelationships;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
-class Invoice extends Model
+class RecurringInvoice extends Model
 {
     public const STATUS_DRAFT = "draft";
-    public const STATUS_PENDING = "pending";
-    public const STATUS_PAYED = "payed";
-    public const STATUS_EXPIRED = "expired";
+    public const STATUS_ACTIVE = "active";
+    public const STATUS_INACTIVE = "inactive";
 
     public const STATUSES = [
         self::STATUS_DRAFT,
-        self::STATUS_PENDING,
-        self::STATUS_PAYED,
-        self::STATUS_EXPIRED
+        self::STATUS_ACTIVE,
+        self::STATUS_INACTIVE
     ];
 
     use HasFactory, AutoloadRelationships, QuerySearch;
 
     protected $fillable = [
         "status",
+        "start_date",
+        "frequency",
+        "next_run_at",
         "issuer",
         "recipient",
-        "date",
-        "due_date",
-        "payment_date",
         "subtotal",
         "taxes",
         "total",
@@ -46,21 +45,13 @@ class Invoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
+    protected array $searchable = ['subtotal', 'total', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($invoice) {
-            if (!$invoice->due_date) {
-                $invoice->due_date = now()->addDays(30);
-            }
-
-            if (!$invoice->date) {
-                $invoice->date = now();
-            }
-
             if(!$invoice->issuer){
                 $invoice->issuer = Meta::getValue('tenant_billing_details');
             }
@@ -68,7 +59,7 @@ class Invoice extends Model
 
         static::updating(function($invoice){
             if ($invoice->isDirty('status') && $invoice->getOriginal('status') === 'draft') {
-                $requiredFields = ['issuer', 'recipient', 'total'];
+                $requiredFields = ['issuer', 'recipient', 'total', 'next_run_at'];
 
                 foreach ($requiredFields as $field) {
                     if (empty($invoice->$field)) {
@@ -77,26 +68,9 @@ class Invoice extends Model
                         ]);
                     }
                 }
-
-                if (empty($invoice->identifier_number)) {
-                    $year = now()->year;
-
-                    $lastOffer = self::whereYear('date', $year)
-                        ->whereNotNull('identifier_number')
-                        ->orderBy('identifier_number', 'desc')
-                        ->first();
-
-                    $nextNumber = $lastOffer ? $lastOffer->identifier_number + 1 : 1;
-
-                    $invoice->identifier_number = $nextNumber;
-                    $invoice->identifier = sprintf('%d/%03d', $year, $nextNumber);
-                }
-
-                if(empty($invoice->structured_communication)){
-                    $invoice->structured_communication = \Diji\Billing\Helpers\Invoice::generateStructuredCommunication($invoice->identifier_number);
-                }
-
             }
+
+            $invoice->next_run_at = self::generateNexRunDate($invoice);
         });
 
         static::deleting(function ($invoice) {
@@ -118,8 +92,39 @@ class Invoice extends Model
         return $this->belongsTo(\Diji\Contact\Models\Contact::class, 'contact_id');
     }
 
-    public function transactions()
+    public static function generateNexRunDate(Invoice $invoice): ?Carbon
     {
-        return $this->morphMany(Transaction::class, 'model');
+        $startDate = Carbon::parse($invoice->start_date);
+        $now = Carbon::now();
+
+        $nextRun = $startDate->copy();
+
+        switch ($invoice->frequency) {
+            case 'daily':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addDay();
+                }
+                break;
+            case 'weekly':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addWeek();
+                }
+                break;
+            case 'monthly':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addMonth();
+                }
+                break;
+            case 'yearly':
+                while ($nextRun->lessThanOrEqualTo($now)) {
+                    $nextRun->addYear();
+                }
+                break;
+            default:
+                $nextRun = null;
+                break;
+        }
+
+        return $nextRun;
     }
 }
