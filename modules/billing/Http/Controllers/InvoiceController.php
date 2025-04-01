@@ -161,10 +161,13 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
+        $qrcode = \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication);
+        $logo = Meta::getValue('tenant_billing_details')['logo'];
+
         $pdf = PDF::loadView('billing::invoice', [
             ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-            "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication)
+            "logo" => $logo,
+            "qrcode" => $qrcode
         ]);
 
         try {
@@ -183,7 +186,7 @@ class InvoiceController extends Controller
                 ->to($request->to)
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
-                ->view("billing::email", ["body" => $request->body])
+                ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $request->body])
                 ->send();
         }catch (\Exception $e){
             return response()->json([
