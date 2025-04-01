@@ -118,7 +118,7 @@ class NordigenService
 
             return json_decode($response->getBody()->getContents(), true);
         }catch (\Exception $e){
-            throw new Exception("Erreur lors de la récupération des transactions.");
+            throw new Exception("Erreur lors de la récupération des transactions. Error : " . $e->getMessage());
         }
     }
 
