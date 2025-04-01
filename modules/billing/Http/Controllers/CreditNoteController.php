@@ -111,7 +111,7 @@ class CreditNoteController extends Controller
         ]);
 
         try {
-            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf) {
+            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf, $credit_note) {
                 $tenant = tenant();
                 $message->from(env('MAIL_FROM_ADDRESS'), $tenant->name);
                 $message->to($request->to);
@@ -128,7 +128,7 @@ class CreditNoteController extends Controller
                     $message->bcc('maxime@codevo.be');
                 }
 
-                $message->attachData($pdf->output(), "aa.pdf", [
+                $message->attachData($pdf->output(), "note-de-crédit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf", [
                     "mime" => 'application/pdf'
                 ]);
             });

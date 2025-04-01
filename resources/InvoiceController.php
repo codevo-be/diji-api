@@ -7,13 +7,11 @@ use App\Models\Meta;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
-use Diji\Billing\Resources\InvoiceResource;
 use Diji\Billing\Models\Invoice;
+use Diji\Billing\Resources\InvoiceResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-use Stancl\Tenancy\Tenancy;
 
 class InvoiceController extends Controller
 {
@@ -165,7 +163,7 @@ class InvoiceController extends Controller
         ]);
 
         try {
-            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf) {
+            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf, $invoice) {
                 $tenant = tenant();
                 $message->from(env('MAIL_FROM_ADDRESS'), $tenant->name);
                 $message->to($request->to);
@@ -182,7 +180,7 @@ class InvoiceController extends Controller
                     $message->bcc('maxime@codevo.be');
                 }
 
-                $message->attachData($pdf->output(), "aa.pdf", [
+                $message->attachData($pdf->output(), "facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf", [
                     "mime" => 'application/pdf'
                 ]);
             });
