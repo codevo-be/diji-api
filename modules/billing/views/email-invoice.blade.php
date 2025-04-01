@@ -47,6 +47,7 @@
         <div>
 
             @if($qrcode)
+                <p style="text-align: center;margin:0; color: #7A7A7A;">Scannez, payez.</p>
                 <img style="display:block; margin: 0 auto 40px auto; width: 220px; height: 220px;" src="{!! $qrcode !!}"/>
             @endif
 
