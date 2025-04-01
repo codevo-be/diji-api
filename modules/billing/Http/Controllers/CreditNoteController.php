@@ -4,6 +4,7 @@ namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
+use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
@@ -111,27 +112,23 @@ class CreditNoteController extends Controller
         ]);
 
         try {
-            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf, $credit_note) {
-                $tenant = tenant();
-                $message->from(env('MAIL_FROM_ADDRESS'), $tenant->name);
-                $message->to($request->to);
+            $tenant = tenant();
+            $instanceBrevo = new Brevo();
 
-                if($request->subject){
-                    $message->subject($request->subject);
-                }
+            $instanceBrevo->attachments([
+                [
+                    "filename" => "note-de-crédit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
+                    "output" => $pdf->output()
+                ]
+            ]);
 
-                if($request->cc){
-                    $message->cc($request->cc);
-                }
-
-                if(env('EMAIL_COPY_DEV')){
-                    $message->bcc('maxime@codevo.be');
-                }
-
-                $message->attachData($pdf->output(), "note-de-crédit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf", [
-                    "mime" => 'application/pdf'
-                ]);
-            });
+            $instanceBrevo
+                ->from(env('MAIL_FROM_ADDRESS'), $tenant->name)
+                ->to($request->to)
+                ->cc($request->cc ?? null)
+                ->subject($request->subject ?? '')
+                ->view("billing::email", ["body" => $request->body])
+                ->send();
         }catch (\Exception $e){
             return response()->json([
                 "message" => $e->getMessage()

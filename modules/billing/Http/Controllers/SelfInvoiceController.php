@@ -4,6 +4,7 @@ namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
+use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\StoreSelfInvoiceRequest;
@@ -115,33 +116,28 @@ class SelfInvoiceController extends Controller
         ]);
 
         try {
-            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf, $self_invoice) {
-                $tenant = tenant();
-                $message->from(env('MAIL_FROM_ADDRESS'), $tenant->name);
-                $message->to($request->to);
+            $tenant = tenant();
+            $instanceBrevo = new Brevo();
 
-                if($request->subject){
-                    $message->subject($request->subject);
-                }
+            $instanceBrevo->attachments([
+                [
+                    "filename" => "autofacture-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf",
+                    "output" => $pdf->output()
+                ]
+            ]);
 
-                if($request->cc){
-                    $message->cc($request->cc);
-                }
-
-                if(env('EMAIL_COPY_DEV')){
-                    $message->bcc('maxime@codevo.be');
-                }
-
-                $message->attachData($pdf->output(), "autofacture-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf", [
-                    "mime" => 'application/pdf'
-                ]);
-            });
+            $instanceBrevo
+                ->from(env('MAIL_FROM_ADDRESS'), $tenant->name)
+                ->to($request->to)
+                ->cc($request->cc ?? null)
+                ->subject($request->subject ?? '')
+                ->view("billing::email", ["body" => $request->body])
+                ->send();
         }catch (\Exception $e){
             return response()->json([
                 "message" => $e->getMessage()
             ]);
         }
-
 
         return response()->noContent();
     }

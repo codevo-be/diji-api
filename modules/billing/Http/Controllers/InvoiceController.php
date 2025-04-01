@@ -3,7 +3,10 @@
 namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attachment;
+use App\Models\AttachmentRelation;
 use App\Models\Meta;
+use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
@@ -11,6 +14,7 @@ use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class InvoiceController extends Controller
@@ -159,35 +163,32 @@ class InvoiceController extends Controller
 
         $pdf = PDF::loadView('billing::invoice', [
             ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null
+            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
+            "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication)
         ]);
 
         try {
-            Mail::send('billing::email', ["body" => $request->body], function ($message) use($request, $pdf, $invoice) {
-                $tenant = tenant();
-                $message->from(env('MAIL_FROM_ADDRESS'), $tenant->name);
-                $message->to($request->to);
+            $tenant = tenant();
+            $instanceBrevo = new Brevo();
 
-                if($request->subject){
-                    $message->subject($request->subject);
-                }
+            $instanceBrevo->attachments([
+                [
+                    "filename" => "facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf",
+                    "output" => $pdf->output()
+                ]
+            ]);
 
-                if($request->cc){
-                    $message->cc($request->cc);
-                }
-
-                if(env('EMAIL_COPY_DEV')){
-                    $message->bcc('maxime@codevo.be');
-                }
-
-                $message->attachData($pdf->output(), "facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf", [
-                    "mime" => 'application/pdf'
-                ]);
-            });
+            $instanceBrevo
+                ->from(env('MAIL_FROM_ADDRESS'), $tenant->name)
+                ->to($request->to)
+                ->cc($request->cc ?? null)
+                ->subject($request->subject ?? '')
+                ->view("billing::email", ["body" => $request->body])
+                ->send();
         }catch (\Exception $e){
             return response()->json([
                 "message" => $e->getMessage()
-            ]);
+            ], 422);
         }
 
 
