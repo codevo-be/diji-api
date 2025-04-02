@@ -13,6 +13,7 @@ use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -171,7 +172,6 @@ class InvoiceController extends Controller
         ]);
 
         try {
-            $tenant = tenant();
             $instanceBrevo = new Brevo();
 
             $instanceBrevo->attachments([
@@ -182,7 +182,6 @@ class InvoiceController extends Controller
             ]);
 
             $instanceBrevo
-                ->from(env('MAIL_FROM_ADDRESS'), $tenant->name)
                 ->to($request->to)
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')

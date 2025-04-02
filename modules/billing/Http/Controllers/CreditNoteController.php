@@ -112,7 +112,6 @@ class CreditNoteController extends Controller
         ]);
 
         try {
-            $tenant = tenant();
             $instanceBrevo = new Brevo();
 
             $instanceBrevo->attachments([
@@ -123,7 +122,6 @@ class CreditNoteController extends Controller
             ]);
 
             $instanceBrevo
-                ->from(env('MAIL_FROM_ADDRESS'), $tenant->name)
                 ->to($request->to)
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')

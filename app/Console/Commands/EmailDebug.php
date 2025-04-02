@@ -3,11 +3,16 @@
 namespace App\Console\Commands;
 
 use App\Models\Tenant;
+use App\Services\Brevo;
+use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use SendinBlue\Client\Api\TransactionalEmailsApi;
+use SendinBlue\Client\Configuration;
+use SendinBlue\Client\Model\SendSmtpEmail;
 
 class EmailDebug extends Command
 {
@@ -31,19 +36,16 @@ class EmailDebug extends Command
     public function handle()
     {
         try {
-            Mail::raw('Test email body', function ($message) {
-                $message->to('maxime@codevo.be')
-                    ->subject('SMTP Test');
-            });
+            tenancy()->initialize("gvt");
+            $brevo = new Brevo();
 
-            $this->info('SMTP test email sent successfully!');
+            $brevo->to("maxime@codevo.be");
+            $brevo->subject("test API");
+            $brevo->content("test html");
+
+            $brevo->send();
         } catch (\Exception $e) {
-            Log::error('SMTP test failed: ' . $e->getMessage());
-
-            $this->error('SMTP Test Failed:');
-            $this->error('Error Message: ' . $e->getMessage());
-
-            $this->error('Stack Trace: ' . $e->getTraceAsString());
+            dump($e->getMessage());
         }
     }
 }

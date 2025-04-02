@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Meta;
 use Illuminate\Support\Facades\Log;
 use SendinBlue\Client\Api\TransactionalEmailsApi;
 use SendinBlue\Client\Configuration;
@@ -12,36 +13,50 @@ class Brevo {
     protected TransactionalEmailsApi $apiInstance;
     protected array $to = [];
     protected array $cc = [];
+    protected array $bcc = [];
     protected string $subject = 'No Subject';
     protected string $htmlContent = '';
     protected array $attachments = [];
     protected array $sender = [];
+    protected array $headers = [];
 
     public function __construct()
     {
-        $config = Configuration::getDefaultConfiguration()->setApiKey('api-key', env('BREVO_API_KEY'));
+        $settings = Meta::getValue("brevo_settings");
+
+        if (!$settings || !isset($settings['api_key'], $settings['sender']['email'])) {
+            throw new \Exception('Brevo configuration is missing or invalid.');
+        }
+
+        $config = Configuration::getDefaultConfiguration()->setApiKey('api-key', $settings["api_key"]);
         $this->apiInstance = new TransactionalEmailsApi(new Client(), $config);
-        $this->sender = [
-            'email' => env('MAIL_FROM_ADDRESS'),
-            'name' => config('app.name'),
-        ];
+        $this->sender = $settings["sender"];
     }
 
     public function to(string $email): self
     {
-        $this->to[] = ['email' => $email];
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->to[] = ['email' => $email, "name" => "test"];
+        }
         return $this;
     }
 
     public function cc($emails): self
     {
-        if(!$emails){
-            return $this;
+        foreach ((array) $emails as $email) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->cc[] = ['email' => $email];
+            }
         }
+        return $this;
+    }
 
-        $emails = is_array($emails) ? $emails : [$emails];
-        foreach ($emails as $email) {
-            $this->cc[] = ['email' => $email];
+    public function bcc($emails): self
+    {
+        foreach ((array) $emails as $email) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->bcc[] = ['email' => $email];
+            }
         }
         return $this;
     }
@@ -66,27 +81,41 @@ class Brevo {
 
     public function from(string $email, string $name = null): self
     {
-        $this->sender = [
-            'email' => $email,
-            'name' => $name ?? $email,
-        ];
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->sender = [
+                'email' => $email,
+                'name' => $name ?? $email,
+            ];
+        }
         return $this;
     }
 
     public function attachments(array $attachments): self
     {
         foreach ($attachments as $attachment) {
-            $this->attachments[] = [
-                'name' => $attachment['filename'],
-                'content' => base64_encode($attachment['output']),
-            ];
+            if (!empty($attachment['filename']) && !empty($attachment['output'])) {
+                $this->attachments[] = [
+                    'name' => $attachment['filename'],
+                    'content' => base64_encode($attachment['output']),
+                ];
+            }
         }
+        return $this;
+    }
+
+    public function headers(array $headers): self
+    {
+        $this->headers = $headers;
         return $this;
     }
 
     public function send(): bool
     {
         try {
+            if (empty($this->to)) {
+                throw new \Exception('Recipient email(s) missing.');
+            }
+
             $data = [
                 'sender' => $this->sender,
                 'to' => $this->to,
@@ -94,21 +123,40 @@ class Brevo {
                 'htmlContent' => $this->htmlContent,
             ];
 
-            if($this->cc){
-                $data["cc"] = $this->cc;
+            if (!empty($this->cc)) {
+                $data['cc'] = $this->cc;
             }
 
-            if($this->attachments){
+            if (!empty($this->bcc)) {
+                $data['bcc'] = $this->bcc;
+            }
+
+            if (!empty($this->attachments)) {
                 $data['attachment'] = $this->attachments;
             }
 
-            $email = new SendSmtpEmail($data);
+            if (!empty($this->headers)) {
+                $data['headers'] = $this->headers;
+            }
 
+            $email = new SendSmtpEmail($data);
             $this->apiInstance->sendTransacEmail($email);
+            $this->reset();
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Brevo Send Error: ' . $e->getMessage());
             return false;
         }
+    }
+
+    protected function reset(): void
+    {
+        $this->to = [];
+        $this->cc = [];
+        $this->bcc = [];
+        $this->subject = 'No Subject';
+        $this->htmlContent = '';
+        $this->attachments = [];
+        $this->headers = [];
     }
 }
