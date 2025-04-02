@@ -116,7 +116,6 @@ class SelfInvoiceController extends Controller
         ]);
 
         try {
-            $tenant = tenant();
             $instanceBrevo = new Brevo();
 
             $instanceBrevo->attachments([
@@ -127,7 +126,6 @@ class SelfInvoiceController extends Controller
             ]);
 
             $instanceBrevo
-                ->from(env('MAIL_FROM_ADDRESS'), $tenant->name)
                 ->to($request->to)
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
