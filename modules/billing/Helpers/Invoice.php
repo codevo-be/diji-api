@@ -2,6 +2,7 @@
 
 namespace Diji\Billing\Helpers;
 
+use App\Models\Meta;
 use chillerlan\QRCode\Common\EccLevel;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
@@ -54,5 +55,22 @@ class Invoice {
         ]);
 
         return (new QRCode($options))->render($data);
+    }
+
+    public static function isIntracommunity(array $issuer, array $recipient): bool
+    {
+        $euCountries = [
+            'at', 'be', 'bg', 'hr', 'cy', 'cz', 'dk', 'ee', 'fi', 'fr', 'de', 'gr',
+            'hu', 'ie', 'it', 'lv', 'lt', 'lu', 'mt', 'nl', 'pl', 'pt', 'ro', 'sk',
+            'si', 'es', 'se'
+        ];
+
+        if (
+            in_array($issuer['country'], $euCountries) &&
+            in_array($recipient['country'], $euCountries) &&
+            $recipient['country'] !== $issuer['country']
+        ) {
+            return true;
+        }
     }
 }
