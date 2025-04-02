@@ -6,8 +6,8 @@ class PricingHelper
 {
     public static function getPricingDetails($subtotal = 0, $vat = 21)
     {
-        $tax = $subtotal * ($vat / 100);
-        $total = $subtotal + $tax;
+        $tax = floatval($subtotal) * (floatval($vat) / 100);
+        $total = floatval($subtotal) + floatval($tax);
 
         return [
             "subtotal" => $subtotal,

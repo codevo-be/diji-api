@@ -50,6 +50,24 @@ class BillingItem extends Model
             $oldOrder = $item->getOriginal('position');
             $newOrder = $item->position;
 
+            if($item->retail){
+                $tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
+                $item->retail = [
+                    "subtotal" => floatval($item->retail["subtotal"]),
+                    "tax" => $tax,
+                    "total" => floatval($item->retail["subtotal"]) + $tax
+                ];
+            }
+
+            if($item->cost){
+                $tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
+                $item->cost = [
+                    "subtotal" => floatval($item->cost["subtotal"]),
+                    "tax" => $tax,
+                    "total" => floatval($item->cost["subtotal"]) + $tax
+                ];
+            }
+
             if ($oldOrder === $newOrder) {
                 return;
             }
