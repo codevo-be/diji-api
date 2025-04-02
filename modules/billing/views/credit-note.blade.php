@@ -127,10 +127,18 @@
                 </tr>
 
                 @foreach($taxes ?? [] as $tax => $value)
-                    <tr>
-                        <td>TVA {!! $tax !!}%</td>
-                        <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($value ?? 0) !!}</td>
-                    </tr>
+
+                    @if(\Diji\Billing\Helpers\Invoice::isIntracommunity($issuer, $recipient) && $tax === 0)
+                        <tr>
+                            <td>TVA intracommunautaire</td>
+                        </tr>
+                    @else
+                        <tr>
+                            <td>TVA {!! $tax !!}%</td>
+                            <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($value ?? 0) !!}</td>
+                        </tr>
+                    @endif
+
                 @endforeach
 
                 <tr style="font-size: 16px; font-weight: 700;">

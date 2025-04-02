@@ -121,22 +121,30 @@
         <div style="margin-top:40px; width:40%; margin-left:auto;">
             <table style="font-size: 14px; page-break-inside: avoid;">
                 <tbody>
-                <tr>
-                    <td style="padding-right: 20px;">Total HTVA</td>
-                    <td style="text-align: right;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($subtotal ?? 0) !!}</td>
-                </tr>
-
-                @foreach($taxes ?? [] as $tax => $value)
                     <tr>
-                        <td>TVA {!! $tax !!}%</td>
-                        <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($value ?? 0) !!}</td>
+                        <td style="padding-right: 20px;">Total HTVA</td>
+                        <td style="text-align: right;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($subtotal ?? 0) !!}</td>
                     </tr>
-                @endforeach
 
-                <tr style="font-size: 16px; font-weight: 700;">
-                    <td style="padding-top:15px;">Total</td>
-                    <td style="padding-top:15px;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total ?? 0) !!}</td>
-                </tr>
+                    @foreach($taxes ?? [] as $tax => $value)
+
+                        @if(\Diji\Billing\Helpers\Invoice::isIntracommunity($issuer, $recipient) && $tax === 0)
+                            <tr>
+                                <td>TVA intracommunautaire</td>
+                            </tr>
+                        @else
+                            <tr>
+                                <td>TVA {!! $tax !!}%</td>
+                                <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($value ?? 0) !!}</td>
+                            </tr>
+                        @endif
+
+                    @endforeach
+
+                    <tr style="font-size: 16px; font-weight: 700;">
+                        <td style="padding-top:15px;">Total</td>
+                        <td style="padding-top:15px;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total ?? 0) !!}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
