@@ -72,5 +72,7 @@ class Invoice {
         ) {
             return true;
         }
+
+        return false;
     }
 }
