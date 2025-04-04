@@ -93,7 +93,7 @@ class RecurringInvoice extends Model
         return $this->belongsTo(\Diji\Contact\Models\Contact::class, 'contact_id');
     }
 
-    public static function generateNexRunDate(Invoice $invoice): ?Carbon
+    public static function generateNexRunDate(RecurringInvoice $invoice): ?Carbon
     {
         $startDate = Carbon::parse($invoice->start_date);
         $now = Carbon::now();

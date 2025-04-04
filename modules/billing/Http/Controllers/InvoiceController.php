@@ -21,7 +21,10 @@ class InvoiceController extends Controller
 
         $query
             ->filter(['contact_id', 'status', 'date'])
-            ->when($request->month, function ($query) use($request){
+            ->when(isset($request->month) &&
+                is_string($request->month) &&
+                trim($request->month) !== '' &&
+                strtolower($request->month) !== 'undefined', function ($query) use($request){
                 return $query->whereMonth('date', $request->month);
             })
             ->orderByDesc('id');
