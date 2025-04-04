@@ -8,6 +8,7 @@ use App\Traits\Filterable;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class Invoice extends Model
@@ -97,6 +98,10 @@ class Invoice extends Model
                     $invoice->structured_communication = \Diji\Billing\Helpers\Invoice::generateStructuredCommunication($invoice->identifier_number);
                 }
 
+            }
+
+            if ($invoice->isDirty('date')) {
+                $invoice->due_date = Carbon::parse($invoice->date)->addDays(30);
             }
         });
 
