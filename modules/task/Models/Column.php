@@ -12,4 +12,9 @@ class Column extends Model
         'name',
         'order',
     ];
+
+    public function items()
+    {
+        return $this->hasMany(Item::class, 'task_column_id');
+    }
 }

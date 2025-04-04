@@ -16,6 +16,7 @@ class ColumnController extends Controller
     {
         $columns = Column::where('project_id', $project)
             ->orderBy('order')
+            ->with('items')
             ->get();
 
         return ColumnResource::collection($columns)->response();
