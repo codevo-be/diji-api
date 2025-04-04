@@ -4,6 +4,7 @@ namespace Diji\Billing\Models;
 
 use App\Models\Meta;
 use App\Traits\AutoloadRelationships;
+use App\Traits\Filterable;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +24,7 @@ class SelfInvoice extends Model
         self::STATUS_EXPIRED
     ];
 
-    use HasFactory, AutoloadRelationships, QuerySearch;
+    use HasFactory, AutoloadRelationships, QuerySearch, Filterable;
 
     protected $fillable = [
         "status",
@@ -46,7 +47,7 @@ class SelfInvoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'date', 'issuer->name', 'issuer->vat_number', 'recipient->name', 'recipient->vat_number'];
+    protected array $searchable = ['identifier','date', 'subtotal', 'total', 'date', 'issuer->name', 'issuer->vat_number', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {
