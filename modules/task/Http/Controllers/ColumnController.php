@@ -14,9 +14,11 @@ class ColumnController extends Controller
      */
     public function index(int $project)
     {
-        $query = Column::query();
+        $columns = Column::where('project_id', $project)
+            ->orderBy('order')
+            ->get();
 
-        return ColumnResource::collection($query->get())->response();
+        return ColumnResource::collection($columns)->response();
     }
 
     /**
