@@ -29,7 +29,7 @@ class InvoiceController extends Controller
             ->orderByDesc('id');
 
         $invoices = $request->has('page')
-            ? $query->paginate()
+            ? $query->paginate(50)
             : $query->get();
 
         return InvoiceResource::collection($invoices)->response();

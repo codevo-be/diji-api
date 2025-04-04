@@ -29,7 +29,7 @@ class SelfInvoiceController extends Controller
             ->orderByDesc('id');
 
         $self_invoices = $request->has('page')
-            ? $query->paginate()
+            ? $query->paginate(50)
             : $query->get();
 
         return SelfInvoiceResource::collection($self_invoices)->response();

@@ -20,7 +20,7 @@ class RecurringInvoiceController extends Controller
             ->orderByDesc('id');
 
         $invoices = $request->has('page')
-            ? $query->paginate()
+            ? $query->paginate(50)
             : $query->get();
 
         return RecurringInvoiceResource::collection($invoices)->response();

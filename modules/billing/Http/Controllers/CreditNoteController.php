@@ -29,7 +29,7 @@ class CreditNoteController extends Controller
             ->orderByDesc('id');
 
         $credit_notes = $request->has('page')
-            ? $query->paginate()
+            ? $query->paginate(50)
             : $query->get();
 
         return CreditNoteResource::collection($credit_notes)->response();
