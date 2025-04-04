@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Project extends Model
 {
     use HasFactory, QuerySearch;
+    protected $table = 'task_projects';
 
     protected $fillable = [
         'name',
