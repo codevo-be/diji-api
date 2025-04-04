@@ -39,6 +39,7 @@
     35 => 'Barryvdh\\DomPDF\\ServiceProvider',
     36 => 'Diji\\Billing\\BillingServiceProvider',
     37 => 'Diji\\Contact\\ContactServiceProvider',
+    38 => 'Diji\\Task\\TaskServiceProvider',
   ),
   'eager' => 
   array (
@@ -65,6 +66,7 @@
     20 => 'Barryvdh\\DomPDF\\ServiceProvider',
     21 => 'Diji\\Billing\\BillingServiceProvider',
     22 => 'Diji\\Contact\\ContactServiceProvider',
+    23 => 'Diji\\Task\\TaskServiceProvider',
   ),
   'deferred' => 
   array (
