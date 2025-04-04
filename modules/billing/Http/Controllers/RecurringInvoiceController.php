@@ -15,15 +15,15 @@ class RecurringInvoiceController extends Controller
     {
         $query = RecurringInvoice::query();
 
-        if($request->filled('contact_id')){
-            $query->where("contact_id", $request->contact_id);
-        }
+        $query
+            ->filter(['contact_id', 'status', 'date'])
+            ->orderByDesc('id');
 
-        if($request->filled('status')){
-            $query->where("status", $request->status);
-        }
+        $invoices = $request->has('page')
+            ? $query->paginate()
+            : $query->get();
 
-        return RecurringInvoiceResource::collection($query->get())->response();
+        return RecurringInvoiceResource::collection($invoices)->response();
     }
 
     public function show(int $recurring_invoice_id): \Illuminate\Http\JsonResponse

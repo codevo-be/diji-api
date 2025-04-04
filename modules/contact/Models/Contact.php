@@ -2,13 +2,14 @@
 
 namespace Diji\Contact\Models;
 
+use App\Traits\Filterable;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Contact extends Model
 {
-    use HasFactory, QuerySearch;
+    use HasFactory, QuerySearch, Filterable;
 
     protected $fillable = [
         "firstname",

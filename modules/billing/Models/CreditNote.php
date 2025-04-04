@@ -4,6 +4,7 @@ namespace Diji\Billing\Models;
 
 use App\Models\Meta;
 use App\Traits\AutoloadRelationships;
+use App\Traits\Filterable;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,7 @@ class CreditNote extends Model
         self::STATUS_REFUND
     ];
 
-    use HasFactory, AutoloadRelationships, QuerySearch;
+    use HasFactory, AutoloadRelationships, QuerySearch, Filterable;
 
     protected $fillable = [
         "invoice_id",
@@ -43,7 +44,7 @@ class CreditNote extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['date', 'subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
+    protected array $searchable = ['identifier', 'date', 'subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {

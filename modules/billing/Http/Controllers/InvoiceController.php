@@ -3,8 +3,6 @@
 namespace Diji\Billing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attachment;
-use App\Models\AttachmentRelation;
 use App\Models\Meta;
 use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,9 +11,6 @@ use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class InvoiceController extends Controller
@@ -24,19 +19,18 @@ class InvoiceController extends Controller
     {
         $query = Invoice::query();
 
-        if($request->filled('contact_id')){
-            $query->where("contact_id", $request->contact_id);
-        }
+        $query
+            ->filter(['contact_id', 'status', 'date'])
+            ->when($request->month, function ($query) use($request){
+                return $query->whereMonth('date', $request->month);
+            })
+            ->orderByDesc('id');
 
-        if($request->filled('status')){
-            $query->where("status", $request->status);
-        }
+        $invoices = $request->has('page')
+            ? $query->paginate()
+            : $query->get();
 
-        if($request->filled('date')){
-            $query->where("date", $request->date);
-        }
-
-        return InvoiceResource::collection($query->get())->response();
+        return InvoiceResource::collection($invoices)->response();
     }
 
     public function show(int $invoice_id): \Illuminate\Http\JsonResponse

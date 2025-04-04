@@ -16,11 +16,14 @@ class ContactController extends Controller
     {
         $query = Contact::query();
 
-        if($request->filled('email')){
-            $query->where("email", $request->email);
-        }
+        $query->filter(['email'])->orderBy('display_name');
 
-        return ContactResource::collection($query->get())->response();
+        $contacts = $request->has('page')
+            ? $query->paginate()
+            : $query->get();
+
+
+        return ContactResource::collection($contacts)->response();
     }
 
     public function show(int $contact_id): \Illuminate\Http\JsonResponse
