@@ -3,6 +3,8 @@
 namespace Diji\Task\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Diji\Task\Models\Column;
+use Diji\Task\Resources\ColumnResource;
 use Illuminate\Http\Request;
 
 class ColumnController extends Controller
@@ -10,9 +12,11 @@ class ColumnController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(int $project)
     {
-        //
+        $query = Column::query();
+
+        return ColumnResource::collection($query->get())->response();
     }
 
     /**

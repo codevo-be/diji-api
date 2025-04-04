@@ -8,7 +8,7 @@ Route::group([
     'prefix' => 'api',
 ], function () {
     Route::middleware(['auth:api', 'auth.tenant'])->group(function () {
-        Route::resource('/task-columns', ColumnController::class)->only(['index']);
+        Route::get('/task-projects/{project}/columns', [ColumnController::class, 'index']);
         Route::resource('/task-projects', ProjectController::class)->only(['index']);
     });
 });
