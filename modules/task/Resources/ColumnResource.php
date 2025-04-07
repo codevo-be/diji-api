@@ -22,6 +22,7 @@ class ColumnResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'items' => $this->items,
+            'project_id' => $this->project_id,
         ];
     }
 }

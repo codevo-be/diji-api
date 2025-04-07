@@ -11,6 +11,7 @@ class Column extends Model
     protected $fillable = [
         'name',
         'order',
+        'project_id'
     ];
 
     public function items()

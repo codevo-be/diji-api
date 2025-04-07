@@ -3,8 +3,12 @@
 namespace Diji\Task\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Diji\Task\Http\Requests\StoreColumnRequest;
+use Diji\Task\Http\Requests\StoreItemRequest;
 use Diji\Task\Models\Column;
+use Diji\Task\Models\Item;
 use Diji\Task\Resources\ColumnResource;
+use Diji\Task\Resources\ItemResource;
 use Illuminate\Http\Request;
 
 class ColumnController extends Controller
@@ -25,9 +29,15 @@ class ColumnController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreColumnRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        $item = Column::create($data);
+
+        return response()->json([
+            'data' => new ColumnResource($item),
+        ], 201);
     }
 
     /**
