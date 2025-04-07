@@ -3,6 +3,8 @@
 namespace Diji\Task\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Diji\Task\Enums\TaskStatus;
 
 class StoreItemRequest extends FormRequest
 {
@@ -14,32 +16,37 @@ class StoreItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstname' => 'nullable|string|required_without_all:company_name,vat_number,',
-            'lastname' => 'nullable|string|required_without_all:company_name,vat_number,',
-            'email' => 'nullable|email|max:150|unique:contacts,email',
-            'phone' => 'nullable|string|max:150',
-            'company_name' => 'nullable|string|required_with:vat_number',
-            'vat_number' => 'nullable|string|max:12',
-            'iban' => 'nullable|string',
-            'billing_address' => 'array|nullable',
-            'billing_address.street' => 'string|nullable',
-            'billing_address.street_number' => 'string|nullable',
-            'billing_address.city' => 'string|nullable',
-            'billing_address.zipcode' => 'string|nullable',
-            'billing_address.country' => 'string|nullable',
+            'task_column_id' => ['required', 'integer', 'exists:task_columns,id'],
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => ['required', 'string', Rule::in(TaskStatus::values())],
+            'priority' => 'required|integer|min:1|max:5',
+            'order' => 'nullable|integer',
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
-            'firstname.required_without_all' => 'Le prénom est requis si ni le numéro de TVA ni le nom de l\'entreprise ne sont renseignés.',
-            'lastname.required_without_all' => 'Le nom de famille est requis si ni le numéro de TVA ni le nom de l\'entreprise ne sont renseignés.',
-            'company_name.required_with' => 'Le nom de l\'entreprise est requis si un numéro de TVA est fourni.',
-            'email.email' => 'L\'email doit être une adresse valide.',
-            'email.unique' => 'Cette adresse email est déjà utilisée.',
-            'phone.max' => 'Le numéro de téléphone ne peut pas dépasser 150 caractères.',
-            'vat_number.max' => 'Le numéro de TVA ne peut pas dépasser 12 caractères.',
+            'task_column_id.required' => 'L\'ID de la colonne de tâche est obligatoire.',
+            'task_column_id.exists' => 'La colonne de tâche sélectionnée est invalide.',
+
+            'name.required' => 'Le nom est obligatoire.',
+            'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+
+            'description.string' => 'La description doit être une chaîne de caractères.',
+
+            'status.required' => 'Le statut est obligatoire.',
+            'status.string' => 'Le statut doit être une chaîne de caractères.',
+            'status.in' => 'Le statut doit être valide.',
+
+            'priority.required' => 'La priorité est obligatoire.',
+            'priority.integer' => 'La priorité doit être un nombre entier.',
+            'priority.min' => 'La priorité doit être au minimum 1.',
+            'priority.max' => 'La priorité doit être au maximum 5.',
+
+            'order.integer' => 'L’ordre doit être un nombre entier.',
         ];
     }
 }
