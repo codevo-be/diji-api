@@ -20,7 +20,7 @@ class StoreColumnRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => ['required', 'integer', 'exists:task_project,id'],
+            'project_id' => ['required', 'integer', 'exists:task_projects,id'],
             'name' => 'required|string|max:255',
             'order' => 'required|integer|min:1'
         ];
