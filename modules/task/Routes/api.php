@@ -12,6 +12,7 @@ Route::group([
         Route::post('/task-items', [ItemController::class, 'store']);
         Route::put('/task-items/{item}', [ItemController::class, 'update']);
         Route::post('/task-columns', [ColumnController::class, 'store']);
+        Route::put('/task-columns/{column}', [ColumnController::class, 'update']);
         Route::get('/task-projects/{project}/columns', [ColumnController::class, 'index']);
         Route::resource('/task-projects', ProjectController::class)->only(['index']);
     });

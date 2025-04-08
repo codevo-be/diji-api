@@ -5,6 +5,7 @@ namespace Diji\Task\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Diji\Task\Http\Requests\StoreColumnRequest;
 use Diji\Task\Http\Requests\StoreItemRequest;
+use Diji\Task\Http\Requests\UpdateColumnRequest;
 use Diji\Task\Models\Column;
 use Diji\Task\Models\Item;
 use Diji\Task\Resources\ColumnResource;
@@ -41,17 +42,25 @@ class ColumnController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Update the specified resource in storage.
      */
-    public function show(string $id)
+    public function update(UpdateColumnRequest $request, string $id)
     {
-        //
+        $data = $request->validated();
+
+        $item = Column::findOrFail($id);
+
+        $item->update($data);
+
+        return response()->json([
+            'data' => new ColumnResource($item),
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Display the specified resource.
      */
-    public function update(Request $request, string $id)
+    public function show(string $id)
     {
         //
     }

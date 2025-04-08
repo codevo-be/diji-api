@@ -22,11 +22,11 @@ class ItemController extends Controller
         ], 201);
     }
 
-    public function update(UpdateItemRequest $request, int $item): JsonResponse
+    public function update(UpdateItemRequest $request, int $id): JsonResponse
     {
         $data = $request->validated();
 
-        $item = Item::findOrFail($item);
+        $item = Item::findOrFail($id);
 
         $item->update($data);
 
