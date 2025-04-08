@@ -30,4 +30,13 @@ class ProjectController extends Controller
             'data' => new ProjectResource($item),
         ], 201);
     }
+
+    public function show(int $id): JsonResponse
+    {
+        $item = Project::findOrFail($id);
+
+        return response()->json([
+            'data' => new ProjectResource($item),
+        ], 201);
+    }
 }
