@@ -10,6 +10,7 @@ Route::group([
 ], function () {
     Route::middleware(['auth:api', 'auth.tenant'])->group(function () {
         Route::post('/task-items', [ItemController::class, 'store']);
+        Route::put('/task-items/{item}', [ItemController::class, 'update']);
         Route::post('/task-columns', [ColumnController::class, 'store']);
         Route::get('/task-projects/{project}/columns', [ColumnController::class, 'index']);
         Route::resource('/task-projects', ProjectController::class)->only(['index']);

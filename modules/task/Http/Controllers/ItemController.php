@@ -4,6 +4,7 @@ namespace Diji\Task\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Diji\Task\Http\Requests\StoreItemRequest;
+use Diji\Task\Http\Requests\UpdateItemRequest;
 use Diji\Task\Models\Item;
 use Diji\Task\Resources\ItemResource;
 use Illuminate\Http\JsonResponse;
@@ -19,5 +20,18 @@ class ItemController extends Controller
         return response()->json([
             'data' => new ItemResource($item),
         ], 201);
+    }
+
+    public function update(UpdateItemRequest $request, int $item): JsonResponse
+    {
+        $data = $request->validated();
+
+        $item = Item::findOrFail($item);
+
+        $item->update($data);
+
+        return response()->json([
+            'data' => new ItemResource($item),
+        ]);
     }
 }
