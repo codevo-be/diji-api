@@ -31,6 +31,7 @@ Route::group([
         /* Self Invoice */
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);
         Route::put("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchUpdate"]);
+        Route::post("/self-invoices/batch/pdf",  [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchPdf"]);
         Route::resource("/self-invoices", Diji\Billing\Http\Controllers\SelfInvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/self-invoices/{self_invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);
