@@ -201,7 +201,7 @@ class CreditNoteController extends Controller
 
         foreach ($ids as $id) {
             try {
-                $credit_notes = CreditNote::where('id', $id)->first();
+                $credit_notes = CreditNote::findOrFail($id)->load('items');
                 $fileName = 'facture-' . str_replace("/", "-", $credit_notes->identifier) . '.pdf';
 
                 $pdfString = PdfService::generateCreditNote($credit_notes);
