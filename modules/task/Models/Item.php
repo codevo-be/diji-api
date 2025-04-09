@@ -15,8 +15,29 @@ class Item extends Model
         'status',
         'priority',
         'order',
-        'done'
+        'done',
+        'task_number',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function (Item $item) {
+            // Assure que la colonne est chargée
+            $column = Column::find($item->task_column_id);
+
+            if ($column) {
+                $projectId = $column->project_id;
+
+                $lastNumber = self::whereHas('column', function ($q) use ($projectId) {
+                    $q->where('project_id', $projectId);
+                })->max('task_number');
+
+                $item->task_number = $lastNumber ? $lastNumber + 1 : 1;
+            }
+        });
+    }
 
     public function column()
     {

@@ -23,6 +23,7 @@ class ItemResource extends JsonResource
             'updated_at' => $this->updated_at,
             'items' => $this->items,
             'done' => $this->done,
+            'task_number' => $this->task_number,
         ];
     }
 }
