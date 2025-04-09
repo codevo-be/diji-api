@@ -9,12 +9,10 @@ Route::group([
     'prefix' => 'api',
 ], function () {
     Route::middleware(['auth:api', 'auth.tenant'])->group(function () {
-        Route::post('/task-items', [ItemController::class, 'store']);
         Route::put('/task-items/bulk-update', [ItemController::class, 'bulkUpdate']);
-        Route::put('/task-items/{item}', [ItemController::class, 'update']);
-        Route::post('/task-columns', [ColumnController::class, 'store']);
-        Route::put('/task-columns/{column}', [ColumnController::class, 'update']);
         Route::get('/task-projects/{project}/columns', [ColumnController::class, 'index']);
-        Route::resource('/task-projects', ProjectController::class)->only(['index', 'store', 'show']);
+        Route::resource('/task-items', ItemController::class)->only(['store', 'update']);
+        Route::resource('/task-columns', ColumnController::class)->only(['store', 'update']);
+        Route::resource('/task-projects', ProjectController::class)->only(['index', 'store', 'show', 'update']);
     });
 });
