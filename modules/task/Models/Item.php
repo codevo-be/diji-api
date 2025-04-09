@@ -15,6 +15,7 @@ class Item extends Model
         'status',
         'priority',
         'order',
+        'done'
     ];
 
     public function column()
