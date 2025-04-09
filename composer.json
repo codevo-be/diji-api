@@ -15,8 +15,7 @@
         "laravel/passport": "^12.4",
         "laravel/tinker": "^2.9",
         "sendinblue/api-v3-sdk": "^8.4",
-        "stancl/tenancy": "^3.8",
-        "ext-zip": "*"
+        "stancl/tenancy": "^3.8"
     },
     "require-dev": {
         "laravel/pint": "^1.13",

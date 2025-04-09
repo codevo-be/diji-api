@@ -9,7 +9,6 @@ Route::group([
         /* Invoice */
         Route::delete("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchDestroy"]);
         Route::put("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchUpdate"]);
-        Route::post('/invoices/batch/pdf', [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchPdf"]);
         Route::resource("/invoices", Diji\Billing\Http\Controllers\InvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/invoices/{invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get("/invoices/{invoice}/pdf", [\Diji\Billing\Http\Controllers\InvoiceController::class, "pdf"]);
