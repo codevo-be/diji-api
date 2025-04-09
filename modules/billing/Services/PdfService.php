@@ -21,8 +21,18 @@ class PdfService
         ]);
     }
 
+    public static function generateCreditNote($credit_note): string
+    {
+        return self::generate('billing::credit-note', [
+            ...$credit_note->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
+        ]);
+    }
+
     public static function generate(string $view, array $data): string
     {
         return Pdf::loadView($view, $data)->output();
     }
+
+
 }

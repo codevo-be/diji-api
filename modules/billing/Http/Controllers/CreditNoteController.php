@@ -11,9 +11,12 @@ use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Models\CreditNote;
 use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Resources\CreditNoteResource;
+use Diji\Billing\Services\PdfService;
+use Diji\Billing\Services\ZipService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class CreditNoteController extends Controller
@@ -90,12 +93,9 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', [
-            ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateCreditNote($credit_note);
 
-        return response($pdf->output(), 200, [
+        return response($pdfString, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=note-de-credit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
         ]);
@@ -187,5 +187,42 @@ class CreditNoteController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    public function batchPdf(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json(['error' => 'Invalid or empty ID list.'], 400);
+        }
+
+        $pdfFiles = array();
+
+        foreach ($ids as $id) {
+            try {
+                $credit_notes = CreditNote::where('id', $id)->first();
+                $fileName = 'facture-' . str_replace("/", "-", $credit_notes->identifier) . '.pdf';
+
+                $pdfString = PdfService::generateCreditNote($credit_notes);
+
+                $pdfFiles[$fileName] = $pdfString;
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    "message" => $e->getMessage()
+                ], 422);
+            }
+        }
+
+        try {
+            $zipPath = ZipService::createTempZip($pdfFiles);
+
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 422);
+        }
     }
 }
