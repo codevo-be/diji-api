@@ -22,6 +22,7 @@ class UpdateItemRequest extends FormRequest
             'status' => ['sometimes', 'string', Rule::in(TaskStatus::values())],
             'priority' => 'sometimes|integer|min:1|max:5',
             'order' => 'sometimes|integer',
+            'done' => 'sometimes|boolean',
         ];
     }
 
@@ -38,6 +39,7 @@ class UpdateItemRequest extends FormRequest
             'priority.min' => 'La priorité doit être au minimum 1.',
             'priority.max' => 'La priorité doit être au maximum 5.',
             'order.integer' => 'L’ordre doit être un nombre entier.',
+            'done.boolean' => 'Le champ terminé doit être vrai ou faux.',
         ];
     }
 }
