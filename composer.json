@@ -28,7 +28,9 @@
         "psr-4": {
             "App\\": "app/",
             "Diji\\Billing\\": "modules/billing",
-            "Diji\\Contact\\": "modules/contact"
+            "Diji\\Contact\\": "modules/contact",
+            "Diji\\Team\\": "modules/team",
+            "Diji\\Module\\": "modules/module"
         }
     },
     "autoload-dev": {
