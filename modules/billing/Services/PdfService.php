@@ -29,10 +29,18 @@ class PdfService
         ]);
     }
 
+    public static function generateSelfInvoice($self_invoice): string
+    {
+        return self::generate('billing::self-invoice', [
+            ...$self_invoice->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
+        ]);
+    }
+
+
     public static function generate(string $view, array $data): string
     {
         return Pdf::loadView($view, $data)->output();
     }
-
 
 }
