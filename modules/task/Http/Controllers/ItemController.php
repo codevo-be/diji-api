@@ -3,7 +3,6 @@
 namespace Diji\Task\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Diji\Contact\Models\Contact;
 use Diji\Task\Http\Requests\StoreItemRequest;
 use Diji\Task\Http\Requests\UpdateItemRequest;
 use Diji\Task\Models\Item;
