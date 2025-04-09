@@ -3,12 +3,14 @@
 namespace Diji\Task\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Diji\Contact\Models\Contact;
 use Diji\Task\Http\Requests\StoreItemRequest;
 use Diji\Task\Http\Requests\UpdateItemRequest;
 use Diji\Task\Models\Item;
 use Diji\Task\Resources\ItemResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ItemController extends Controller
 {
@@ -58,5 +60,13 @@ class ItemController extends Controller
         }
 
         return response()->json(['message' => 'Mise à jour des tâches réussie.']);
+    }
+
+    public function destroy(int $id): Response
+    {
+        $item = Item::findOrFail($id);
+        $item->delete();
+
+        return response()->noContent();
     }
 }

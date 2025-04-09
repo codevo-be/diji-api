@@ -11,7 +11,7 @@ Route::group([
     Route::middleware(['auth:api', 'auth.tenant'])->group(function () {
         Route::put('/task-items/bulk-update', [ItemController::class, 'bulkUpdate']);
         Route::get('/task-projects/{project}/columns', [ColumnController::class, 'index']);
-        Route::resource('/task-items', ItemController::class)->only(['store', 'update']);
+        Route::resource('/task-items', ItemController::class)->only(['store', 'update', 'destroy']);
         Route::resource('/task-columns', ColumnController::class)->only(['store', 'update']);
         Route::resource('/task-projects', ProjectController::class)->only(['index', 'store', 'show', 'update']);
     });
