@@ -15,7 +15,6 @@ class ItemController extends Controller
     public function store(StoreItemRequest $request): JsonResponse
     {
         $data = $request->validated();
-
         $item = Item::create($data);
 
         return response()->json([
@@ -26,9 +25,7 @@ class ItemController extends Controller
     public function update(UpdateItemRequest $request, int $id): JsonResponse
     {
         $data = $request->validated();
-
         $item = Item::findOrFail($id);
-
         $item->update($data);
 
         return response()->json([
