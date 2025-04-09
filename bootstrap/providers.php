@@ -8,5 +8,7 @@ return [
     Barryvdh\DomPDF\ServiceProvider::class,
     \Diji\Billing\BillingServiceProvider::class,
     \Diji\Contact\ContactServiceProvider::class,
-    \Diji\Task\TaskServiceProvider::class
+    \Diji\Task\TaskServiceProvider::class,
+    \Diji\Team\TeamServiceProvider::class,
+    \Diji\Module\ModuleServiceProvider::class
 ];

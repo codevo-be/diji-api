@@ -30,7 +30,9 @@
             "App\\": "app/",
             "Diji\\Billing\\": "modules/billing",
             "Diji\\Contact\\": "modules/contact",
-            "Diji\\Task\\": "modules/task"
+            "Diji\\Task\\": "modules/task",
+            "Diji\\Team\\": "modules/team",
+            "Diji\\Module\\": "modules/module"
         }
     },
     "autoload-dev": {

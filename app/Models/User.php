@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Diji\Contact\Models\Contact;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,7 +20,8 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'firstname',
+        'lastname',
         'email',
         'password',
     ];
@@ -47,8 +49,30 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function (User $user) {
+            if (!$user->display_name) {
+                $user->display_name = $user->setDisplayName();
+            }
+        });
+
+        static::updating(function($user){
+            if ($user->isDirty('firstname') || $user->isDirty('lastname')) {
+                $user->display_name = $user->setDisplayName();
+            }
+        });
+    }
+
     public function tenants()
     {
         return $this->belongsToMany(Tenant::class, 'user_tenants');
+    }
+
+    private function setDisplayName()
+    {
+        return trim("{$this->firstname} {$this->lastname}");
     }
 }
