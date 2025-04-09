@@ -24,4 +24,19 @@ class ZipService
 
         $zip->close();
     }
+
+    /**
+     * @throws \Exception
+     */
+    public static function createTempZip(array $files): string
+    {
+        $zipFileName = 'invoices_' . now()->format('Ymd_His') . '.zip';
+        $zipPath = storage_path("app/tmp/{$zipFileName}");
+
+        Storage::makeDirectory('tmp');
+
+        self::createZip($files,  $zipPath);
+
+        return $zipPath;
+    }
 }

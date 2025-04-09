@@ -166,20 +166,15 @@ class InvoiceController extends Controller
             }
         }
 
-        $zipFileName = 'invoices_' . now()->format('Ymd_His') . '.zip';
-        $zipPath = storage_path("app/tmp/{$zipFileName}");
-
-        Storage::makeDirectory('tmp');
-
         try {
-            ZipService::createZip($pdfFiles,  $zipPath);
+            $zipPath = ZipService::createTempZip($pdfFiles);
+
+            return response()->download($zipPath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);
         }
-
-        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 
     public function pdf(Request $request, int $invoice_id)
