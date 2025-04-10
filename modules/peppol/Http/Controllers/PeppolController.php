@@ -3,6 +3,7 @@
 namespace Diji\Peppol\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Requests\PeppolSendRequest;
 use Diji\Peppol\Services\PeppolPayloadAssembler;
 use Illuminate\Http\JsonResponse;
@@ -17,16 +18,7 @@ class PeppolController extends Controller
 
         // Génère le XML UBL
         $xml = (new PeppolBuilder())
-            ->withDocumentType('Invoice')
-            ->withDocumentInfo($payload->document)
-            ->withBuyerReference($payload->buyerReference)
-            ->withSender($payload->sender)
-            ->withReceiver($payload->receiver)
-            ->withDelivery($payload->delivery)
-            ->withPayment($payload->payment)
-            ->withTaxes($payload->taxes)
-            ->withMonetaryTotal($payload->totals)
-            ->withLines($payload->lines)
+            ->withPayload($payload)
             ->build();
 
         // Enregistrement local pour debug/audit

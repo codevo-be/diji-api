@@ -20,6 +20,7 @@ class PeppolPayloadAssembler
     public static function fromRequest(PeppolSendRequest $request): PeppolPayloadDTO
     {
         $document = new DocumentDTO(
+            documentType: $request->input('document.document_type'),
             billName: $request->input('document.bill_name'),
             issueDate: $request->input('document.issue_date'),
             dueDate: $request->input('document.due_date'),

@@ -2,122 +2,30 @@
 
 namespace Diji\Peppol\Helpers;
 
-use Billing\Data\PeppolDocumentAttachments;
-use Billing\dto\DeliveryInfo;
-use Billing\dto\DocumentInfo;
-use Billing\dto\InvoiceLine;
-use Billing\dto\MonetaryTotalInfo;
-use Billing\dto\PaymentInfo;
-use Billing\dto\PeppolAttachment;
-use Billing\dto\ReceiverInfo;
-use Billing\dto\SenderInfo;
-use Billing\dto\TaxInfo;
+use Diji\Peppol\DTO\PeppolPayloadDTO;
+
 use DOMDocument;
 use DOMElement;
-use InvalidArgumentException;
+
 
 class PeppolBuilder
 {
+    protected PeppolPayloadDTO $payload;
     protected DOMDocument $doc;
     protected DOMElement $documentElement;
-    protected string $documentType;
-    protected DocumentInfo $documentInfo;
-    protected string $buyerReference;
-    protected ?PeppolDocumentAttachments $attachmentsData = null;
-    protected SenderInfo $sender;
-    protected ReceiverInfo $receiver;
-    protected DeliveryInfo $delivery;
-    protected PaymentInfo $payment;
-    /** @var TaxInfo[] */
-    protected array $taxes = [];
-    protected MonetaryTotalInfo $monetaryTotal;
-    /** @var InvoiceLine[] */
-    protected array $lines = [];
 
 
-    /**
-     * Définit le type de document à générer : "Invoice" ou "CreditNote".
-     *
-     * @param string $type
-     * @return self
-     */
-    public function withDocumentType(string $type): self
+    public function withPayload(PeppolPayloadDTO $payload): self
     {
-        $allowedTypes = ['Invoice', 'CreditNote'];
+        $this->payload = $payload;
+        return $this;
+    }
 
-        if (!in_array($type, $allowedTypes)) {
-            throw new InvalidArgumentException("Le type de document '$type' n'est pas pris en charge.");
-        }
-
-        $this->documentType = $type;
-
-        return $this;
-    }
-    public function withDocumentInfo(DocumentInfo $info): self
-    {
-        $this->documentInfo = $info;
-        return $this;
-    }
-    public function withBuyerReference(?string $reference): self
-    {
-        $this->buyerReference = $reference;
-        return $this;
-    }
-    public function withAttachmentsData(PeppolDocumentAttachments $data): self
-    {
-        $this->attachmentsData = $data;
-        return $this;
-    }
-    public function withSender(SenderInfo $sender): self
-    {
-        $this->sender = $sender;
-        return $this;
-    }
-    public function withReceiver(ReceiverInfo $receiver): self
-    {
-        $this->receiver = $receiver;
-        return $this;
-    }
-    public function withDelivery(DeliveryInfo $delivery): self
-    {
-        $this->delivery = $delivery;
-        return $this;
-    }
-    public function withPayment(PaymentInfo $payment): self
-    {
-        $this->payment = $payment;
-        return $this;
-    }
-    /**
-     * @param TaxInfo[] $taxes
-     */
-    public function withTaxes(array $taxes): self
-    {
-        $this->taxes = $taxes;
-        return $this;
-    }
-    public function withMonetaryTotal(MonetaryTotalInfo $monetaryTotal): self
-    {
-        $this->monetaryTotal = $monetaryTotal;
-        return $this;
-    }
-    /**
-     * @param InvoiceLine[] $lines
-     */
-    public function withLines(array $lines): self
-    {
-        $this->lines = $lines;
-        return $this;
-    }
     /**
      * Construit le XML UBL à partir des données injectées.
      */
     public function build(): string
     {
-        if (!isset($this->documentType)) {
-            throw new \RuntimeException("Aucun type de document défini. Utilisez withDocumentType().");
-        }
-
         $this->doc = new DOMDocument('1.0', 'UTF-8');
         $this->doc->formatOutput = true;
 
@@ -125,7 +33,7 @@ class PeppolBuilder
         $this->addPeppolMetadata();
         $this->addDocumentInfo();
         $this->addBuyerReference();
-        $this->addAttachments();
+        $this->addAttachments(); // Optionnel
         $this->addSender();
         $this->addReceiver();
         $this->addDelivery();
