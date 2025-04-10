@@ -5,7 +5,6 @@ namespace Diji\Peppol\DTO;
 class DeliveryDTO
 {
     public function __construct(
-        public string $date,
-        public string $countryCode
+        public string $date
     ) {}
 }

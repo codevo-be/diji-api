@@ -5,15 +5,10 @@ namespace Diji\Peppol\DTO;
 class ReceiverDTO
 {
     public function __construct(
-        public string $peppolIdentifier,
         public string $name,
-        public string $addressLine1,
-        public string $city,
-        public string $zipCode,
-        public string $country,
+        public string $peppolIdentifier,
         public string $vatNumber,
-        public ?string $contactName = null,
-        public ?string $contactPhone = null,
-        public ?string $contactEmail = null
+        public ReceiverContactDTO $contact,
+        public AddressDTO $address
     ) {}
 }

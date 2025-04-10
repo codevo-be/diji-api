@@ -10,11 +10,10 @@ class PeppolPayloadDTO
         public ReceiverDTO $receiver,
         public DeliveryDTO $delivery,
         public PaymentDTO $payment,
-        /** @var TaxDTO[] */
-        public array $taxes,
         /** @var InvoiceLineDTO[] */
         public array $lines,
-        public MonetaryTotalDTO $totals,
-        public string $buyerReference
+        /** @var TaxDTO[] */
+        public array $taxes,
+        public MonetaryTotalDTO $totals
     ) {}
 }

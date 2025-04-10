@@ -5,11 +5,11 @@ namespace Diji\Peppol\DTO;
 class InvoiceLineDTO
 {
     public function __construct(
+        public string $description,
         public int $quantity,
-        public float $taxableAmount,
         public float $unitPrice,
-        public float $taxPercentage,
+        public float $taxableAmount,
         public string $vatCode,
-        public string $description
+        public float $taxPercentage
     ) {}
 }
