@@ -4,8 +4,8 @@ namespace Diji\Peppol\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Diji\Peppol\Helpers\PeppolBuilder;
+use Diji\Peppol\Helpers\PeppolPayloadBuilder;
 use Diji\Peppol\Requests\PeppolSendRequest;
-use Diji\Peppol\Services\PeppolPayloadAssembler;
 use Diji\Peppol\Services\PeppolService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +16,7 @@ class PeppolController extends Controller
     public function convertToUbl(PeppolSendRequest $request): JsonResponse
     {
         // 1. Construction des DTO à partir de la requête
-        $payload = PeppolPayloadAssembler::fromRequest($request);
+        $payload = PeppolPayloadBuilder::fromRequest($request);
 
         // 2. Génération du XML UBL
         $xml = (new PeppolBuilder())

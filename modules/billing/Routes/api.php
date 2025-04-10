@@ -13,6 +13,7 @@ Route::group([
         Route::resource("/invoices", Diji\Billing\Http\Controllers\InvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/invoices/{invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get("/invoices/{invoice}/pdf", [\Diji\Billing\Http\Controllers\InvoiceController::class, "pdf"]);
+        Route::get("/invoices/{invoice}/send-to-peppol", [\Diji\Billing\Http\Controllers\InvoiceController::class, "sendToPeppol"]);
         Route::post("/invoices/{invoice}/email", [\Diji\Billing\Http\Controllers\InvoiceController::class, "email"]);
 
         /* Recurring invoice */

@@ -1,6 +1,6 @@
 <?php
 
-namespace Diji\Peppol\Services;
+namespace Diji\Peppol\Helpers;
 
 use Diji\Peppol\DTO\AddressDTO;
 use Diji\Peppol\DTO\DeliveryDTO;
@@ -15,7 +15,7 @@ use Diji\Peppol\DTO\SenderDTO;
 use Diji\Peppol\DTO\TaxDTO;
 use Diji\Peppol\Requests\PeppolSendRequest;
 
-class PeppolPayloadAssembler
+class PeppolPayloadBuilder
 {
     public static function fromRequest(PeppolSendRequest $request): PeppolPayloadDTO
     {

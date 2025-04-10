@@ -205,6 +205,13 @@ class InvoiceController extends Controller
         ]);
     }
 
+    public function sendToPeppol(Request $request, int $invoice_id)
+    {
+        $invoice = Invoice::findOrFail($invoice_id)->load('items');
+
+
+    }
+
     public function email(Request $request, int $invoice_id)
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
