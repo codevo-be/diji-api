@@ -1,11 +1,10 @@
 <?php
 
-namespace Peppol\Controllers;
+namespace Diji\Peppol\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Billing\Helpers\PeppolBuilder;
-use Billing\Requests\Peppol\PeppolSendRequest;
-use Billing\Services\PeppolPayloadAssembler;
+use Diji\Peppol\Requests\PeppolSendRequest;
+use Diji\Peppol\Services\PeppolPayloadAssembler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 

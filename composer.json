@@ -16,7 +16,8 @@
         "laravel/tinker": "^2.9",
         "sendinblue/api-v3-sdk": "^8.4",
         "stancl/tenancy": "^3.8",
-        "ext-zip": "*"
+        "ext-zip": "*",
+        "ext-dom": "*"
     },
     "require-dev": {
         "laravel/pint": "^1.13",
