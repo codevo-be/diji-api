@@ -7,12 +7,15 @@ use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Requests\PeppolSendRequest;
 use Diji\Peppol\Services\PeppolPayloadAssembler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PeppolController extends Controller
 {
     public function convertToUbl(PeppolSendRequest $request): JsonResponse
     {
+        Log::info("Convert to ubl");
+
         // Convertit les données de la requête en un ensemble de DTOs
         $payload = PeppolPayloadAssembler::fromRequest($request);
 

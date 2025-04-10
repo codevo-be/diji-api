@@ -14,7 +14,6 @@ class PeppolBuilder
     protected DOMDocument $doc;
     protected DOMElement $documentElement;
 
-
     public function withPayload(PeppolPayloadDTO $payload): self
     {
         $this->payload = $payload;
@@ -44,7 +43,6 @@ class PeppolBuilder
 
         return $this->doc->saveXML();
     }
-
     protected function prepareRootElement(): void
     {
         $root = $this->doc->createElementNS(
@@ -367,7 +365,6 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($paymentTerms);
     }
-
     protected function getPeppolSchemeId(string $vatNumber): ?string
     {
         $countryCode = strtoupper(substr($vatNumber, 0, 2));
@@ -424,5 +421,4 @@ class PeppolBuilder
         $el->setAttribute('currencyID', $this->payload->document->currency);
         return $el;
     }
-
 }
