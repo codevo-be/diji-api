@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class SenderInfo
+
+class SenderDTO
 {
     public function __construct(
         public string $vatNumber,

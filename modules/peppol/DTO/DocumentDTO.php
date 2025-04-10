@@ -1,6 +1,7 @@
 <?php
 
 namespace Diji\Peppol\DTO;
+
 class DocumentDTO
 {
     public function __construct(

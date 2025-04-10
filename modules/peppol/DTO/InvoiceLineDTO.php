@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class InvoiceLine
+
+class InvoiceLineDTO
 {
     public function __construct(
         public int $quantity,

@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class DeliveryInfo
+
+class DeliveryDTO
 {
     public function __construct(
         public string $date,

@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class ReceiverInfo
+
+class ReceiverDTO
 {
     public function __construct(
         public string $peppolIdentifier,

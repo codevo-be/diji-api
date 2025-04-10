@@ -1,6 +1,7 @@
 <?php
 
 namespace Diji\Peppol\DTO;
+
 class PeppolPayloadDTO
 {
     public function __construct(

@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class PaymentInfo
+
+class PaymentDTO
 {
     public function __construct(
         public int $paymentDelay,

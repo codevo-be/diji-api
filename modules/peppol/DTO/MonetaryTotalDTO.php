@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class MonetaryTotalInfo
+
+class MonetaryTotalDTO
 {
     public function __construct(
         public float $totalTaxableAmount,

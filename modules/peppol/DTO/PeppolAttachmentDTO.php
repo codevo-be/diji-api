@@ -1,7 +1,8 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class PeppolAttachment
+
+class PeppolAttachmentDTO
 {
     public function __construct(
         public string $fileName,

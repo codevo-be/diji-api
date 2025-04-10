@@ -1,7 +1,7 @@
 <?php
 
 namespace Diji\Peppol\DTO;
-class TaxInfo
+class TaxDTO
 {
     public function __construct(
         public float $taxableAmount,
