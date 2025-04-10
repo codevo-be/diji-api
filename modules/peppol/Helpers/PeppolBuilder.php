@@ -48,8 +48,8 @@ class PeppolBuilder
     protected function prepareRootElement(): void
     {
         $root = $this->doc->createElementNS(
-            'urn:oasis:names:specification:ubl:schema:xsd:' . $this->documentType . '-2',
-            $this->documentType
+            'urn:oasis:names:specification:ubl:schema:xsd:' . $this->payload->document->documentType . '-2',
+            $this->payload->document->documentType
         );
 
         $root->setAttributeNS(
@@ -79,98 +79,62 @@ class PeppolBuilder
     }
     protected function addDocumentInfo(): void
     {
-        if (!isset($this->documentInfo)) {
-            throw new \RuntimeException('Aucune donnée de document définie. Utilisez withDocumentInfo().');
-        }
+        $document = $this->payload->document;
 
-        $this->documentElement->appendChild($this->doc->createElement('cbc:ID', $this->documentInfo->id));
-        $this->documentElement->appendChild($this->doc->createElement('cbc:IssueDate', $this->documentInfo->issueDate));
-        $this->documentElement->appendChild($this->doc->createElement('cbc:DueDate', $this->documentInfo->dueDate));
+        $this->documentElement->appendChild($this->doc->createElement('cbc:ID', $document->billName));
+        $this->documentElement->appendChild($this->doc->createElement('cbc:IssueDate', $document->issueDate));
+        $this->documentElement->appendChild($this->doc->createElement('cbc:DueDate', $document->dueDate));
 
-        $typeCode = $this->documentType === 'Invoice' ? '380' : '381';
+        $typeCode = $document->documentType === 'Invoice' ? '380' : '381';
         $this->documentElement->appendChild($this->doc->createElement('cbc:InvoiceTypeCode', $typeCode));
 
-        $this->documentElement->appendChild($this->doc->createElement('cbc:DocumentCurrencyCode', $this->documentInfo->currency));
+        $this->documentElement->appendChild($this->doc->createElement('cbc:DocumentCurrencyCode', $document->currency));
     }
     protected function addBuyerReference(): void
     {
-        if (!empty($this->buyerReference)) {
+        $reference = $this->payload->document->buyerReference;
+
+        if (!empty($reference)) {
             $this->documentElement->appendChild(
-                $this->doc->createElement('cbc:BuyerReference', $this->buyerReference)
+                $this->doc->createElement('cbc:BuyerReference', $reference)
             );
         }
     }
     protected function addAttachments(): void
     {
-        if (!$this->attachmentsData) {
-            return;
-        }
-
-        // PDF principal
-        if (!empty($this->attachmentsData->mainPdfBase64) && $this->attachmentsData->billName && $this->attachmentsData->senderName) {
-            $reference = $this->doc->createElement('cac:AdditionalDocumentReference');
-            $reference->appendChild($this->doc->createElement('cbc:ID', $this->attachmentsData->billName . '-InvoicePDF'));
-
-            $attachment = $this->doc->createElement('cac:Attachment');
-            $embedded = $this->doc->createElement('cbc:EmbeddedDocumentBinaryObject', $this->attachmentsData->mainPdfBase64);
-            $embedded->setAttribute('mimeCode', 'application/pdf');
-            $embedded->setAttribute('filename', $this->attachmentsData->senderName . '-' . $this->attachmentsData->billName . '.pdf');
-
-            $attachment->appendChild($embedded);
-            $reference->appendChild($attachment);
-            $this->documentElement->appendChild($reference);
-        }
-
-        // Autres fichiers
-        foreach ($this->attachmentsData->attachments as $att) {
-            if ($att instanceof PeppolAttachment) {
-                $reference = $this->doc->createElement('cac:AdditionalDocumentReference');
-                $reference->appendChild($this->doc->createElement('cbc:ID', $att->fileName));
-
-                $attachment = $this->doc->createElement('cac:Attachment');
-                $embedded = $this->doc->createElement('cbc:EmbeddedDocumentBinaryObject', $att->base64);
-                $embedded->setAttribute('mimeCode', $att->mimeType);
-                $embedded->setAttribute('filename', $att->fileName);
-
-                $attachment->appendChild($embedded);
-                $reference->appendChild($attachment);
-                $this->documentElement->appendChild($reference);
-            }
-        }
     }
     protected function addSender(): void
     {
-        if (!isset($this->sender)) {
-            throw new \RuntimeException("Aucune information sur le fournisseur. Veuillez appeler withSender().");
-        }
+        $sender = $this->payload->sender;
+        $address = $sender->address;
 
         $party = $this->doc->createElement('cac:AccountingSupplierParty');
         $partyNode = $this->doc->createElement('cac:Party');
 
         // EndpointID
-        $endpointId = $this->doc->createElement('cbc:EndpointID', strtoupper($this->sender->vatNumber));
-        $endpointId->setAttribute('schemeID', $this->getPeppolSchemeId(strtoupper($this->sender->vatNumber)));
+        $endpointId = $this->doc->createElement('cbc:EndpointID', strtoupper($sender->vatNumber));
+        $endpointId->setAttribute('schemeID', $this->getPeppolSchemeId(strtoupper($sender->vatNumber)));
         $partyNode->appendChild($endpointId);
 
         // Nom
         $partyName = $this->doc->createElement('cac:PartyName');
-        $partyName->appendChild($this->doc->createElement('cbc:Name', $this->sender->name));
+        $partyName->appendChild($this->doc->createElement('cbc:Name', $sender->name));
         $partyNode->appendChild($partyName);
 
         // Adresse
-        $address = $this->doc->createElement('cac:PostalAddress');
-        $address->appendChild($this->doc->createElement('cbc:StreetName', $this->sender->addressLine1));
-        $address->appendChild($this->doc->createElement('cbc:CityName', $this->sender->city));
-        $address->appendChild($this->doc->createElement('cbc:PostalZone', $this->sender->zipCode));
+        $addressNode = $this->doc->createElement('cac:PostalAddress');
+        $addressNode->appendChild($this->doc->createElement('cbc:StreetName', $address->line1));
+        $addressNode->appendChild($this->doc->createElement('cbc:CityName', $address->city));
+        $addressNode->appendChild($this->doc->createElement('cbc:PostalZone', $address->zipCode));
 
         $country = $this->doc->createElement('cac:Country');
-        $country->appendChild($this->doc->createElement('cbc:IdentificationCode', $this->sender->country));
-        $address->appendChild($country);
-        $partyNode->appendChild($address);
+        $country->appendChild($this->doc->createElement('cbc:IdentificationCode', $address->country));
+        $addressNode->appendChild($country);
+        $partyNode->appendChild($addressNode);
 
         // TaxScheme
         $taxScheme = $this->doc->createElement('cac:PartyTaxScheme');
-        $taxScheme->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($this->sender->vatNumber)));
+        $taxScheme->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($sender->vatNumber)));
         $tax = $this->doc->createElement('cac:TaxScheme');
         $tax->appendChild($this->doc->createElement('cbc:ID', 'VAT'));
         $taxScheme->appendChild($tax);
@@ -178,8 +142,8 @@ class PeppolBuilder
 
         // Legal Entity
         $legal = $this->doc->createElement('cac:PartyLegalEntity');
-        $legal->appendChild($this->doc->createElement('cbc:RegistrationName', $this->sender->name));
-        $legal->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($this->sender->vatNumber)));
+        $legal->appendChild($this->doc->createElement('cbc:RegistrationName', $sender->name));
+        $legal->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($sender->vatNumber)));
         $partyNode->appendChild($legal);
 
         $party->appendChild($partyNode);
@@ -187,36 +151,43 @@ class PeppolBuilder
     }
     protected function addReceiver(): void
     {
-        if (!isset($this->receiver)) {
-            throw new \RuntimeException("Aucune information sur le client. Veuillez appeler withRe().");
-        }
+        $receiver = $this->payload->receiver;
+        $address = $receiver->address;
+        $contact = $receiver->contact;
 
         $party = $this->doc->createElement('cac:AccountingCustomerParty');
         $partyNode = $this->doc->createElement('cac:Party');
 
         // EndpointID
-        $endpointId = $this->doc->createElement('cbc:EndpointID', $this->getIdFromPeppolIdentifier(strtoupper($this->receiver->peppolIdentifier)));
-        $endpointId->setAttribute('schemeID', $this->getSchemeIdFromPeppolIdentifier(strtoupper($this->receiver->peppolIdentifier)));
+        $endpointId = $this->doc->createElement(
+            'cbc:EndpointID',
+            $this->getIdFromPeppolIdentifier(strtoupper($receiver->peppolIdentifier))
+        );
+        $endpointId->setAttribute(
+            'schemeID',
+            $this->getSchemeIdFromPeppolIdentifier(strtoupper($receiver->peppolIdentifier))
+        );
         $partyNode->appendChild($endpointId);
 
         // Nom
         $partyName = $this->doc->createElement('cac:PartyName');
-        $partyName->appendChild($this->doc->createElement('cbc:Name', $this->receiver->name));
+        $partyName->appendChild($this->doc->createElement('cbc:Name', $receiver->name));
         $partyNode->appendChild($partyName);
 
         // Adresse
-        $address = $this->doc->createElement('cac:PostalAddress');
-        $address->appendChild($this->doc->createElement('cbc:StreetName', $this->receiver->addressLine1));
-        $address->appendChild($this->doc->createElement('cbc:CityName', $this->receiver->city));
-        $address->appendChild($this->doc->createElement('cbc:PostalZone', $this->receiver->zipCode));
+        $addressNode = $this->doc->createElement('cac:PostalAddress');
+        $addressNode->appendChild($this->doc->createElement('cbc:StreetName', $address->line1));
+        $addressNode->appendChild($this->doc->createElement('cbc:CityName', $address->city));
+        $addressNode->appendChild($this->doc->createElement('cbc:PostalZone', $address->zipCode));
+
         $country = $this->doc->createElement('cac:Country');
-        $country->appendChild($this->doc->createElement('cbc:IdentificationCode', $this->receiver->country));
-        $address->appendChild($country);
-        $partyNode->appendChild($address);
+        $country->appendChild($this->doc->createElement('cbc:IdentificationCode', $address->country));
+        $addressNode->appendChild($country);
+        $partyNode->appendChild($addressNode);
 
         // TVA
         $taxScheme = $this->doc->createElement('cac:PartyTaxScheme');
-        $taxScheme->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($this->receiver->vatNumber)));
+        $taxScheme->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($receiver->vatNumber)));
         $tax = $this->doc->createElement('cac:TaxScheme');
         $tax->appendChild($this->doc->createElement('cbc:ID', 'VAT'));
         $taxScheme->appendChild($tax);
@@ -224,31 +195,31 @@ class PeppolBuilder
 
         // Legal Entity
         $legal = $this->doc->createElement('cac:PartyLegalEntity');
-        $legal->appendChild($this->doc->createElement('cbc:RegistrationName', $this->receiver->name));
-        $legal->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($this->receiver->vatNumber)));
+        $legal->appendChild($this->doc->createElement('cbc:RegistrationName', $receiver->name));
+        $legal->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($receiver->vatNumber)));
         $partyNode->appendChild($legal);
 
         // Contact (optionnel)
         if (
-            !empty($this->receiver->contactName) ||
-            !empty($this->receiver->contactPhone) ||
-            !empty($this->receiver->contactEmail)
+            !empty($contact?->name) ||
+            !empty($contact?->phone) ||
+            !empty($contact?->email)
         ) {
-            $contact = $this->doc->createElement('cac:Contact');
+            $contactNode = $this->doc->createElement('cac:Contact');
 
-            if (!empty($this->receiver->contactName)) {
-                $contact->appendChild($this->doc->createElement('cbc:Name', $this->receiver->contactName));
+            if (!empty($contact->name)) {
+                $contactNode->appendChild($this->doc->createElement('cbc:Name', $contact->name));
             }
 
-            if (!empty($this->receiver->contactPhone)) {
-                $contact->appendChild($this->doc->createElement('cbc:Telephone', $this->receiver->contactPhone));
+            if (!empty($contact->phone)) {
+                $contactNode->appendChild($this->doc->createElement('cbc:Telephone', $contact->phone));
             }
 
-            if (!empty($this->receiver->contactEmail)) {
-                $contact->appendChild($this->doc->createElement('cbc:ElectronicMail', $this->receiver->contactEmail));
+            if (!empty($contact->email)) {
+                $contactNode->appendChild($this->doc->createElement('cbc:ElectronicMail', $contact->email));
             }
 
-            $partyNode->appendChild($contact);
+            $partyNode->appendChild($contactNode);
         }
 
         $party->appendChild($partyNode);
@@ -256,20 +227,18 @@ class PeppolBuilder
     }
     protected function addDelivery(): void
     {
-        if (!isset($this->delivery)) {
-            throw new \RuntimeException("Aucune information de livraison définie. Veuillez appeler withDelivery().");
-        }
+        $deliveryData = $this->payload->delivery;
 
         $delivery = $this->doc->createElement('cac:Delivery');
         $delivery->appendChild(
-            $this->doc->createElement('cbc:ActualDeliveryDate', $this->delivery->date)
+            $this->doc->createElement('cbc:ActualDeliveryDate', $deliveryData->date)
         );
 
         $location = $this->doc->createElement('cac:DeliveryLocation');
         $address = $this->doc->createElement('cac:Address');
         $country = $this->doc->createElement('cac:Country');
         $country->appendChild(
-            $this->doc->createElement('cbc:IdentificationCode', $this->delivery->countryCode)
+            $this->doc->createElement('cbc:IdentificationCode', $this->payload->sender->address->country)
         );
 
         $address->appendChild($country);
@@ -280,15 +249,11 @@ class PeppolBuilder
     }
     protected function addTaxes(): void
     {
-        if (empty($this->taxes)) {
-            throw new \RuntimeException("Aucune information sur les taxes. Veuillez appeler withTax().");
-        }
-
         $taxTotal = $this->doc->createElement('cac:TaxTotal');
 
         $totalTaxAmount = array_reduce(
-            $this->taxes,
-            fn($carry, TaxInfo $t) => $carry + $t->taxAmount,
+            $this->payload->taxes,
+            fn($carry, \Diji\Peppol\DTO\TaxDTO $t) => $carry + $t->taxAmount,
             0.0
         );
 
@@ -296,7 +261,7 @@ class PeppolBuilder
             $this->createElementWithCurrency('cbc:TaxAmount', $totalTaxAmount)
         );
 
-        foreach ($this->taxes as $tax) {
+        foreach ($this->payload->taxes as $tax) {
             $subtotal = $this->doc->createElement('cac:TaxSubtotal');
 
             $subtotal->appendChild($this->createElementWithCurrency('cbc:TaxableAmount', $tax->taxableAmount));
@@ -306,7 +271,7 @@ class PeppolBuilder
             $category->appendChild($this->doc->createElement('cbc:ID', $tax->vatCode));
             $category->appendChild($this->doc->createElement('cbc:Percent', $tax->taxPercentage));
 
-            if ((float)$tax->taxPercentage === 0.0) {
+            if ((float) $tax->taxPercentage === 0.0) {
                 $category->appendChild($this->doc->createElement('cbc:TaxExemptionReasonCode', 'VATEX-EU-IC'));
             }
 
@@ -322,14 +287,10 @@ class PeppolBuilder
     }
     protected function addMonetaryTotal(): void
     {
-        if (!isset($this->monetaryTotal)) {
-            throw new \RuntimeException("Les totaux monétaires n'ont pas été définis. Appelle withMonetaryTotal().");
-        }
-
         $total = $this->doc->createElement('cac:LegalMonetaryTotal');
 
-        $taxable = $this->monetaryTotal->totalTaxableAmount;
-        $totalAmount = $this->monetaryTotal->totalAmount;
+        $taxable = $this->payload->totals->totalTaxableAmount;
+        $totalAmount = $this->payload->totals->totalAmount;
 
         $total->appendChild($this->createElementWithCurrency('cbc:LineExtensionAmount', $taxable));
         $total->appendChild($this->createElementWithCurrency('cbc:TaxExclusiveAmount', $taxable));
@@ -340,11 +301,7 @@ class PeppolBuilder
     }
     protected function addInvoiceLines(): void
     {
-        if (empty($this->lines)) {
-            throw new \RuntimeException("Aucune ligne de facture définie. Appelle withLines().");
-        }
-
-        foreach ($this->lines as $index => $line) {
+        foreach ($this->payload->lines as $index => $line) {
             $invoiceLine = $this->doc->createElement('cac:InvoiceLine');
 
             $invoiceLine->appendChild($this->doc->createElement('cbc:ID', $index + 1));
@@ -378,6 +335,39 @@ class PeppolBuilder
             $this->documentElement->appendChild($invoiceLine);
         }
     }
+    protected function addPayment(): void
+    {
+        $payment = $this->payload->payment;
+        $sender = $this->payload->sender;
+
+        // <cac:PaymentMeans>
+        $paymentMeans = $this->doc->createElement('cac:PaymentMeans');
+
+        $meansCode = $this->doc->createElement('cbc:PaymentMeansCode', $payment->paymentDelay);
+        $meansCode->setAttribute('name', 'Credit transfer');
+        $paymentMeans->appendChild($meansCode);
+
+        $paymentId = $this->payload->document->structuredCommunication ?? $this->payload->document->billName;
+
+        $paymentMeans->appendChild(
+            $this->doc->createElement('cbc:PaymentID', $paymentId)
+        );
+
+        $account = $this->doc->createElement('cac:PayeeFinancialAccount');
+        $account->appendChild($this->doc->createElement('cbc:ID', $sender->iban));
+        $account->appendChild($this->doc->createElement('cbc:Name', $sender->name));
+
+        $paymentMeans->appendChild($account);
+        $this->documentElement->appendChild($paymentMeans);
+
+        // <cac:PaymentTerms>
+        $paymentTerms = $this->doc->createElement('cac:PaymentTerms');
+        $noteText = 'Net within ' . $payment->paymentDelay . ' days';
+        $paymentTerms->appendChild($this->doc->createElement('cbc:Note', $noteText));
+
+        $this->documentElement->appendChild($paymentTerms);
+    }
+
     protected function getPeppolSchemeId(string $vatNumber): ?string
     {
         $countryCode = strtoupper(substr($vatNumber, 0, 2));
@@ -428,42 +418,11 @@ class PeppolBuilder
     {
         return explode(':', $identifier)[0] ?? '';
     }
-    protected function addPayment(): void
-    {
-        if (!isset($this->payment)) {
-            throw new \RuntimeException("Aucune information de paiement définie. Veuillez appeler withPayment().");
-        }
-
-        // <cac:PaymentMeans>
-        $paymentMeans = $this->doc->createElement('cac:PaymentMeans');
-
-        $meansCode = $this->doc->createElement('cbc:PaymentMeansCode', $this->payment->paymentDelay);
-        $meansCode->setAttribute('name', 'Credit transfer');
-        $paymentMeans->appendChild($meansCode);
-
-        $paymentId = $this->payment->structuredCommunication ?? $this->payment->fallbackPaymentId;
-
-        $paymentMeans->appendChild(
-            $this->doc->createElement('cbc:PaymentID', $paymentId)
-        );
-
-        $account = $this->doc->createElement('cac:PayeeFinancialAccount');
-        $account->appendChild($this->doc->createElement('cbc:ID', $this->payment->iban));
-        $account->appendChild($this->doc->createElement('cbc:Name', $this->payment->senderName));
-
-        $paymentMeans->appendChild($account);
-        $this->documentElement->appendChild($paymentMeans);
-
-        // <cac:PaymentTerms>
-        $paymentTerms = $this->doc->createElement('cac:PaymentTerms');
-        $noteText = 'Net within ' . $this->payment->paymentDelay . ' days';
-        $paymentTerms->appendChild($this->doc->createElement('cbc:Note', $noteText));
-        $this->documentElement->appendChild($paymentTerms);
-    }
     protected function createElementWithCurrency(string $name, float $value): DOMElement
     {
         $el = $this->doc->createElement($name, number_format($value, 2, '.', ''));
-        $el->setAttribute('currencyID', $this->documentInfo->currency);
+        $el->setAttribute('currencyID', $this->payload->document->currency);
         return $el;
     }
+
 }
