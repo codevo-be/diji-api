@@ -23,13 +23,16 @@ class SelfInvoiceController extends Controller
 
         $query
             ->filter(['contact_id', 'status', 'date'])
-            ->when($request->month, function ($query) use ($request) {
+            ->when(isset($request->month) &&
+                is_string($request->month) &&
+                trim($request->month) !== '' &&
+                strtolower($request->month) !== 'undefined', function ($query) use($request){
                 return $query->whereMonth('date', $request->month);
             })
             ->orderByDesc('id');
 
         $self_invoices = $request->has('page')
-            ? $query->paginate()
+            ? $query->paginate(50)
             : $query->get();
 
         return SelfInvoiceResource::collection($self_invoices)->response();
