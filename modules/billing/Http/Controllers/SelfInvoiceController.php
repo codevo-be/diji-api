@@ -101,10 +101,7 @@ class SelfInvoiceController extends Controller
     {
         $self_invoice = SelfInvoice::findOrFail($self_invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::self-invoice', [
-            ...$self_invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateSelfInvoice($self_invoice);
 
         try {
             $instanceBrevo = new Brevo();
@@ -112,7 +109,7 @@ class SelfInvoiceController extends Controller
             $instanceBrevo->attachments([
                 [
                     "filename" => "autofacture-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf",
-                    "output" => $pdf->output()
+                    "output" => $pdfString
                 ]
             ]);
 
