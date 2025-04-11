@@ -201,7 +201,7 @@ class CreditNoteController extends Controller
     public function sendToPeppol(Request $request, int $credit_note_id)
     {
         $creditNote = CreditNote::findOrFail($credit_note_id)->load('items');
-        $payload = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), "2025/001");
+        $payload = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), "Invoice-2025/001");
 
         $xml = (new PeppolBuilder())
             ->withPayload($payload)

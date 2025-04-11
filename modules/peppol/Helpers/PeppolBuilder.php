@@ -31,13 +31,13 @@ class PeppolBuilder
         $this->prepareRootElement();
         $this->addPeppolMetadata();
         $this->addDocumentInfo();
+        $this->addBuyerReference();
 
         // Ajout de la référence de facturation uniquement pour les notes de crédit
         if ($this->payload->document->documentType === 'CreditNote') {
             $this->addBillingReference();
         }
 
-        $this->addBuyerReference();
         $this->addAttachments(); // Optionnel
         $this->addSender();
         $this->addReceiver();
@@ -87,10 +87,19 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($this->doc->createElement('cbc:ID', $document->billName));
         $this->documentElement->appendChild($this->doc->createElement('cbc:IssueDate', $document->issueDate));
-        $this->documentElement->appendChild($this->doc->createElement('cbc:DueDate', $document->dueDate));
+
+        if ($document->documentType === 'Invoice' && !empty($document->dueDate)) {
+            $this->documentElement->appendChild($this->doc->createElement('cbc:DueDate', $document->dueDate));
+        }
 
         $typeCode = $document->documentType === 'Invoice' ? '380' : '381';
-        $this->documentElement->appendChild($this->doc->createElement('cbc:InvoiceTypeCode', $typeCode));
+        $elementName = $document->documentType === 'Invoice'
+            ? 'cbc:InvoiceTypeCode'
+            : 'cbc:CreditNoteTypeCode';
+
+        $this->documentElement->appendChild(
+            $this->doc->createElement($elementName, $typeCode)
+        );
 
         $this->documentElement->appendChild($this->doc->createElement('cbc:DocumentCurrencyCode', $document->currency));
     }
@@ -358,7 +367,9 @@ class PeppolBuilder
         $meansCode->setAttribute('name', 'Credit transfer');
         $paymentMeans->appendChild($meansCode);
 
-        $paymentId = $this->payload->document->structuredCommunication ?? $this->payload->document->billName;
+        $paymentId = !empty($this->payload->document->structuredCommunication)
+            ? $this->payload->document->structuredCommunication
+            : $this->payload->document->billName;
 
         $paymentMeans->appendChild(
             $this->doc->createElement('cbc:PaymentID', $paymentId)
@@ -378,7 +389,6 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($paymentTerms);
     }
-
     protected function addBillingReference(): void
     {
         $reference = $this->payload->document->referenceInvoiceId;
@@ -390,7 +400,6 @@ class PeppolBuilder
         $billingReference->appendChild($invoiceRef);
         $this->documentElement->appendChild($billingReference);
     }
-
     protected function getPeppolSchemeId(string $vatNumber): ?string
     {
         $countryCode = strtoupper(substr($vatNumber, 0, 2));

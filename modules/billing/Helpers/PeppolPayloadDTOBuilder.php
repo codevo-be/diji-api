@@ -142,10 +142,10 @@ class PeppolPayloadDTOBuilder
             documentType: 'CreditNote',
             billName: $creditNote["identifier"],
             issueDate: $creditNote["date"],
-            dueDate: $creditNote["due_date"],
+            dueDate: "",
             currency: 'EUR',
             buyerReference: $creditNote['identifier'],
-            structuredCommunication: $creditNote['structured_communication'],
+            structuredCommunication: "",
             referenceInvoiceId: $referenceInvoiceId
         );
 
@@ -261,7 +261,6 @@ class PeppolPayloadDTOBuilder
             default => 'S',
         };
     }
-
 }
 
 
