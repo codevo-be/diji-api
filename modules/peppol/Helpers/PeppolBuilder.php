@@ -328,7 +328,13 @@ class PeppolBuilder
             // <cac:Price>
             $price = $this->doc->createElement('cac:Price');
             $price->appendChild($this->createElementWithCurrency('cbc:PriceAmount', $line->unitPrice));
+
+            $baseQuantity = $this->doc->createElement('cbc:BaseQuantity', 1);
+            $baseQuantity->setAttribute('unitCode', '1I');
+            $price->appendChild($baseQuantity);
+
             $invoiceLine->appendChild($price);
+
 
             $this->documentElement->appendChild($invoiceLine);
         }

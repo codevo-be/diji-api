@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
-use Diji\Peppol\Stubs\PeppolPayloadDTOBuilder;
+use Diji\Peppol\Helpers\PeppolBuilder;
+use Diji\Peppol\Services\PeppolService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use ZipArchive;
@@ -206,12 +209,6 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function sendToPeppol(Request $request, int $invoice_id)
-    {
-        $invoice = Invoice::findOrFail($invoice_id)->load('items');
-
-        $payload = PeppolPayloadDTOBuilder::fromInvoice($invoice);
-    }
 
     public function email(Request $request, int $invoice_id)
     {
@@ -250,5 +247,27 @@ class InvoiceController extends Controller
 
 
         return response()->noContent();
+    }
+
+    public function sendToPeppol(Request $request, int $invoice_id)
+    {
+        $invoice = Invoice::findOrFail($invoice_id)->load('items');
+        $payload = PeppolPayloadDTOBuilder::fromInvoice(new InvoiceResource($invoice));
+
+        $xml = (new PeppolBuilder())
+            ->withPayload($payload)
+            ->build();
+
+        // Juste pour les tests
+        $filename = 'aaaaa.xml';
+        Storage::disk('local')->put("peppol/{$filename}", $xml);
+
+        $result = (new PeppolService())->sendInvoice($xml, $filename);
+
+        return response()->json([
+            'message' => 'Document Peppol généré et envoyé avec succès.',
+            'digiteal_response' => $result,
+            'filename' => $filename
+        ]);
     }
 }
