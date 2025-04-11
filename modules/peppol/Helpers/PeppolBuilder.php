@@ -320,7 +320,11 @@ class PeppolBuilder
 
             $itemLine->appendChild($this->doc->createElement('cbc:ID', $index + 1));
 
-            $quantity = $this->doc->createElement('cbc:InvoicedQuantity', $line->quantity);
+            $quantityElementName = $this->payload->document->documentType === 'CreditNote'
+                ? 'cbc:CreditedQuantity'
+                : 'cbc:InvoicedQuantity';
+
+            $quantity = $this->doc->createElement($quantityElementName, $line->quantity);
             $quantity->setAttribute('unitCode', '1I');
             $itemLine->appendChild($quantity);
 
