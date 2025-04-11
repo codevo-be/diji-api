@@ -10,6 +10,7 @@ use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
+use Diji\Peppol\Stubs\PeppolPayloadDTOBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -209,7 +210,7 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
-
+        $payload = PeppolPayloadDTOBuilder::fromInvoice($invoice);
     }
 
     public function email(Request $request, int $invoice_id)
