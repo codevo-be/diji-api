@@ -245,7 +245,6 @@ class InvoiceController extends Controller
             ], 422);
         }
 
-
         return response()->noContent();
     }
 
