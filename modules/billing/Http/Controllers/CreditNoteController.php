@@ -6,14 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Models\CreditNote;
+use Diji\Billing\Models\Invoice;
 use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Resources\CreditNoteResource;
+use Diji\Billing\Resources\InvoiceResource;
+use Diji\Peppol\Helpers\PeppolBuilder;
+use Diji\Peppol\Services\PeppolService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class CreditNoteController extends Controller
@@ -190,5 +196,27 @@ class CreditNoteController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    public function sendToPeppol(Request $request, int $credit_note_id)
+    {
+        $creditNote = CreditNote::findOrFail($credit_note_id)->load('items');
+        $payload = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), "2025/001");
+
+        $xml = (new PeppolBuilder())
+            ->withPayload($payload)
+            ->build();
+
+        // Juste pour les tests
+        $filename = 'bbbbb.xml';
+        Storage::disk('local')->put("peppol/{$filename}", $xml);
+
+        $result = (new PeppolService())->sendInvoice($xml, $filename);
+
+        return response()->json([
+            'message' => 'Document Peppol généré et envoyé avec succès.',
+            'digiteal_response' => $result,
+            'filename' => $filename
+        ]);
     }
 }

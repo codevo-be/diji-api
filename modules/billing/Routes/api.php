@@ -27,6 +27,7 @@ Route::group([
         Route::resource("/credit-notes/{credit_note}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get("/credit-notes/{credit_note}/pdf", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "pdf"]);
         Route::post("/credit-notes/{credit_note}/email", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "email"]);
+        Route::post("/credit-notes/{credit_note}/send-to-peppol", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "sendToPeppol"]);
 
         /* Self Invoice */
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);
