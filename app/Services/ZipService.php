@@ -1,6 +1,6 @@
 <?php
 
-namespace Diji\Billing\Services;
+namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;

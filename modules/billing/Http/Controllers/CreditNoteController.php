@@ -5,18 +5,14 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Models\CreditNote;
-use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Resources\CreditNoteResource;
 use Diji\Billing\Services\PdfService;
-use Diji\Billing\Services\ZipService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class CreditNoteController extends Controller
