@@ -5,22 +5,15 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\StoreSelfInvoiceRequest;
-use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateSelfInvoiceRequest;
 use Diji\Billing\Models\SelfInvoice;
-use Diji\Billing\Resources\InvoiceResource;
-use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\SelfInvoiceResource;
 use Diji\Billing\Services\PdfService;
-use Diji\Billing\Services\ZipService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-use Stancl\Tenancy\Tenancy;
 
 class SelfInvoiceController extends Controller
 {
