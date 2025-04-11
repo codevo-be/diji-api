@@ -22,6 +22,7 @@ Route::group([
         /* Credit note */
         Route::delete("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchDestroy"]);
         Route::put("/credit-notes/batch", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchUpdate"]);
+        Route::post("/credit-notes/batch/pdf", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "batchPdf"]);
         Route::resource("/credit-notes", Diji\Billing\Http\Controllers\CreditNoteController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/credit-notes/{credit_note}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get("/credit-notes/{credit_note}/pdf", [\Diji\Billing\Http\Controllers\CreditNoteController::class, "pdf"]);
@@ -30,6 +31,7 @@ Route::group([
         /* Self Invoice */
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);
         Route::put("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchUpdate"]);
+        Route::post("/self-invoices/batch/pdf",  [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchPdf"]);
         Route::resource("/self-invoices", Diji\Billing\Http\Controllers\SelfInvoiceController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource("/self-invoices/{self_invoice}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::delete("/self-invoices/batch", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "batchDestroy"]);

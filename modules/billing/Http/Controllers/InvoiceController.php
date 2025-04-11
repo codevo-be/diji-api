@@ -5,15 +5,15 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
+use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use ZipArchive;
 
 class InvoiceController extends Controller
 {
@@ -149,34 +149,17 @@ class InvoiceController extends Controller
             return response()->json(['error' => 'Invalid or empty ID list.'], 400);
         }
 
-        $zipFileName = 'invoices_' . now()->format('Ymd_His') . '.zip';
-        $zipPath = storage_path("app/tmp/{$zipFileName}");
-
-        Storage::makeDirectory('tmp');
-
-        $zip = new ZipArchive;
-
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
-            return response()->json(['error' => 'Could not create ZIP file.'], 500);
-        }
+        $pdfFiles = array();
 
         foreach ($ids as $id) {
             try {
-                $invoice = \Diji\Billing\Models\Invoice::findOrFail($id)->load('items');
-
-                $pdf = PDF::loadView('billing::invoice', [
-                    ...$invoice->toArray(),
-                    "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-                    "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode(
-                        $invoice->issuer["name"],
-                        $invoice->issuer["iban"],
-                        $invoice->total,
-                        $invoice->structured_communication
-                    )
-                ]);
-
+                $invoice = Invoice::findOrFail($id)->load('items');
                 $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
-                $zip->addFromString($fileName, $pdf->output());
+
+                $pdfString = PdfService::generateInvoice($invoice);
+
+                $pdfFiles[$fileName] = $pdfString;
+
             } catch (\Exception $e) {
                 return response()->json([
                     "message" => $e->getMessage()
@@ -184,22 +167,24 @@ class InvoiceController extends Controller
             }
         }
 
-        $zip->close();
+        try {
+            $zipPath = ZipService::createTempZip($pdfFiles);
 
-        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 422);
+        }
     }
 
     public function pdf(Request $request, int $invoice_id)
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::invoice', [
-            ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-            "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication)
-        ]);
+        $pdfString = PdfService::generateInvoice($invoice);
 
-        return response($pdf->output(), 200, [
+        return response($pdfString, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf",
         ]);
