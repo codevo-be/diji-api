@@ -5,15 +5,14 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Models\CreditNote;
-use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Resources\CreditNoteResource;
+use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class CreditNoteController extends Controller
@@ -22,19 +21,21 @@ class CreditNoteController extends Controller
     {
         $query = CreditNote::query();
 
-        if($request->filled('contact_id')){
-            $query->where("contact_id", $request->contact_id);
-        }
+        $query
+            ->filter(['contact_id', 'status', 'date'])
+            ->when(isset($request->month) &&
+                is_string($request->month) &&
+                trim($request->month) !== '' &&
+                strtolower($request->month) !== 'undefined', function ($query) use($request){
+                return $query->whereMonth('date', $request->month);
+            })
+            ->orderByDesc('id');
 
-        if($request->filled('status')){
-            $query->where("status", $request->status);
-        }
+        $credit_notes = $request->has('page')
+            ? $query->paginate(50)
+            : $query->get();
 
-        if($request->filled('date')){
-            $query->where("date", $request->date);
-        }
-
-        return CreditNoteResource::collection($query->get())->response();
+        return CreditNoteResource::collection($credit_notes)->response();
     }
 
     public function show(int $credit_note_id): \Illuminate\Http\JsonResponse
@@ -91,12 +92,9 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', [
-            ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateCreditNote($credit_note);
 
-        return response($pdf->output(), 200, [
+        return response($pdfString, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=note-de-credit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
         ]);
@@ -106,10 +104,7 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', [
-            ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateCreditNote($credit_note);
 
         try {
             $instanceBrevo = new Brevo();
@@ -117,7 +112,7 @@ class CreditNoteController extends Controller
             $instanceBrevo->attachments([
                 [
                     "filename" => "note-de-crédit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
-                    "output" => $pdf->output()
+                    "output" => $pdfString
                 ]
             ]);
 
@@ -188,5 +183,42 @@ class CreditNoteController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    public function batchPdf(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json(['error' => 'Invalid or empty ID list.'], 400);
+        }
+
+        $pdfFiles = array();
+
+        foreach ($ids as $id) {
+            try {
+                $credit_notes = CreditNote::findOrFail($id)->load('items');
+                $fileName = 'facture-' . str_replace("/", "-", $credit_notes->identifier) . '.pdf';
+
+                $pdfString = PdfService::generateCreditNote($credit_notes);
+
+                $pdfFiles[$fileName] = $pdfString;
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    "message" => $e->getMessage()
+                ], 422);
+            }
+        }
+
+        try {
+            $zipPath = ZipService::createTempZip($pdfFiles);
+
+            return response()->download($zipPath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 422);
+        }
     }
 }

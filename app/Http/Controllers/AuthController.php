@@ -71,12 +71,13 @@ class AuthController extends Controller
     public function getAuthenticatedUser(Request $request): \Illuminate\Http\JsonResponse
     {
         $user = Auth::user();
-        $tenant_id = $request->header('X-Tenant');
+        $tenant = tenant();
 
         return response()->json([
             "data" => [
                 "user" => $user,
-                "tenant" => Tenant::find($tenant_id)
+                "tenant" => $tenant,
+                "modules" => $tenant->modules
             ]
         ]);
     }

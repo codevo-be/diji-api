@@ -4,9 +4,11 @@ namespace Diji\Billing\Models;
 
 use App\Models\Meta;
 use App\Traits\AutoloadRelationships;
+use App\Traits\Filterable;
 use App\Traits\QuerySearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class Invoice extends Model
@@ -23,7 +25,7 @@ class Invoice extends Model
         self::STATUS_EXPIRED
     ];
 
-    use HasFactory, AutoloadRelationships, QuerySearch;
+    use HasFactory, AutoloadRelationships, QuerySearch, Filterable;
 
     protected $fillable = [
         "status",
@@ -46,7 +48,7 @@ class Invoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
+    protected array $searchable = ['identifier', 'subtotal', 'total', 'date', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {
@@ -96,6 +98,10 @@ class Invoice extends Model
                     $invoice->structured_communication = \Diji\Billing\Helpers\Invoice::generateStructuredCommunication($invoice->identifier_number);
                 }
 
+            }
+
+            if ($invoice->isDirty('date')) {
+                $invoice->due_date = Carbon::parse($invoice->date)->addDays(30);
             }
         });
 
