@@ -14,6 +14,6 @@ class PeppolPayloadDTO
         public array $lines,
         /** @var TaxDTO[] */
         public array $taxes,
-        public MonetaryTotalDTO $totals
+        public MonetaryTotalDTO $totals,
     ) {}
 }

@@ -31,6 +31,12 @@ class PeppolBuilder
         $this->prepareRootElement();
         $this->addPeppolMetadata();
         $this->addDocumentInfo();
+
+        // Ajout de la référence de facturation uniquement pour les notes de crédit
+        if ($this->payload->document->documentType === 'CreditNote') {
+            $this->addBillingReference();
+        }
+
         $this->addBuyerReference();
         $this->addAttachments(); // Optionnel
         $this->addSender();
@@ -300,15 +306,16 @@ class PeppolBuilder
     protected function addInvoiceLines(): void
     {
         foreach ($this->payload->lines as $index => $line) {
-            $invoiceLine = $this->doc->createElement('cac:InvoiceLine');
+            $lineTag = 'cac:' . $this->payload->document->documentType . 'Line';
+            $itemLine = $this->doc->createElement($lineTag);
 
-            $invoiceLine->appendChild($this->doc->createElement('cbc:ID', $index + 1));
+            $itemLine->appendChild($this->doc->createElement('cbc:ID', $index + 1));
 
             $quantity = $this->doc->createElement('cbc:InvoicedQuantity', $line->quantity);
             $quantity->setAttribute('unitCode', '1I');
-            $invoiceLine->appendChild($quantity);
+            $itemLine->appendChild($quantity);
 
-            $invoiceLine->appendChild($this->createElementWithCurrency('cbc:LineExtensionAmount', $line->taxableAmount));
+            $itemLine->appendChild($this->createElementWithCurrency('cbc:LineExtensionAmount', $line->taxableAmount));
 
             // <cac:Item>
             $item = $this->doc->createElement('cac:Item');
@@ -323,7 +330,7 @@ class PeppolBuilder
             $taxCategory->appendChild($taxScheme);
 
             $item->appendChild($taxCategory);
-            $invoiceLine->appendChild($item);
+            $itemLine->appendChild($item);
 
             // <cac:Price>
             $price = $this->doc->createElement('cac:Price');
@@ -333,10 +340,10 @@ class PeppolBuilder
             $baseQuantity->setAttribute('unitCode', '1I');
             $price->appendChild($baseQuantity);
 
-            $invoiceLine->appendChild($price);
+            $itemLine->appendChild($price);
 
 
-            $this->documentElement->appendChild($invoiceLine);
+            $this->documentElement->appendChild($itemLine);
         }
     }
     protected function addPayment(): void
@@ -371,6 +378,19 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($paymentTerms);
     }
+
+    protected function addBillingReference(): void
+    {
+        $reference = $this->payload->document->referenceInvoiceId;
+
+        $billingReference = $this->doc->createElement('cac:BillingReference');
+        $invoiceRef = $this->doc->createElement('cac:InvoiceDocumentReference');
+        $invoiceRef->appendChild($this->doc->createElement('cbc:ID', $reference));
+
+        $billingReference->appendChild($invoiceRef);
+        $this->documentElement->appendChild($billingReference);
+    }
+
     protected function getPeppolSchemeId(string $vatNumber): ?string
     {
         $countryCode = strtoupper(substr($vatNumber, 0, 2));

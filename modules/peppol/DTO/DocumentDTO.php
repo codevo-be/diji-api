@@ -11,6 +11,7 @@ class DocumentDTO
         public string $dueDate,
         public string $currency,
         public string $buyerReference,
-        public string $structuredCommunication
+        public string $structuredCommunication,
+        public ?string $referenceInvoiceId = null // Uniquement pour la note de Crédit
     ) {}
 }
