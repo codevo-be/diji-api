@@ -101,10 +101,7 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', [
-            ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateCreditNote($credit_note);
 
         try {
             $instanceBrevo = new Brevo();
@@ -112,7 +109,7 @@ class CreditNoteController extends Controller
             $instanceBrevo->attachments([
                 [
                     "filename" => "note-de-crédit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
-                    "output" => $pdf->output()
+                    "output" => $pdfString
                 ]
             ]);
 
