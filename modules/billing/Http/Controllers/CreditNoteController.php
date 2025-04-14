@@ -29,6 +29,13 @@ class CreditNoteController extends Controller
                 strtolower($request->month) !== 'undefined', function ($query) use($request){
                 return $query->whereMonth('date', $request->month);
             })
+            ->when(isset($request->date_from) &&
+                isset($request->date_to), function ($query) use($request){
+                return $query->whereBetween('date', [
+                    $request->date_from,
+                    $request->date_to
+                ]);
+            })
             ->orderByDesc('id');
 
         $credit_notes = $request->has('page')
