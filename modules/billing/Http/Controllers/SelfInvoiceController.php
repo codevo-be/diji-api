@@ -167,11 +167,17 @@ class SelfInvoiceController extends Controller
         }
 
         $pdfFiles = array();
+        $badStatusFiles = array();
 
         foreach ($ids as $id) {
             try {
                 $invoice = SelfInvoice::findOrFail($id)->load('items');
                 $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
+
+                if ($invoice->status === 'draft') {
+                    $badStatusFiles[] = $invoice->identifier;
+                    continue;
+                }
 
                 $pdfString = PdfService::generateInvoice($invoice);
 
