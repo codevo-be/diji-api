@@ -4,6 +4,7 @@ namespace Diji\Billing\Services;
 
 use App\Models\Meta;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Diji\Billing\Models\Invoice;
 
 class PdfService
 {
@@ -12,12 +13,12 @@ class PdfService
         return self::generate('billing::invoice', [
             ...$invoice->toArray(),
             "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-            "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode(
+            "qrcode" => $invoice->status !== Invoice::STATUS_DRAFT ?  \Diji\Billing\Helpers\Invoice::generateQrCode(
                 $invoice->issuer["name"],
                 $invoice->issuer["iban"],
-                $invoice->total,
-                $invoice->structured_communication
-            )
+                $invoice->total ?? 0,
+                $invoice->structured_communication ?? ''
+            ) : false
         ]);
     }
 
