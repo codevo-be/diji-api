@@ -9,6 +9,7 @@ use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Services\PdfService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class downloadInvoice extends Command
@@ -77,6 +78,7 @@ class downloadInvoice extends Command
 
                 file_put_contents($path, $pdfString);
             }catch (\Exception $e){
+                Log::info(json_encode($e));
                 dump('error');
                 dump($e->getMessage());
             }
