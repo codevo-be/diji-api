@@ -78,7 +78,6 @@ class downloadInvoice extends Command
 
                 file_put_contents($path, $pdfString);
             }catch (\Exception $e){
-                Log::info(json_encode($e));
                 dump('error');
                 dump($e->getMessage());
             }
@@ -90,6 +89,7 @@ class downloadInvoice extends Command
         ])->where('status', '!=', 'draft')->get();
 
         foreach ($self_invoices as $self_invoice){
+            dump($self_invoice->identifier);
             try {
                 $pdfString = PdfService::generateSelfInvoice($self_invoice);
 
