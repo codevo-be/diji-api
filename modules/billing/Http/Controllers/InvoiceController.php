@@ -157,10 +157,17 @@ class InvoiceController extends Controller
         }
 
         $pdfFiles = array();
+        $badStatusFiles = array();
 
         foreach ($ids as $id) {
             try {
                 $invoice = Invoice::findOrFail($id)->load('items');
+
+                if ($invoice->status === 'draft') {
+                    $badStatusFiles[] = $invoice->identifier;
+                    continue;
+                }
+
                 $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
 
                 $pdfString = PdfService::generateInvoice($invoice);

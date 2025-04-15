@@ -201,10 +201,17 @@ class CreditNoteController extends Controller
         }
 
         $pdfFiles = array();
+        $badStatusFiles = [];
 
         foreach ($ids as $id) {
             try {
                 $credit_notes = CreditNote::findOrFail($id)->load('items');
+
+                if ($credit_notes->status === 'draft') {
+                    $badStatusFiles[] = $credit_notes->identifier;
+                    continue;
+                }
+
                 $fileName = 'facture-' . str_replace("/", "-", $credit_notes->identifier) . '.pdf';
 
                 $pdfString = PdfService::generateCreditNote($credit_notes);
