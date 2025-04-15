@@ -42,7 +42,7 @@ class downloadInvoice extends Command
         $invoices = Invoice::query()->whereBetween('date', [
         "2025-01-01",
         "2025-03-31"
-    ])->get();
+    ])->where('status', '!=', 'draft')->get();
 
         foreach ($invoices as $invoice){
             try {
@@ -64,7 +64,7 @@ class downloadInvoice extends Command
         $credit_notes = CreditNote::query()->whereBetween('date', [
             "2025-01-01",
             "2025-03-31"
-        ])->get();
+        ])->where('status', '!=', 'draft')->get();
 
         foreach ($credit_notes as $credit_note){
             try {
@@ -87,7 +87,7 @@ class downloadInvoice extends Command
         $self_invoices = SelfInvoice::query()->whereBetween('date', [
             "2025-01-01",
             "2025-03-31"
-        ])->get();
+        ])->where('status', '!=', 'draft')->get();
 
         foreach ($self_invoices as $self_invoice){
             try {
