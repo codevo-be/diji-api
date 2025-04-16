@@ -6,6 +6,12 @@ Route::group([
     'prefix'     => 'api',
 ], function () {
     Route::middleware(["auth:api","auth.tenant"])->group(function(){
+        /* Estimate */
+        Route::resource("/estimates", Diji\Billing\Http\Controllers\EstimateController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+        Route::resource("/estimates/{estimate}/items", \Diji\Billing\Http\Controllers\BillingItemController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get("/estimates/{invoice}/pdf", [\Diji\Billing\Http\Controllers\EstimateController::class, "pdf"]);
+        Route::post("/estimates/{invoice}/email", [\Diji\Billing\Http\Controllers\EstimateController::class, "email"]);
+
         /* Invoice */
         Route::delete("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchDestroy"]);
         Route::put("/invoices/batch", [\Diji\Billing\Http\Controllers\InvoiceController::class, "batchUpdate"]);
