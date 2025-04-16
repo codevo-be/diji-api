@@ -8,6 +8,14 @@ use Diji\Billing\Models\Invoice;
 
 class PdfService
 {
+    public static function generateEstimate($estimate): string
+    {
+        return self::generate('billing::estimate', [
+            ...$estimate->toArray(),
+            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null
+        ]);
+    }
+
     public static function generateInvoice($invoice): string
     {
         return self::generate('billing::invoice', [

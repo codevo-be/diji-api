@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class BillingItem extends Model
 {
     public const MODEL_TYPES = [
+        "estimate" => Estimate::class,
         "invoice" => Invoice::class,
         "credit_note" => CreditNote::class,
         "self_invoice" => SelfInvoice::class,

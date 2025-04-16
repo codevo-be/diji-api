@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoices', function (Blueprint $table) {
+        Schema::create('estimates', function (Blueprint $table) {
             $table->id();
             $table->string('identifier')->unique()->nullable();
             $table->unsignedInteger('identifier_number')->nullable();
-            $table->enum('status', \Diji\Billing\Models\Invoice::STATUSES)->default(\Diji\Billing\Models\Invoice::STATUS_DRAFT);
+            $table->enum('status', \Diji\Billing\Models\Estimate::STATUSES)->default(\Diji\Billing\Models\Estimate::STATUS_DRAFT);
+            $table->foreignId('contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->json('issuer')->nullable();
             $table->json('recipient')->nullable();
             $table->date("date");
             $table->date("due_date")->nullable();
-            $table->date("payment_date")->nullable();
-            $table->string("structured_communication", 12)->nullable();
             $table->decimal('subtotal', 10)->default(0)->nullable();
             $table->json('taxes')->nullable();
             $table->decimal('total', 10)->default(0)->nullable();
@@ -35,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('invoices');
+        Schema::dropIfExists('estimates');
     }
 };
