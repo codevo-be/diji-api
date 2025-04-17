@@ -7,7 +7,6 @@ use Diji\Peppol\DTO\PeppolPayloadDTO;
 use DOMDocument;
 use DOMElement;
 
-
 class PeppolBuilder
 {
     protected PeppolPayloadDTO $payload;
@@ -171,15 +170,10 @@ class PeppolBuilder
         $party = $this->doc->createElement('cac:AccountingCustomerParty');
         $partyNode = $this->doc->createElement('cac:Party');
 
-        // EndpointID
-        $endpointId = $this->doc->createElement(
-            'cbc:EndpointID',
-            $this->getIdFromPeppolIdentifier(strtoupper($receiver->peppolIdentifier))
-        );
-        $endpointId->setAttribute(
-            'schemeID',
-            $this->getSchemeIdFromPeppolIdentifier(strtoupper($receiver->peppolIdentifier))
-        );
+        // EndpointID (généré depuis le numéro de TVA)
+        $vatNumber = strtoupper($receiver->vatNumber);
+        $endpointId = $this->doc->createElement('cbc:EndpointID', $vatNumber);
+        $endpointId->setAttribute('schemeID', $this->getPeppolSchemeId($vatNumber));
         $partyNode->appendChild($endpointId);
 
         // Nom
@@ -200,7 +194,7 @@ class PeppolBuilder
 
         // TVA
         $taxScheme = $this->doc->createElement('cac:PartyTaxScheme');
-        $taxScheme->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($receiver->vatNumber)));
+        $taxScheme->appendChild($this->doc->createElement('cbc:CompanyID', $vatNumber));
         $tax = $this->doc->createElement('cac:TaxScheme');
         $tax->appendChild($this->doc->createElement('cbc:ID', 'VAT'));
         $taxScheme->appendChild($tax);
@@ -209,7 +203,7 @@ class PeppolBuilder
         // Legal Entity
         $legal = $this->doc->createElement('cac:PartyLegalEntity');
         $legal->appendChild($this->doc->createElement('cbc:RegistrationName', $receiver->name));
-        $legal->appendChild($this->doc->createElement('cbc:CompanyID', strtoupper($receiver->vatNumber)));
+        $legal->appendChild($this->doc->createElement('cbc:CompanyID', $vatNumber));
         $partyNode->appendChild($legal);
 
         // Contact (optionnel)
@@ -445,14 +439,6 @@ class PeppolBuilder
             'FR' => '9957',
             default => '9925',
         };
-    }
-    protected function getIdFromPeppolIdentifier(string $identifier): string
-    {
-        return explode(':', $identifier)[1] ?? '';
-    }
-    protected function getSchemeIdFromPeppolIdentifier(string $identifier): string
-    {
-        return explode(':', $identifier)[0] ?? '';
     }
     protected function createElementWithCurrency(string $name, float $value): DOMElement
     {
