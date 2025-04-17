@@ -7,6 +7,7 @@ Route::group([
     'prefix'     => 'api',
 ], function () {
     Route::middleware(['auth:api', "auth.tenant"])->group(function(){
+        Route::post("/peppol/convert-to-ubl", [PeppolController::class, 'convertToUbl']);
+        Route::post("/peppol/hook", [PeppolController::class, 'hook']);
     });
-    Route::post("/peppol/convert-to-ubl", [PeppolController::class, 'convertToUbl']); // todo: pas oublier de le remettre au dessus
 });
