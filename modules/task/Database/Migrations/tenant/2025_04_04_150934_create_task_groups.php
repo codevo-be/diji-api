@@ -8,19 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('task_projects', function (Blueprint $table) {
+        Schema::create('task_groups', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('project_id')
+                ->constrained('projects');
             $table->string('name');
-            $table->text('description')->nullable();
+            $table->integer('position')->default(0);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('task_projects');
+        Schema::dropIfExists('task_groups');
     }
 };
+
+
+
+
 
 
 

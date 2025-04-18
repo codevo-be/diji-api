@@ -4,7 +4,7 @@ namespace Diji\Task\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreColumnRequest extends FormRequest
+class StoreTaskGroupRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,9 +20,9 @@ class StoreColumnRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => ['required', 'integer', 'exists:task_projects,id'],
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
             'name' => 'required|string|max:255',
-            'order' => 'required|integer|min:1'
+            'position' => 'sometimes|integer|min:1'
         ];
     }
 
@@ -39,9 +39,9 @@ class StoreColumnRequest extends FormRequest
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
 
-            'order.required' => 'L\'ordre est obligatoire.',
-            'order.integer' => 'L\'ordre doit être un nombre entier.',
-            'order.min' => 'L\'ordre doit être au minimum 1.'
+            'position.required' => 'L\'ordre est obligatoire.',
+            'position.integer' => 'L\'ordre doit être un nombre entier.',
+            'position.min' => 'L\'ordre doit être au minimum 1.'
         ];
     }
 }

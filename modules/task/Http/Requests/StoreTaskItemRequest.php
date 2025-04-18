@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Diji\Task\Enums\TaskStatus;
 
-class StoreItemRequest extends FormRequest
+class StoreTaskItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,20 +16,20 @@ class StoreItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'task_column_id' => ['required', 'integer', 'exists:task_columns,id'],
+            'task_group_id' => ['required', 'integer', 'exists:task_groups,id'],
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => ['required', 'string', Rule::in(TaskStatus::values())],
             'priority' => 'required|integer|min:1|max:5',
-            'order' => 'nullable|integer',
+            'position' => 'sometimes|integer'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'task_column_id.required' => 'L\'ID de la colonne de tâche est obligatoire.',
-            'task_column_id.exists' => 'La colonne de tâche sélectionnée est invalide.',
+            'task_group_id.required' => 'L\'ID de la liste de tâche est obligatoire.',
+            'task_group_id.exists' => 'La liste de tâche sélectionnée est invalide.',
 
             'name.required' => 'Le nom est obligatoire.',
             'name.string' => 'Le nom doit être une chaîne de caractères.',

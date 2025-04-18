@@ -5,7 +5,7 @@ namespace Diji\Task\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ItemResource extends JsonResource
+class TaskItemResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,13 +17,13 @@ class ItemResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'order' => $this->order,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-            'items' => $this->items,
-            'done' => $this->done,
+            'task_group_id' => $this->task_group_id,
             'task_number' => $this->task_number,
+            'name' => $this->name,
+            'description' => $this->description,
+            'status' => $this->status,
+            'priority' => $this->priority,
+            'position' => $this->position,
         ];
     }
 }

@@ -5,7 +5,7 @@ namespace Diji\Task\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ColumnResource extends JsonResource
+class TaskGroupResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,12 +17,10 @@ class ColumnResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'order' => $this->order,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-            'items' => $this->items,
             'project_id' => $this->project_id,
+            'name' => $this->name,
+            'position' => $this->position,
+            'items' => TaskItemResource::collection($this->whenLoaded('items'))
         ];
     }
 }

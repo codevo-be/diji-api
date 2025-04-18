@@ -8,15 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('task_items', function (Blueprint $table) {
-            $table->integer('task_number')->nullable()->after('priority');
+        Schema::create('projects', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::table('task_items', function (Blueprint $table) {
-            $table->dropColumn('task_number');
-        });
+        Schema::dropIfExists('projects');
     }
 };
+
+
+

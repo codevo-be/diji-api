@@ -32,7 +32,8 @@
             "Diji\\Contact\\": "modules/contact",
             "Diji\\Task\\": "modules/task",
             "Diji\\Team\\": "modules/team",
-            "Diji\\Module\\": "modules/module"
+            "Diji\\Module\\": "modules/module",
+            "Diji\\Project\\": "modules/project"
         }
     },
     "autoload-dev": {

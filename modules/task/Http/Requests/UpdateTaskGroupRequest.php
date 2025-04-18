@@ -4,7 +4,7 @@ namespace Diji\Task\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateColumnRequest extends FormRequest
+class UpdateTaskGroupRequest extends FormRequest
 {
     /**
      * Détermine si l'utilisateur est autorisé à faire cette requête.
@@ -22,7 +22,7 @@ class UpdateColumnRequest extends FormRequest
         return [
             'project_id' => ['sometimes', 'integer', 'exists:task_projects,id'],
             'name' => ['sometimes', 'string', 'max:255'],
-            'order' => ['sometimes', 'integer', 'min:1'],
+            'position' => ['sometimes', 'integer', 'min:1'],
         ];
     }
 
@@ -37,8 +37,8 @@ class UpdateColumnRequest extends FormRequest
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
 
-            'order.integer' => 'L\'ordre doit être un nombre entier.',
-            'order.min' => 'L\'ordre doit être au minimum 1.'
+            'position.integer' => 'L\'ordre doit être un nombre entier.',
+            'position.min' => 'L\'ordre doit être au minimum 1.'
         ];
     }
 }
