@@ -15,7 +15,13 @@ trait AutoloadRelationships
                 $relations = explode(',', $request->query('include'));
 
                 if (!empty($relations)) {
-                    $query->with($relations);
+                    $validRelations = array_filter($relations, function ($relation) {
+                        return method_exists(static::newModelInstance(), $relation);
+                    });
+
+                    if (!empty($validRelations)) {
+                        $query->with($validRelations);
+                    }
                 }
             }
         });
