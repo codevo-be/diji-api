@@ -3,8 +3,6 @@
 namespace Diji\Task\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Diji\Task\Enums\TaskStatus;
 
 class StoreTaskItemRequest extends FormRequest
 {
@@ -19,8 +17,8 @@ class StoreTaskItemRequest extends FormRequest
             'task_group_id' => ['required', 'integer', 'exists:task_groups,id'],
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => ['required', 'string', Rule::in(TaskStatus::values())],
-            'priority' => 'required|integer|min:1|max:5',
+            'status' => ['sometimes', 'string'],
+            'priority' => 'sometimes|integer|min:1|max:5',
             'position' => 'sometimes|integer'
         ];
     }
@@ -37,11 +35,9 @@ class StoreTaskItemRequest extends FormRequest
 
             'description.string' => 'La description doit être une chaîne de caractères.',
 
-            'status.required' => 'Le statut est obligatoire.',
             'status.string' => 'Le statut doit être une chaîne de caractères.',
             'status.in' => 'Le statut doit être valide.',
 
-            'priority.required' => 'La priorité est obligatoire.',
             'priority.integer' => 'La priorité doit être un nombre entier.',
             'priority.min' => 'La priorité doit être au minimum 1.',
             'priority.max' => 'La priorité doit être au maximum 5.',

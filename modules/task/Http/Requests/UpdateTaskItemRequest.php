@@ -3,8 +3,6 @@
 namespace Diji\Task\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Diji\Task\Enums\TaskStatus;
 
 class UpdateTaskItemRequest extends FormRequest
 {
@@ -19,7 +17,7 @@ class UpdateTaskItemRequest extends FormRequest
             'task_group_id' => ['sometimes', 'integer', 'exists:task_groups,id'],
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|nullable|string',
-            'status' => ['sometimes', 'string', Rule::in(TaskStatus::values())],
+            'status' => ['sometimes', 'string'],
             'priority' => 'sometimes|integer|min:1|max:5',
             'position' => 'sometimes|integer',
         ];

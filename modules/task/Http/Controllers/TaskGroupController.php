@@ -18,12 +18,11 @@ class TaskGroupController extends Controller
     {
         $query = TaskGroup::where('project_id', $project)->orderBy('position');
 
-
-        $items = $request->has('page')
+        $groups = $request->has('page')
             ? $query->paginate()
             : $query->get();
 
-        return TaskGroupResource::collection($query->get())->response();
+        return TaskGroupResource::collection($groups)->response();
     }
 
     public function show(int $project_id, int $group_id)
@@ -53,7 +52,7 @@ class TaskGroupController extends Controller
     {
         $data = $request->validated();
 
-        $group = TaskGroupResource::findOrFail($group_id);
+        $group = TaskGroup::findOrFail($group_id);
 
         $group->update($data);
 

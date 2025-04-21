@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TaskGroup extends Model
 {
-    use HasFactory, QuerySearch, Filterable;
+    use AutoloadRelationships, HasFactory, QuerySearch, Filterable;
 
     protected $fillable = [
         'name',
@@ -47,7 +47,7 @@ class TaskGroup extends Model
     }
 
 
-    public function items()
+    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TaskItem::class, 'task_group_id');
     }

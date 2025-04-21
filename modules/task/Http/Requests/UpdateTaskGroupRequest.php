@@ -20,7 +20,7 @@ class UpdateTaskGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => ['sometimes', 'integer', 'exists:task_projects,id'],
+            'project_id' => ['sometimes', 'integer', 'exists:projects,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'position' => ['sometimes', 'integer', 'min:1'],
         ];

@@ -9,6 +9,7 @@ use Diji\Project\Models\Project;
 use Diji\Project\Resources\ProjectResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProjectController extends Controller
 {
@@ -57,7 +58,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function destroy(Project $project_id): \Illuminate\Http\Response
+    public function destroy(int $project_id): \Illuminate\Http\Response
     {
         $project = Project::findOrFail($project_id);
 
