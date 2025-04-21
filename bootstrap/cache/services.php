@@ -1,5 +1,5 @@
 <?php return array (
-  'providers' =>
+  'providers' => 
   array (
     0 => 'Illuminate\\Auth\\AuthServiceProvider',
     1 => 'Illuminate\\Broadcasting\\BroadcastServiceProvider',
@@ -40,11 +40,11 @@
     36 => 'Diji\\Billing\\BillingServiceProvider',
     37 => 'Diji\\Contact\\ContactServiceProvider',
     38 => 'Diji\\Team\\TeamServiceProvider',
-    39 => 'Diji\\Module\\ModuleServiceProvider',
-    38 => 'Diji\\Task\\TaskServiceProvider',
-    40 => 'Diji\\Project\\ProjectServiceProvider'
+    39 => 'Diji\\Task\\TaskServiceProvider',
+    40 => 'Diji\\Project\\ProjectServiceProvider',
+    41 => 'Diji\\Module\\ModuleServiceProvider',
   ),
-  'eager' =>
+  'eager' => 
   array (
     0 => 'Illuminate\\Auth\\AuthServiceProvider',
     1 => 'Illuminate\\Cookie\\CookieServiceProvider',
@@ -70,11 +70,11 @@
     21 => 'Diji\\Billing\\BillingServiceProvider',
     22 => 'Diji\\Contact\\ContactServiceProvider',
     23 => 'Diji\\Team\\TeamServiceProvider',
-    24 => 'Diji\\Module\\ModuleServiceProvider',
-    23 => 'Diji\\Task\\TaskServiceProvider',
-    25 => 'Diji\\Project\\ProjectServiceProvider'
+    24 => 'Diji\\Task\\TaskServiceProvider',
+    25 => 'Diji\\Project\\ProjectServiceProvider',
+    26 => 'Diji\\Module\\ModuleServiceProvider',
   ),
-  'deferred' =>
+  'deferred' => 
   array (
     'Illuminate\\Broadcasting\\BroadcastManager' => 'Illuminate\\Broadcasting\\BroadcastServiceProvider',
     'Illuminate\\Contracts\\Broadcasting\\Factory' => 'Illuminate\\Broadcasting\\BroadcastServiceProvider',
@@ -229,51 +229,51 @@
     'Laravel\\Sail\\Console\\PublishCommand' => 'Laravel\\Sail\\SailServiceProvider',
     'command.tinker' => 'Laravel\\Tinker\\TinkerServiceProvider',
   ),
-  'when' =>
+  'when' => 
   array (
-    'Illuminate\\Broadcasting\\BroadcastServiceProvider' =>
+    'Illuminate\\Broadcasting\\BroadcastServiceProvider' => 
     array (
     ),
-    'Illuminate\\Bus\\BusServiceProvider' =>
+    'Illuminate\\Bus\\BusServiceProvider' => 
     array (
     ),
-    'Illuminate\\Cache\\CacheServiceProvider' =>
+    'Illuminate\\Cache\\CacheServiceProvider' => 
     array (
     ),
-    'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider' =>
+    'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider' => 
     array (
     ),
-    'Illuminate\\Concurrency\\ConcurrencyServiceProvider' =>
+    'Illuminate\\Concurrency\\ConcurrencyServiceProvider' => 
     array (
     ),
-    'Illuminate\\Hashing\\HashServiceProvider' =>
+    'Illuminate\\Hashing\\HashServiceProvider' => 
     array (
     ),
-    'Illuminate\\Mail\\MailServiceProvider' =>
+    'Illuminate\\Mail\\MailServiceProvider' => 
     array (
     ),
-    'Illuminate\\Auth\\Passwords\\PasswordResetServiceProvider' =>
+    'Illuminate\\Auth\\Passwords\\PasswordResetServiceProvider' => 
     array (
     ),
-    'Illuminate\\Pipeline\\PipelineServiceProvider' =>
+    'Illuminate\\Pipeline\\PipelineServiceProvider' => 
     array (
     ),
-    'Illuminate\\Queue\\QueueServiceProvider' =>
+    'Illuminate\\Queue\\QueueServiceProvider' => 
     array (
     ),
-    'Illuminate\\Redis\\RedisServiceProvider' =>
+    'Illuminate\\Redis\\RedisServiceProvider' => 
     array (
     ),
-    'Illuminate\\Translation\\TranslationServiceProvider' =>
+    'Illuminate\\Translation\\TranslationServiceProvider' => 
     array (
     ),
-    'Illuminate\\Validation\\ValidationServiceProvider' =>
+    'Illuminate\\Validation\\ValidationServiceProvider' => 
     array (
     ),
-    'Laravel\\Sail\\SailServiceProvider' =>
+    'Laravel\\Sail\\SailServiceProvider' => 
     array (
     ),
-    'Laravel\\Tinker\\TinkerServiceProvider' =>
+    'Laravel\\Tinker\\TinkerServiceProvider' => 
     array (
     ),
   ),
