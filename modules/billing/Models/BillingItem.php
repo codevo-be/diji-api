@@ -16,7 +16,7 @@ class BillingItem extends Model
         "recurring_invoice" => RecurringInvoice::class
     ];
 
-    protected $fillable = ["position", "model_type", "model_id", "name", "quantity", "vat", "cost", "retail"];
+    protected $fillable = ["type", "position", "model_type", "model_id", "name", "quantity", "vat", "cost", "retail"];
 
     protected $casts = [
         "quantity" => "float",
@@ -46,21 +46,28 @@ class BillingItem extends Model
                         ->count() + 1;
             }
 
-            if($item->retail){
-                $tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
+            if($item->type !== "product"){
+                $item->retail = null;
+                $item->cost = null;
+                $item->vat = null;
+                $item->quantity = 0;
+            }
+
+            if($item->type === "product" && $item->retail) {
+                $retail_tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
                 $item->retail = [
                     "subtotal" => floatval($item->retail["subtotal"]),
-                    "tax" => $tax,
-                    "total" => floatval($item->retail["subtotal"]) + $tax
+                    "tax" => $retail_tax,
+                    "total" => floatval($item->retail["subtotal"]) + $retail_tax
                 ];
             }
 
-            if($item->cost){
-                $tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
+            if($item->type === "product" && $item->cost) {
+                $cost_tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
                 $item->cost = [
                     "subtotal" => floatval($item->cost["subtotal"]),
-                    "tax" => $tax,
-                    "total" => floatval($item->cost["subtotal"]) + $tax
+                    "tax" => $cost_tax,
+                    "total" => floatval($item->cost["subtotal"]) + $cost_tax
                 ];
             }
         });
@@ -69,21 +76,28 @@ class BillingItem extends Model
             $oldOrder = $item->getOriginal('position');
             $newOrder = $item->position;
 
-            if($item->retail){
-                $tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
+            if($item->type !== "product"){
+                $item->retail = null;
+                $item->cost = null;
+                $item->vat = null;
+                $item->quantity = 0;
+            }
+
+            if($item->type === "product" && $item->retail) {
+                $retail_tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
                 $item->retail = [
                     "subtotal" => floatval($item->retail["subtotal"]),
-                    "tax" => $tax,
-                    "total" => floatval($item->retail["subtotal"]) + $tax
+                    "tax" => $retail_tax,
+                    "total" => floatval($item->retail["subtotal"]) + $retail_tax
                 ];
             }
 
-            if($item->cost){
-                $tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
+            if($item->type === "product" && $item->cost) {
+                $cost_tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
                 $item->cost = [
                     "subtotal" => floatval($item->cost["subtotal"]),
-                    "tax" => $tax,
-                    "total" => floatval($item->cost["subtotal"]) + $tax
+                    "tax" => $cost_tax,
+                    "total" => floatval($item->cost["subtotal"]) + $cost_tax
                 ];
             }
 
@@ -120,7 +134,7 @@ class BillingItem extends Model
 
     private static function recalculateModelTotals($model): void
     {
-        if(!$model->retail){
+        if(!$model->retail | $model->type !== "product"){
             return;
         }
 

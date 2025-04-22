@@ -19,20 +19,38 @@ class UpdateBillingItemRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+
+        $type = $this->input('type');
+
+        $common = [
             'position' => 'sometimes|numeric',
             'name' => 'sometimes|string',
-            'quantity' => 'sometimes|nullable|numeric|min:0',
-            'vat' => 'sometimes|nullable|integer|min:0|max:100',
-            'cost' => 'sometimes|nullable|array',
-            'cost.subtotal' => 'required_with:cost|numeric',
-            'retail' => 'sometimes|nullable|array',
-            'retail.subtotal' => 'required_with:retail|numeric',
+            'type' => 'sometimes|string',
         ];
+
+        if ($type === 'product') {
+            return array_merge($common, [
+                'quantity' => 'sometimes|numeric|min:0',
+                'vat' => 'sometimes|numeric|min:0|max:100',
+                'cost' => 'sometimes|array',
+                'cost.subtotal' => 'sometimes|numeric|min:0',
+                'retail' => 'sometimes|array',
+                'retail.subtotal' => 'sometimes|numeric|min:0',
+            ]);
+        }
+
+        if (in_array($type, ['title', 'text'])) {
+            return $common;
+        }
+
+        return $common;
     }
 
     public function messages(): array
     {
-        return [];
+        return [
+            "name.required" => "Le nom est requis !",
+            "retail.subtotal.required" => "Le prix est requis !"
+        ];
     }
 }

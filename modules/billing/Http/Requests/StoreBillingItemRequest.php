@@ -19,20 +19,37 @@ class StoreBillingItemRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $type = $this->input('type');
+
+        $common = [
             'position' => 'sometimes|numeric',
             'name' => 'required|string',
-            'quantity' => 'sometimes|nullable|numeric|min:0',
-            'vat' => 'sometimes|integer|min:0|max:100',
-            'cost' => 'sometimes|array',
-            'cost.subtotal' => 'required_with:cost|numeric',
-            'retail' => 'sometimes|array',
-            'retail.subtotal' => 'required_with:retail|numeric'
+            'type' => 'required|string',
         ];
+
+        if ($type === 'product') {
+            return array_merge($common, [
+                'quantity' => 'required|numeric|min:0',
+                'vat' => 'required|numeric|min:0|max:100',
+                'cost' => 'sometimes|array',
+                'cost.subtotal' => 'sometimes|numeric|min:0',
+                'retail' => 'required|array',
+                'retail.subtotal' => 'required|numeric|min:0',
+            ]);
+        }
+
+        if (in_array($type, ['title', 'text'])) {
+            return $common;
+        }
+
+        return $common;
     }
 
     public function messages(): array
     {
-        return [];
+        return [
+            "name.required" => "Le nom est requis !",
+            "retail.subtotal.required" => "Le prix est requis !"
+        ];
     }
 }
