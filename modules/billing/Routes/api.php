@@ -45,7 +45,7 @@ Route::group([
         Route::post("/self-invoices/{self_invoice}/email", [\Diji\Billing\Http\Controllers\SelfInvoiceController::class, "email"]);
 
         /* Options */
-
+        Route::resource("/transactions", \Diji\Billing\Http\Controllers\TransactionController::class)->only(["index", "show", 'update']);
         Route::get("/nordigen/institutions", [\Diji\Billing\Http\Controllers\NordigenController::class, 'institutions']);
     });
 });

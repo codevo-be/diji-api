@@ -26,12 +26,8 @@ class StoreBillingItemRequest extends FormRequest
             'vat' => 'sometimes|integer|min:0|max:100',
             'cost' => 'sometimes|array',
             'cost.subtotal' => 'required_with:cost|numeric',
-            'cost.tax' => 'required_with:cost|numeric',
-            'cost.total' => 'required_with:cost|numeric',
             'retail' => 'sometimes|array',
-            'retail.subtotal' => 'required_with:retail|numeric',
-            'retail.tax' => 'required_with:retail|numeric',
-            'retail.total' => 'required_with:retail|numeric',
+            'retail.subtotal' => 'required_with:retail|numeric'
         ];
     }
 

@@ -45,6 +45,24 @@ class BillingItem extends Model
                         ->where('model_id', $item->model_id)
                         ->count() + 1;
             }
+
+            if($item->retail){
+                $tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
+                $item->retail = [
+                    "subtotal" => floatval($item->retail["subtotal"]),
+                    "tax" => $tax,
+                    "total" => floatval($item->retail["subtotal"]) + $tax
+                ];
+            }
+
+            if($item->cost){
+                $tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
+                $item->cost = [
+                    "subtotal" => floatval($item->cost["subtotal"]),
+                    "tax" => $tax,
+                    "total" => floatval($item->cost["subtotal"]) + $tax
+                ];
+            }
         });
 
         static::updating(function (BillingItem $item) {
