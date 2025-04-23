@@ -174,7 +174,11 @@ class InvoiceController extends Controller
 
                 $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
 
-                $pdfString = PdfService::generateInvoice($invoice);
+                $pdfString = PdfService::generate('billing::invoice', [
+                    ...$invoice->toArray(),
+                    "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
+                    "qrcode" => false
+                ]);
 
                 $pdfFiles[$fileName] = $pdfString;
 
