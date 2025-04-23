@@ -13,6 +13,7 @@ use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class InvoiceController extends Controller
@@ -182,6 +183,12 @@ class InvoiceController extends Controller
         }
 
         try {
+            if(collect($pdfFiles)->count() <= 0){
+                return response()->json([
+                    "message" => "Le zip est vide !"
+                ], 422);
+            }
+
             $zipPath = ZipService::createTempZip($pdfFiles);
 
             return response()->download($zipPath)->deleteFileAfterSend(true);
