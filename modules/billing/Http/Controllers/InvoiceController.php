@@ -179,13 +179,15 @@ class InvoiceController extends Controller
                 $pdfFiles[$fileName] = $pdfString;
 
             } catch (\Exception $e) {
-                Log::info("pdf generation");
+                Log::info("Zip");
                 Log::info($e->getMessage());
                 continue;
             }
         }
 
-        try {
+        Log::info(json_encode($pdfFiles));
+
+        /*try {
             if(collect($pdfFiles)->count() <= 0){
                 return response()->json([
                     "message" => "Le zip est vide !"
@@ -201,7 +203,7 @@ class InvoiceController extends Controller
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);
-        }
+        }*/
     }
 
     public function pdf(Request $request, int $invoice_id)
