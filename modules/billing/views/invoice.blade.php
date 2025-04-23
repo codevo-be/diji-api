@@ -112,13 +112,13 @@
 
                         @if(isset($item['quantity'])) <td style="padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! $item['quantity'] !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
 
-                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($item['retail']['subtotal']) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
+                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($item['retail']['subtotal'])) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
 
                         @if(isset($item['vat'])) <td style="padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! $item['vat'] !!}%</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
 
-                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($item['retail']['subtotal'] * ($item['quantity'] ?? 1)) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
+                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($item['retail']['subtotal']) * ($item['quantity'] ?? 1)) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
 
-                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($item['retail']['total'] * ($item['quantity'] ?? 1)) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
+                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($item['retail']['total']) * ($item['quantity'] ?? 1)) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
                     </tr>
                 @endforeach
             </tbody>
@@ -129,7 +129,7 @@
                 <tbody>
                 <tr>
                     <td style="padding-right: 20px;">Total HTVA</td>
-                    <td style="text-align: right;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($subtotal ?? 0) !!}</td>
+                    <td style="text-align: right;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($subtotal) ?? 0) !!}</td>
                 </tr>
 
                 @foreach($taxes ?? [] as $tax => $value)
@@ -141,7 +141,7 @@
                     @else
                         <tr>
                             <td>TVA {!! $tax !!}%</td>
-                            <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($value ?? 0) !!}</td>
+                            <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($value) ?? 0) !!}</td>
                         </tr>
                     @endif
 
@@ -149,7 +149,7 @@
 
                 <tr style="font-size: 16px; font-weight: 700;">
                     <td style="padding-top:15px;">Total</td>
-                    <td style="padding-top:15px;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total ?? 0) !!}</td>
+                    <td style="padding-top:15px;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($total) ?? 0) !!}</td>
                 </tr>
                 </tbody>
             </table>
@@ -161,7 +161,7 @@
             @endif
             @if($issuer)
                 <p style="margin-top:10px; font-size: 14px;">
-                    Veuillez payer le montant de <strong>{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total) !!}</strong> sur le compte <strong>{!! $issuer['iban'] !!}</strong> avant le <strong>{!! \Illuminate\Support\Carbon::parse($due_date)->format('d/m/Y') !!}</strong> en mentionnant la référence <strong>{!! \Diji\Billing\Helpers\Invoice::formatStructuredCommunication($structured_communication) !!}</strong>
+                    Veuillez payer le montant de <strong>{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($total)) !!}</strong> sur le compte <strong>{!! $issuer['iban'] !!}</strong> avant le <strong>{!! \Illuminate\Support\Carbon::parse($due_date)->format('d/m/Y') !!}</strong> en mentionnant la référence <strong>{!! \Diji\Billing\Helpers\Invoice::formatStructuredCommunication($structured_communication) !!}</strong>
                 </p>
             @endif
             <p  style="margin-top:10px; font-size: 14px;">Merci pour votre confiance !</p>
