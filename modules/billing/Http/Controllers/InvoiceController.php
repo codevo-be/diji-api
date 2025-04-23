@@ -151,6 +151,9 @@ class InvoiceController extends Controller
 
     public function batchPdf(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        set_time_limit(300);
+
         $ids = $request->input('ids');
 
         if (!is_array($ids) || empty($ids)) {
