@@ -179,6 +179,7 @@ class InvoiceController extends Controller
                 $pdfFiles[$fileName] = $pdfString;
 
             } catch (\Exception $e) {
+                Log::info($e->getMessage());
                 return response()->json([
                     "message" => $e->getMessage()
                 ], 422);
@@ -196,6 +197,7 @@ class InvoiceController extends Controller
 
             return response()->download($zipPath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
+            Log::info($e->getMessage());
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);
