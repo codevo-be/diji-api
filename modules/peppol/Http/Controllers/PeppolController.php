@@ -141,17 +141,4 @@ class PeppolController extends Controller
             'message' => 'Hook reçu et document Peppol enregistré avec succès.',
         ]);
     }
-
-    public function index(Request $request): JsonResponse
-    {
-        $query = PeppolDocument::query();
-
-        $documents = $request->has('page')
-            ? $query->paginate()
-            : $query->get();
-
-        return response()->json([
-            'data' => $documents,
-        ]);
-    }
 }

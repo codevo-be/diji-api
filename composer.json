@@ -33,6 +33,7 @@
             "Diji\\Contact\\": "modules/contact",
             "Diji\\Team\\": "modules/team",
             "Diji\\Module\\": "modules/module",
+            "Diji\\Expense\\": "modules/expense",
             "Diji\\Peppol\\": "modules/peppol"
         }
     },

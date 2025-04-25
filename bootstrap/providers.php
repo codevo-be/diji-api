@@ -11,4 +11,5 @@ return [
     \Diji\Team\TeamServiceProvider::class,
     \Diji\Module\ModuleServiceProvider::class,
     \Diji\Peppol\PeppolServiceProvider::class,
+    \Diji\Expense\ExpenseServiceProvider::class,
 ];

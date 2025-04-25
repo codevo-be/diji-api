@@ -42,6 +42,7 @@
     38 => 'Diji\\Team\\TeamServiceProvider',
     39 => 'Diji\\Module\\ModuleServiceProvider',
     40 => 'Diji\\Peppol\\PeppolServiceProvider',
+    41 => 'Diji\\Expense\\ExpenseServiceProvider',
   ),
   'eager' => 
   array (
@@ -71,6 +72,7 @@
     23 => 'Diji\\Team\\TeamServiceProvider',
     24 => 'Diji\\Module\\ModuleServiceProvider',
     25 => 'Diji\\Peppol\\PeppolServiceProvider',
+    26 => 'Diji\\Expense\\ExpenseServiceProvider',
   ),
   'deferred' => 
   array (

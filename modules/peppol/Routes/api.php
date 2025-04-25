@@ -9,6 +9,5 @@ Route::group([
     Route::middleware(['auth:api', "auth.tenant"])->group(function(){
         Route::post("/peppol/convert-to-ubl", [PeppolController::class, 'convertToUbl']);
         Route::post("/peppol/hook", [PeppolController::class, 'hook']);
-        Route::resource("/peppol", PeppolController::class)->only(['index']);
     });
 });
