@@ -9,6 +9,7 @@ use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
+use Diji\Billing\Jobs\ProcessBatchCreditNotesEmail;
 use Diji\Billing\Models\CreditNote;
 use Diji\Billing\Resources\CreditNoteResource;
 use Diji\Billing\Services\PdfService;
@@ -195,43 +196,56 @@ class CreditNoteController extends Controller
     public function batchPdf(Request $request)
     {
         $ids = $request->input('ids');
+        $email = $request->input('email');
 
         if (!is_array($ids) || empty($ids)) {
             return response()->json(['error' => 'Invalid or empty ID list.'], 400);
         }
 
-        $pdfFiles = array();
-        $badStatusFiles = [];
+        try {
+            $badStatusFiles = CreditNote::whereIn('id', $ids)
+                ->where('status', 'draft')
+                ->pluck('id')
+                ->toArray();
 
-        foreach ($ids as $id) {
-            try {
-                $credit_notes = CreditNote::findOrFail($id)->load('items');
+            $goodStatusFiles = array_diff($ids, $badStatusFiles);
 
-                if ($credit_notes->status === 'draft') {
-                    $badStatusFiles[] = $credit_notes->identifier;
-                    continue;
-                }
+            //ProcessBatchCreditNotesEmail::dispatch($goodStatusFiles);
+            /*$mailService = new Brevo();
+            $pdfFiles = [];
 
-                $fileName = 'facture-' . str_replace("/", "-", $credit_notes->identifier) . '.pdf';
+            foreach($goodStatusFiles as $id) { //TODO Faire une gestion d'erreur
+                $credit_note = CreditNote::findOrFail($id)->load('items');
 
-                $pdfString = PdfService::generateCreditNote($credit_notes);
+                $fileName = 'facture-' .str_replace("/", "-", $credit_note->identifier);
+                $pdfString = PdfService::generateCreditNote($credit_note);
 
                 $pdfFiles[$fileName] = $pdfString;
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    "message" => $e->getMessage()
-                ], 422);
             }
-        }
 
-        try {
             $zipPath = ZipService::createTempZip($pdfFiles);
 
-            return response()->download($zipPath)->deleteFileAfterSend(true);
+            $mailService->to($email)
+                ->subject('Factures')
+                ->content('Voici vos factures')
+                ->attachments([
+                    [
+                        'url' => $zipPath,
+                        'name' => 'factures.zip',
+                    ],
+                ])
+                ->send();
+            // Suppression du fichier zip temporaire
+            ZipService::deleteTempZip($zipPath);*/
+
+            return response()->json([
+                'sent' => $goodStatusFiles,
+                'skipped' => $badStatusFiles,
+                'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                "message" => $e->getMessage()
+                "message" => "Some credit notes do not exist. " . $e->getMessage()
             ], 422);
         }
     }
