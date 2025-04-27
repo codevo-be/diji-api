@@ -70,14 +70,14 @@
         </table>
     </div>
 
-    <div style="margin-top:40px; margin-bottom: 100px;">
-        <div style="margin-bottom: 60px;">
+    <div style="margin-top:30px; margin-bottom: 60px;">
+        <div style="margin-bottom: 20px;">
             <h2 style="font-size:36px; font-weight: bold;">
                 <span style="">Devis </span>
                 <span style="color: #A5A5A5;">{!! $identifier !!}</span>
             </h2>
 
-            <table style="font-size:14px; margin-top: 20px;">
+            <table style="font-size:14px; margin-top: 15px;">
                 <tbody>
                 <tr>
                     <td style="padding-right: 10px;">Date</td>
@@ -94,37 +94,9 @@
             </table>
         </div>
 
-        <table style="width: 100%; margin-bottom: 40px;">
-            <thead>
-            <tr>
-                <th style="padding: 10px 15px; font-size:9px; text-align: left; color:black;">Nom</th>
-                <th style="padding: 10px 15px; font-size:9px; text-align: left; color:black;">Quantité</th>
-                <th style="padding: 10px 15px; font-size:9px; text-align: left; color:black;">Prix</th>
-                <th style="padding: 10px 15px; font-size:9px; text-align: left; color:black;">TVA</th>
-                <th style="padding: 10px 15px; font-size:9px; text-align: left; color:black;">Total HT</th>
-                <th style="padding: 10px 15px; font-size:9px; text-align: left; color:black;">Total TVAC</th>
-            </tr>
-            </thead>
-            <tbody>
-                @foreach(($items ?? []) as $item)
-                    <tr>
-                        <td style="padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! $item['name'] !!}</td>
+        @include('billing::components.items')
 
-                        @if(isset($item['quantity'])) <td style="padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! $item['quantity'] !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
-
-                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($item['retail']['subtotal']) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
-
-                        @if(isset($item['vat'])) <td style="padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! $item['vat'] !!}%</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
-
-                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($item['retail']['subtotal'] * ($item['quantity'] ?? 1)) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
-
-                        @if(isset($item['retail'])) <td style="white-space: nowrap; padding: 6px 15px; font-size: 10px; border-top: 1px solid #F2F2F2;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($item['retail']['total'] * ($item['quantity'] ?? 1)) !!}</td> @else <td style="border-top: 1px solid #F2F2F2;"></td> @endif
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <div style="margin-top:40px; width:40%; margin-left:auto;">
+        <div style="width:40%; margin-left:auto;">
             <table style="font-size: 14px; page-break-inside: avoid;">
                 <tbody>
                 <tr>

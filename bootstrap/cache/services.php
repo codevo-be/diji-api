@@ -40,7 +40,9 @@
     36 => 'Diji\\Billing\\BillingServiceProvider',
     37 => 'Diji\\Contact\\ContactServiceProvider',
     38 => 'Diji\\Team\\TeamServiceProvider',
-    39 => 'Diji\\Module\\ModuleServiceProvider',
+    39 => 'Diji\\Task\\TaskServiceProvider',
+    40 => 'Diji\\Project\\ProjectServiceProvider',
+    41 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'eager' => 
   array (
@@ -68,7 +70,9 @@
     21 => 'Diji\\Billing\\BillingServiceProvider',
     22 => 'Diji\\Contact\\ContactServiceProvider',
     23 => 'Diji\\Team\\TeamServiceProvider',
-    24 => 'Diji\\Module\\ModuleServiceProvider',
+    24 => 'Diji\\Task\\TaskServiceProvider',
+    25 => 'Diji\\Project\\ProjectServiceProvider',
+    26 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'deferred' => 
   array (
