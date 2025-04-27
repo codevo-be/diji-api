@@ -31,7 +31,7 @@ class StoreBillingItemRequest extends FormRequest
             return array_merge($common, [
                 'quantity' => 'required|numeric|min:0',
                 'vat' => 'required|numeric|min:0|max:100',
-                'cost' => 'sometimes|array',
+                'cost' => 'sometimes|array|nullable',
                 'cost.subtotal' => 'sometimes|numeric|min:0',
                 'retail' => 'required|array',
                 'retail.subtotal' => 'required|numeric|min:0',

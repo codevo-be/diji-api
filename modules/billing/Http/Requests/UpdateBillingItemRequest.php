@@ -32,7 +32,7 @@ class UpdateBillingItemRequest extends FormRequest
             return array_merge($common, [
                 'quantity' => 'sometimes|numeric|min:0',
                 'vat' => 'sometimes|numeric|min:0|max:100',
-                'cost' => 'sometimes|array',
+                'cost' => 'sometimes|array|nullable',
                 'cost.subtotal' => 'sometimes|numeric|min:0',
                 'retail' => 'sometimes|array',
                 'retail.subtotal' => 'sometimes|numeric|min:0',
