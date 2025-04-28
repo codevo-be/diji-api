@@ -205,16 +205,19 @@ class CreditNoteController extends Controller
         try {
             $badStatusFiles = CreditNote::whereIn('id', $ids)
                 ->where('status', 'draft')
-                ->pluck('id')
+                ->get(['id'])
+                ->mapWithKeys(function ($item) {
+                    return [$item->id => "Impossible de print le document avec le statut courant."];
+                })
                 ->toArray();
 
-            $goodStatusFiles = array_diff($ids, $badStatusFiles);
+            $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
 
             ProcessBatchCreditNotesEmail::dispatch($goodStatusFiles, $email);
 
             return response()->json([
                 'sent' => $goodStatusFiles,
-                'skipped' => $badStatusFiles,
+                'errors' => $badStatusFiles,
                 'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
             ]);
         } catch (\Exception $e) {
