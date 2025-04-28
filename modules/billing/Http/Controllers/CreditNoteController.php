@@ -213,7 +213,36 @@ class CreditNoteController extends Controller
 
             $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
 
-            ProcessBatchCreditNotesEmail::dispatch($goodStatusFiles, $email);
+            $pdfFiles = [];
+
+            foreach($goodStatusFiles as $id) { //TODO Faire une gestion d'erreur
+                $credit_note = CreditNote::findOrFail($id)->load('items');
+
+                $fileName = 'facture-' . str_replace("/", "-", $credit_note->identifier .'.pdf');
+                $pdfString = PdfService::generateCreditNote($credit_note);
+
+                $pdfFiles[$fileName] = $pdfString;
+            }
+
+            $zipPath = ZipService::createTempZip($pdfFiles);
+            $zipContent = file_get_contents($zipPath);
+
+            //ProcessBatchCreditNotesEmail::dispatch($zipContent, $email);
+
+            $mailService = new Brevo();
+
+            $mailService->to($email)
+                ->subject('Factures')
+                ->content('Voici vos factures')
+                ->attachments([
+                    [
+                        'output' => $zipContent,
+                        'filename' => 'factures.zip',
+                    ],
+                ])
+                ->send();
+
+            ZipService::deleteTempZip($zipPath);
 
             return response()->json([
                 'sent' => $goodStatusFiles,

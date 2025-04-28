@@ -43,7 +43,7 @@ class ZipService
     public static function deleteTempZip(string $zipPath): void
     {
         if (file_exists($zipPath)) {
-            Storage::delete($zipPath);
+            unlink($zipPath);
         }
     }
 }
