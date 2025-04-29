@@ -12,7 +12,7 @@ class ZipService
      */
     public static function createZip(array $files, string $zipPath): void
     {
-        $zip = new ZipArchive;
+        $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
             throw new \Exception('Could not create ZIP file.');

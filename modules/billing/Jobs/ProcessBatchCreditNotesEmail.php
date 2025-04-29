@@ -14,23 +14,32 @@ class ProcessBatchCreditNotesEmail implements ShouldQueue
 {
     use Dispatchable, Queueable;
 
-    protected string $content;
+    protected array $validIds;
     protected string $email;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(string $content, string $email)
+    public function __construct(array $validIds, string $email)
     {
-        $this->content = $content;
+        $this->validIds = $validIds;
         $this->email = $email;
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
+        $pdfFiles = [];
+
+        foreach($this->validIds as $id) { //TODO Faire une gestion d'erreur
+            $credit_note = CreditNote::findOrFail($id)->load('items');
+
+            $fileName = 'facture-' . str_replace("/", "-", $credit_note->identifier .'.pdf');
+            $pdfString = PdfService::generateCreditNote($credit_note);
+
+            $pdfFiles[$fileName] = $pdfString;
+        }
+
+
+        $zipPath = ZipService::createTempZip($pdfFiles);
+        $zipContent = file_get_contents($zipPath);
+
         $mailService = new Brevo();
 
         $mailService->to($this->email)
@@ -38,10 +47,12 @@ class ProcessBatchCreditNotesEmail implements ShouldQueue
             ->content('Voici vos factures')
             ->attachments([
                 [
-                    'output' => $this->content,
+                    'output' => $zipContent,
                     'filename' => 'factures.zip',
                 ],
             ])
             ->send();
+
+        ZipService::deleteTempZip($zipPath);
     }
 }
