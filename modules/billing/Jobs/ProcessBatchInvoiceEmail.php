@@ -4,51 +4,54 @@ namespace Diji\Billing\Jobs;
 
 use App\Services\Brevo;
 use App\Services\ZipService;
-use Diji\Billing\Models\CreditNote;
+use Diji\Billing\Models\Invoice;
 use Diji\Billing\Services\PdfService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ProcessBatchCreditNotesEmail implements ShouldQueue
+class ProcessBatchInvoiceEmail implements ShouldQueue
 {
-    use Dispatchable, Queueable;
+    use Queueable, Dispatchable;
 
     protected array $validIds;
     protected string $email;
 
+    /**
+     * Create a new job instance.
+     */
     public function __construct(array $validIds, string $email)
     {
         $this->validIds = $validIds;
         $this->email = $email;
     }
 
+    /**
+     * Execute the job.
+     */
     public function handle(): void
     {
-        $pdfFiles = [];
+        $pdfFiles = array();
 
-        foreach($this->validIds as $id) { //TODO Faire une gestion d'erreur
-            $credit_note = CreditNote::findOrFail($id)->load('items');
+        foreach($this->validIds as $id) {
+            $invoice = Invoice::findOrFail($id)->load('items');
 
-            $fileName = 'credit-note-' . str_replace("/", "-", $credit_note->identifier .'.pdf');
-            $pdfString = PdfService::generateCreditNote($credit_note);
+            $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
+            $pdfString = PdfService::generateInvoice($invoice);
 
             $pdfFiles[$fileName] = $pdfString;
         }
-
-
         $zipPath = ZipService::createTempZip($pdfFiles);
         $zipContent = file_get_contents($zipPath);
 
         $mailService = new Brevo();
-
         $mailService->to($this->email)
-            ->subject('Notes de crédit')
-            ->content('Voici vos notes de crédit')
+            ->subject('Factures')
+            ->content('Voici vos factures')
             ->attachments([
                 [
                     'output' => $zipContent,
-                    'filename' => 'credit_notes.zip',
+                    'filename' => 'factures.zip',
                 ],
             ])
             ->send();

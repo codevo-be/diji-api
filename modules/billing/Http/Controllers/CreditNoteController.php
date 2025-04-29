@@ -218,7 +218,7 @@ class CreditNoteController extends Controller
             return response()->json([
                 'sent' => $goodStatusFiles,
                 'errors' => $badStatusFiles,
-                'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
+                'message' => 'Traitement lancé, vous recevrez un email avec les notes de crédits valides.'
             ]);
         } catch (\Exception $e) {
             return response()->json([

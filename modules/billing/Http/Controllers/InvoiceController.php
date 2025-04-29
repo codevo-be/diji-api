@@ -9,6 +9,7 @@ use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
+use Diji\Billing\Jobs\ProcessBatchInvoiceEmail;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Diji\Billing\Services\PdfService;
@@ -151,40 +152,32 @@ class InvoiceController extends Controller
     public function batchPdf(Request $request)
     {
         $ids = $request->input('ids');
+        $email = $request->input('email');
 
         if (!is_array($ids) || empty($ids)) {
             return response()->json(['error' => 'Invalid or empty ID list.'], 400);
         }
 
-        $pdfFiles = array();
-        $badStatusFiles = array();
-
-        foreach ($ids as $id) {
-            try {
-                $invoice = Invoice::findOrFail($id)->load('items');
-
-                if ($invoice->status === 'draft') {
-                    $badStatusFiles[] = $invoice->identifier;
-                    continue;
-                }
-
-                $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
-
-                $pdfString = PdfService::generateInvoice($invoice);
-
-                $pdfFiles[$fileName] = $pdfString;
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    "message" => $e->getMessage()
-                ], 422);
-            }
-        }
-
         try {
-            $zipPath = ZipService::createTempZip($pdfFiles);
+            $badStatusFiles = Invoice::whereIn('id', $ids)
+                ->where('status', 'draft')
+                ->get('id')
+                ->mapWithKeys(function ($item) {
+                    return [
+                        $item->id => "Impossible de print le document avec le statut courant."
+                    ];
+                })
+                ->toArray();
 
-            return response()->download($zipPath)->deleteFileAfterSend(true);
+            $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
+
+            ProcessBatchInvoiceEmail::dispatch($goodStatusFiles, $email);
+
+            return response()->json([
+                'sent' => $goodStatusFiles,
+                'errors' => $badStatusFiles,
+                'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()

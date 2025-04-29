@@ -4,15 +4,15 @@ namespace Diji\Billing\Jobs;
 
 use App\Services\Brevo;
 use App\Services\ZipService;
-use Diji\Billing\Models\CreditNote;
+use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Services\PdfService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ProcessBatchCreditNotesEmail implements ShouldQueue
+class ProcessBatchSelfInvoiceEmail implements ShouldQueue
 {
-    use Dispatchable, Queueable;
+    use Queueable, Dispatchable;
 
     protected array $validIds;
     protected string $email;
@@ -25,30 +25,27 @@ class ProcessBatchCreditNotesEmail implements ShouldQueue
 
     public function handle(): void
     {
-        $pdfFiles = [];
+        $pdfFiles = array();
 
-        foreach($this->validIds as $id) { //TODO Faire une gestion d'erreur
-            $credit_note = CreditNote::findOrFail($id)->load('items');
+        foreach ($this->validIds as $id) {
+            $selfInvoice = SelfInvoice::findOrFail($id)->load('items');
 
-            $fileName = 'credit-note-' . str_replace("/", "-", $credit_note->identifier .'.pdf');
-            $pdfString = PdfService::generateCreditNote($credit_note);
-
+            $fileName = 'auto-facturation-' . str_replace("/", "-", $selfInvoice->identifier) . '.pdf';
+            $pdfString = PdfService::generateSelfInvoice($selfInvoice);
             $pdfFiles[$fileName] = $pdfString;
         }
-
 
         $zipPath = ZipService::createTempZip($pdfFiles);
         $zipContent = file_get_contents($zipPath);
 
         $mailService = new Brevo();
-
         $mailService->to($this->email)
-            ->subject('Notes de crédit')
-            ->content('Voici vos notes de crédit')
+            ->subject('Auto-facturations')
+            ->content('Voici vos auto-facturations')
             ->attachments([
                 [
                     'output' => $zipContent,
-                    'filename' => 'credit_notes.zip',
+                    'filename' => 'auto-facturations.zip',
                 ],
             ])
             ->send();
