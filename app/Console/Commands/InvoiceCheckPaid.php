@@ -42,7 +42,9 @@ class InvoiceCheckPaid extends Command
                               due_date,
                               DATE_ADD(due_date, INTERVAL 7 DAY),
                               DATE_ADD(due_date, INTERVAL 1 MONTH)
-                    );";
+                              )
+                        AND status = 'pending'
+                        AND check_paid_notification = true;";
 
             $invoices = DB::select($sql);
 
@@ -55,7 +57,7 @@ class InvoiceCheckPaid extends Command
 
                 $mailService
                     ->to($email)
-                    ->subject('Factures non paiées')
+                    ->subject('Factures non payées')
                     ->content("Paie ta facture")
                     ->send();
             }

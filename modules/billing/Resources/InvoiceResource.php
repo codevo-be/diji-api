@@ -26,6 +26,7 @@ class InvoiceResource extends JsonResource
             'recipient'                 => $this->recipient,
             'date'                      => $this->date,
             'due_date'                  => $this->due_date,
+            'check_paid_notification'   => $this->check_paid_notification,
             'payment_date'              => $this->payment_date,
             'structured_communication'  => $this->structured_communication, // todo format with +++
             'subtotal'                  => $this->subtotal,
