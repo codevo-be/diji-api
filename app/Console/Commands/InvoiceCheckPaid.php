@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Services\Brevo;
 use Carbon\Carbon;
 use Diji\Billing\Models\Invoice;
+use Diji\Billing\Models\InvoiceEmailLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -36,7 +37,8 @@ class InvoiceCheckPaid extends Command
         foreach ($tenants as $tenant) {
             $this->info("Traitement du tenant : " . $tenant->name);
 
-            $sql = "select *
+            $sql = "select *,
+                        DATEDIFF(CAST(NOW() AS DATE), due_date) as days_diff
                     from {$tenant->name}.invoices
                     where CAST(NOW() AS DATE) IN (
                               due_date,
@@ -50,16 +52,41 @@ class InvoiceCheckPaid extends Command
 
             foreach ($invoices as $invoice) {
                 $recipient = json_decode($invoice->recipient, true);
-                $email = $recipient['email'] ??  null;
+                $email = $recipient['email'] ?? null;
                 if ($email === null) continue;
 
                 $this->info($invoice->id);
+                $succeed = false;
+                $messageError = null;
 
-                $mailService
-                    ->to($email)
-                    ->subject('Factures non payées')
-                    ->content("Paie ta facture")
-                    ->send();
+                try {
+
+                    $mailService
+                        ->to($email)
+                        ->subject('Factures non payées')
+                        ->content("Paie ta facture")
+                        ->send();
+
+                    $succeed = true;
+                } catch (\Exception $e) {
+                    $this->error($e->getMessage());
+                    $messageError = $e->getMessage();
+                } finally {
+                    DB::insert("
+                            INSERT INTO {$tenant->name}.invoice_email_logs
+                                (invoice_id, recipient_email, sent_at, extended_date, success, error_message, created_at, updated_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            ", [
+                        $invoice->id,
+                        $email,
+                        now(),
+                        $invoice->days_diff,
+                        $succeed,
+                        $messageError,
+                        now(),
+                        now()
+                    ]);
+                }
             }
         }
     }
