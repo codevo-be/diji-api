@@ -24,6 +24,7 @@ class TaskItemResource extends JsonResource
             'status' => $this->status,
             'priority' => $this->priority,
             'position' => $this->position,
+            'tracked_time' => $this->tracked_time,
         ];
     }
 }

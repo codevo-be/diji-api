@@ -19,7 +19,8 @@ class StoreTaskItemRequest extends FormRequest
             'description' => 'nullable|string',
             'status' => ['sometimes', 'string'],
             'priority' => 'sometimes|integer|min:1|max:5',
-            'position' => 'sometimes|integer'
+            'position' => 'sometimes|integer',
+            'tracked_time' => 'sometimes|integer',
         ];
     }
 
@@ -43,6 +44,7 @@ class StoreTaskItemRequest extends FormRequest
             'priority.max' => 'La priorité doit être au maximum 5.',
 
             'order.integer' => 'L’ordre doit être un nombre entier.',
+            'tracked_time.integer' => 'Le temps suivi doit être un nombre entier.',
         ];
     }
 }
