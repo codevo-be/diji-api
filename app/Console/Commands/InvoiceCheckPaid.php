@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Meta;
 use App\Models\Tenant;
 use App\Services\Brevo;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Models\InvoiceEmailLog;
@@ -60,11 +62,40 @@ class InvoiceCheckPaid extends Command
                 $messageError = null;
 
                 try {
+                    if ($invoice->days_diff === 0) {
+                        $subject = "Rappel : Votre facture est arrivée à échéance";
+                        $body = "Bonjour,\n\nNous vous informons que votre facture n°{$invoice->identifier} € est arrivée à échéance aujourd’hui ({$invoice->due_date}).\n\nMerci de procéder au règlement dans les plus brefs délais.";
+                    } else if ($invoice->days_diff === 7) {
+                        $subject = 'Relance : Facture impayée depuis 7 jours';
+                        $body = "Bonjour,\n\nNous constatons que la facture n°{$invoice->identifier}, n’a pas encore été réglée alors qu’elle était due le {$invoice->due_date}.\n\nMerci de bien vouloir régulariser votre situation dans les meilleurs délais.";
+                    } else if ($invoice->days_diff === 30) {
+                        $subject = 'Dernier rappel : Facture impayée depuis plus de 30 jours';
+                        $body = "Bonjour,\n\nMalgré nos précédentes relances, la facture n°{$invoice->identifier} reste impayée depuis plus de 30 jours.\n\nNous vous invitons à régler cette facture sans délai afin d’éviter d’éventuelles pénalités.";
+                    } else {
+                        continue;
+
+                    }
+
+                    $qrcode = \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication);
+                    $logo = Meta::getValue('tenant_billing_details')['logo'];
+
+                    $pdf = PDF::loadView('billing::invoice', [
+                        ...$invoice->toArray(), // TODO Vérifier si ceci fonctionne avec le select qui prend invoice + days_diff de sql
+                        "logo" => $logo,
+                        "qrcode" => $qrcode
+                    ]);
+
+                    $mailService->attachments([
+                        [
+                            "filename" => "facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf",
+                            "output" => $pdf->output()
+                        ]
+                    ]);
 
                     $mailService
                         ->to($email)
-                        ->subject('Factures non payées')
-                        ->content("Paie ta facture")
+                        ->subject( $subject)
+                        ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $body])
                         ->send();
 
                     $succeed = true;
