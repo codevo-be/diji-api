@@ -14,7 +14,7 @@
     </tr>
 @elseif($item["type"] === "text")
     <tr>
-        <td style="padding: 6px 15px; font-size: 12px;">{!! nl2br($item['name']) !!}</td>
+        <td style="padding: 6px 15px; font-size: 10px;">{!! nl2br($item['name']) !!}</td>
 
         <td></td>
 
