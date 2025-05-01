@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Requests\PostUpload;
 use App\Http\Requests\StoreMetaRequest;
 use App\Models\Meta;
 use App\Models\Tenant;
@@ -41,6 +42,21 @@ class UploadController extends Controller
         return response()->json([
             "data" => $upload
         ]);
+    }
+
+    public function storeExpenseFiles(PostUpload $request)
+    {
+        $data = $request->validated();
+        $test = [];
+        foreach ($data['files'] as $file) {
+            $originalName = $file->getClientOriginalName();
+            $test[] = $originalName;
+        }
+
+        return response()->json([
+            "name" => $data['name'],
+            "test" => $test,
+        ], 200);
     }
 
     public function show(string $tenant, string $year, string $month, string $filename)

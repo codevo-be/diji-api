@@ -11,6 +11,7 @@ Route::middleware(['auth:api','auth.tenant'])->prefix('auth')->group(function ()
 });
 
 Route::middleware(['auth:api','auth.tenant'])->group(function () {
+    Route::post('/uploads/expense', [\App\Http\Controllers\UploadController::class, 'storeExpenseFiles']);
     Route::resource('/metas', \App\Http\Controllers\MetaController::class)->only(["show","update"]);
     Route::resource('/uploads', \App\Http\Controllers\UploadController::class)->only('store');
 });
