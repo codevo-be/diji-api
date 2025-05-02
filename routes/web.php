@@ -7,4 +7,4 @@ Route::get('/', function () {
 });
 
 /* Upload */
-Route::get('/{tenant}/uploads/{year}/{month}/{filename}', [\App\Http\Controllers\UploadController::class, 'show']);
+//Route::get('/{tenant}/uploads/{year}/{month}/{filename}', [\App\Http\Controllers\UploadController::class, 'show']);

@@ -18,6 +18,17 @@ class UploadService
         return $models[$modelType] ?? null;
     }
 
+    public function getFiles(string $tenantId, string $model, string $modelId)
+    {
+        $modelClass = $this->getModelClass($model);
+
+        // Récupérer tous les fichiers liés à ce modèle
+        return Upload::where('model_type', $modelClass)
+            ->where('model_id', $modelId)
+            ->get(['id', 'filename', 'mime_type', 'path'])
+            ->toArray();
+    }
+
     public function save($file, string $tenantId, string $model, $modelId)
     {
         //Suppression de toutes les anciennes occurrences
@@ -47,7 +58,6 @@ class UploadService
     }
 
     public function delete(string $model, string $modelId): void
-        /* TODO Future amélioration : vérifier si le fichier créé est l'identique du futur supprimé*/
     {
         $modelClass = $this->getModelClass($model);
 

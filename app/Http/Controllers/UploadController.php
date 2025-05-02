@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Requests\GetModelUpload;
 use App\Http\Requests\PostUpload;
 use App\Http\Requests\StoreMetaRequest;
 use App\Models\Meta;
@@ -63,8 +64,6 @@ class UploadController extends Controller
 
         $createdFiles = [];
 
-        $this->uploadService->delete($model, $modelId);
-
         $files = $data['files'] ?? [];
         foreach ($files as $file) {
             $createdFiles[] = $this->uploadService->save($file, $tenant->id, $model, $modelId);
@@ -73,34 +72,51 @@ class UploadController extends Controller
         return response()->json([
             "message" => "Les fichiers ont été téléchargés avec succès",
             "data" => $createdFiles,
-        ], 200);
+        ], 201);
     }
 
-    public function show(string $tenant, string $year, string $month, string $filename)
+    public function show(Request $request, string $model, string $modelId): JsonResponse
     {
-       /* $user = Auth::user();
+        $tenant = tenant();
 
-        if(!$user){
-            return response()->json([
-                "message" => "Vous n'êtes pas autorisé à accéder à ce fichier !",
-                "user" => $user
-            ]);
-        }*/
+        $files = $this->uploadService->getFiles($tenant->id, $model, $modelId);
 
-        $path = storage_path("app/private/{$tenant}/uploads");
-
-        if (!file_exists("{$path}/{$year}/{$month}/{$filename}")) {
-            return response()->json(['error' => "Le fichier n'existe pas"], 404);
-        }
-
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => $path,
-            'visibility' => 'private',
+        return response()->json([
+            "message" => "Tried to get files",
+            "files" => $files,
         ]);
-
-        $filePath = $disk->path("{$year}/{$month}/{$filename}");
-
-        return response()->file($filePath);
     }
+
+    public function destroy(Request $request)
+    {
+
+    }
+
+//    public function show(string $tenant, string $year, string $month, string $filename)
+//    {
+//       /* $user = Auth::user();
+//
+//        if(!$user){
+//            return response()->json([
+//                "message" => "Vous n'êtes pas autorisé à accéder à ce fichier !",
+//                "user" => $user
+//            ]);
+//        }*/
+//
+//        $path = storage_path("app/private/{$tenant}/uploads");
+//
+//        if (!file_exists("{$path}/{$year}/{$month}/{$filename}")) {
+//            return response()->json(['error' => "Le fichier n'existe pas"], 404);
+//        }
+//
+//        $disk = Storage::build([
+//            'driver' => 'local',
+//            'root' => $path,
+//            'visibility' => 'private',
+//        ]);
+//
+//        $filePath = $disk->path("{$year}/{$month}/{$filename}");
+//
+//        return response()->file($filePath);
+//    }
 }
