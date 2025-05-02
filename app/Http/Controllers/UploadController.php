@@ -9,6 +9,7 @@ use App\Models\Meta;
 use App\Models\Tenant;
 use App\Models\Upload;
 use App\Resources\MetaResource;
+use App\Services\UploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,13 @@ use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
+    private UploadService $uploadService;
+
+    public function __construct()
+    {
+        $this->uploadService = new UploadService();
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -48,15 +56,18 @@ class UploadController extends Controller
     public function storeExpenseFiles(PostUpload $request): JsonResponse
     {
         $data = $request->validated();
-        $test = [];
+
+        $tenant = tenant();
+
+        $createdFiles = [];
+
         foreach ($data['files'] as $file) {
-            $originalName = $file->getClientOriginalName();
-            $test[] = $originalName;
+            $createdFiles[] = $this->uploadService->save($file, $tenant->id, $data['model'], $data['model_id']);
         }
 
         return response()->json([
-            "name" => $data['name'],
-            "test" => $test,
+            "message" => "Les fichiers ont été téléchargés avec succès",
+            "data" => $createdFiles,
         ], 200);
     }
 
@@ -66,7 +77,7 @@ class UploadController extends Controller
 
         if(!$user){
             return response()->json([
-                "message" => "Vous n'êtes pas autorisé à accéder a ce fichier !",
+                "message" => "Vous n'êtes pas autorisé à accéder à ce fichier !",
                 "user" => $user
             ]);
         }*/
