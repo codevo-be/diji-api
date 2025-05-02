@@ -124,7 +124,7 @@ class SelfInvoiceController extends Controller
             ]);
 
             $instanceBrevo
-                ->to($request->to)
+                ->to($request->to, $self_invoice->recipient["name"])
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["body" => $request->body])

@@ -39,7 +39,7 @@ class EmailDebug extends Command
             tenancy()->initialize("gvt");
             $brevo = new Brevo();
 
-            $brevo->to("maxime@codevo.be");
+            $brevo->to("maxime@codevo.be", "Maxime");
             $brevo->subject("test API");
             $brevo->content("test html");
 

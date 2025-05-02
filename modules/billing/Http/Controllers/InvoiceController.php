@@ -246,7 +246,7 @@ class InvoiceController extends Controller
             ]);
 
             $instanceBrevo
-                ->to($request->to)
+                ->to($request->to, $invoice->recipient["name"])
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
                 ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $request->body])
