@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PostUpload extends FormRequest
 {
@@ -14,19 +15,50 @@ class PostUpload extends FormRequest
 
     public function rules(): array
     {
+        $acceptedTypes = array(
+            "expense",
+            "invoice"
+        );
+
         return [
+            'model' => ["required", "string", Rule::in($acceptedTypes)],
+            'model_id' => 'required|integer',
             'name' => 'required|string|max:255',
             'files' => "required|array",
-            //'files.*' => "mimes:pdf,jpeg,png",
+            'files.*' => "mimes:pdf,jpeg,png",
         ];
     }
 
-    public function message(): array
+    private function getModelClass(string $modelType): ?string
+    {
+        $models = [
+            'expense' => \Diji\Billing\Models\Transaction::class,
+            'invoice' => \Diji\Billing\Models\Invoice::class,
+        ];
+
+        return $models[$modelType] ?? null;
+    }
+
+    public function messages(): array
     {
         return [
             'name.required' => 'Le nom est obligatoire',
-            //'files.required' => "Vous devez télécharger des fichiers."
+            'files.required' => "Vous devez télécharger des fichiers."
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $modelType = $this->input('model');
+            $modelId = $this->input('model_id');
+
+            $modelClass = $this->getModelClass($modelType);
+
+            if ($modelClass && ! $modelClass::find($modelId)) {
+                $validator->errors()->add('model_id', "Aucun enregistrement trouvé pour {$modelType} avec l'ID {$modelId}.");
+            }
+        });
     }
 
 }

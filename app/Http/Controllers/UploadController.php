@@ -9,6 +9,7 @@ use App\Models\Meta;
 use App\Models\Tenant;
 use App\Models\Upload;
 use App\Resources\MetaResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,7 @@ class UploadController extends Controller
         ]);
     }
 
-    public function storeExpenseFiles(PostUpload $request)
+    public function storeExpenseFiles(PostUpload $request): JsonResponse
     {
         $data = $request->validated();
         $test = [];
