@@ -20,6 +20,7 @@ class UpdateTaskItemRequest extends FormRequest
             'status' => ['sometimes', 'string'],
             'priority' => 'sometimes|integer|min:1|max:5',
             'position' => 'sometimes|integer',
+            'tracked_time' => 'sometimes|integer',
         ];
     }
 
@@ -36,6 +37,7 @@ class UpdateTaskItemRequest extends FormRequest
             'priority.min' => 'La priorité doit être au minimum 1.',
             'priority.max' => 'La priorité doit être au maximum 5.',
             'position.integer' => 'L’ordre doit être un nombre entier.',
+            'tracked_time.integer' => 'Le temps suivi doit être un nombre entier.',
         ];
     }
 }
