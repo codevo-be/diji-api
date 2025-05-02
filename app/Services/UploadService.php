@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Upload;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -57,7 +59,27 @@ class UploadService
         ]);
     }
 
-    public function delete(string $model, string $modelId): void
+    /**
+     * @throws Exception
+     */
+    public function delete($uploadId): void
+    {
+        try {
+            $upload = Upload::findOrFail($uploadId);
+            $path = $upload->path;
+            $folderPath = dirname($path);
+
+            // Supprimer la ligne de la base de données
+            $upload->delete();
+            // Supprimer le fichier du disque
+            Storage::disk('uploads')->delete($path);
+            $this->deleteEmptyParentDirectories($folderPath);
+        } catch (ModelNotFoundException $exception) {
+            throw new Exception("Impossible de trouver le fichier avec l'ID {$uploadId}.");
+        }
+    }
+
+    public function deleteFromModel(string $model, string $modelId): void
     {
         $modelClass = $this->getModelClass($model);
 

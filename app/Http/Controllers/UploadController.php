@@ -27,7 +27,7 @@ class UploadController extends Controller
         $this->uploadService = new UploadService();
     }
 
-    public function store(Request $request)
+    /*public function store(Request $request)
     {
         $request->validate([
             'file' => 'required|file'
@@ -52,9 +52,9 @@ class UploadController extends Controller
         return response()->json([
             "data" => $upload
         ]);
-    }
+    }*/
 
-    public function storeExpenseFiles(PostUpload $request): JsonResponse
+    public function store(PostUpload $request): JsonResponse
     {
         $data = $request->validated();
 
@@ -87,9 +87,16 @@ class UploadController extends Controller
         ]);
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request, string $uploadId)
     {
-
+        try {
+            $this->uploadService->delete($uploadId);
+            return response()->noContent();
+        } catch (\Exception $exception) {
+            return response()->json([
+                "message" => "Erreur lors de la suppression du fichier : " . $exception->getMessage(),
+            ], 500);
+        }
     }
 
 //    public function show(string $tenant, string $year, string $month, string $filename)
