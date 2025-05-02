@@ -58,11 +58,16 @@ class UploadController extends Controller
         $data = $request->validated();
 
         $tenant = tenant();
+        $model = $data['model'];
+        $modelId = $data['model_id'];
 
         $createdFiles = [];
 
-        foreach ($data['files'] as $file) {
-            $createdFiles[] = $this->uploadService->save($file, $tenant->id, $data['model'], $data['model_id']);
+        $this->uploadService->delete($model, $modelId);
+
+        $files = $data['files'] ?? [];
+        foreach ($files as $file) {
+            $createdFiles[] = $this->uploadService->save($file, $tenant->id, $model, $modelId);
         }
 
         return response()->json([

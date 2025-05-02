@@ -24,8 +24,8 @@ class PostUpload extends FormRequest
             'model' => ["required", "string", Rule::in($acceptedTypes)],
             'model_id' => 'required|integer',
             'name' => 'required|string|max:255',
-            'files' => "required|array",
-            'files.*' => "mimes:pdf,jpeg,png",
+            'files' => "nullable|array",
+            'files.*' => "file|mimes:pdf,jpeg,png",
         ];
     }
 
@@ -43,7 +43,9 @@ class PostUpload extends FormRequest
     {
         return [
             'name.required' => 'Le nom est obligatoire',
-            'files.required' => "Vous devez télécharger des fichiers."
+            "model.required" => "Le type de modèle est obligatoire",
+            "model_id.required" => "L'ID du modèle est obligatoire",
+            "files.*.mimes" => "Le fichier doit être au format PDF, JPEG ou PNG",
         ];
     }
 

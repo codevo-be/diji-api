@@ -21,8 +21,6 @@ class UploadService
     public function save($file, string $tenantId, string $model, $modelId)
     {
         //Suppression de toutes les anciennes occurrences
-        $this->delete($model, $modelId);
-
         $year = Carbon::now()->year;
         $month = Carbon::now()->month;
 
@@ -48,7 +46,7 @@ class UploadService
         ]);
     }
 
-    public function delete(string $model, string $modelId)
+    public function delete(string $model, string $modelId): void
         /* TODO Future amélioration : vérifier si le fichier créé est l'identique du futur supprimé*/
     {
         $modelClass = $this->getModelClass($model);
