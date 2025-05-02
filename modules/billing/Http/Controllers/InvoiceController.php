@@ -249,32 +249,53 @@ class InvoiceController extends Controller
     public function sendToPeppol(int $invoice_id)
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items', 'contact');
-        $payload = PeppolPayloadDTOBuilder::fromInvoice(new InvoiceResource($invoice));
+        $payloads = PeppolPayloadDTOBuilder::fromInvoice(new InvoiceResource($invoice));
 
-        $xml = (new PeppolBuilder())
-            ->withPayload($payload)
-            ->build();
+        foreach ($payloads as $index => $payload) {
+            $identifier = $payload->receiver->peppolIdentifier ?? 'inconnu';
 
-        // Juste pour les tests
-        $filename = 'aaaaa.xml';
-        Storage::disk('local')->put("peppol/{$filename}", $xml);
+            if (str_starts_with($identifier, '0088')) {
+                info("Tentative $index : Test avec identifiant personnalisé ($identifier)");
+            } elseif (str_starts_with($identifier, '0208')) {
+                info("Tentative $index : Test avec numéro d’entreprise ($identifier)");
+            } elseif (str_starts_with($identifier, '9925')) {
+                info("Tentative $index : Test avec numéro de TVA ($identifier)");
+            } else {
+                info("Tentative $index : Test avec identifiant inconnu ($identifier)");
+            }
 
-        $result = (new PeppolService())->sendInvoice($xml, $filename);
+            $xml = (new PeppolBuilder())
+                ->withPayload($payload)
+                ->build();
 
-        $internalResponse = json_decode($result['response'] ?? '', true);
+            $filename = "peppol_try_{$index}.xml";
+            Storage::disk('local')->put("peppol/{$filename}", $xml);
 
-        if (!isset($internalResponse['status']) || $internalResponse['status'] !== 'OK') {
-            return response()->json([
-                'error' => true,
-                'message' => $internalResponse['message'] ?? 'Erreur inconnue lors de l’envoi du document.',
-                'digiteal_response' => $result,
-            ], 400);
+            $result = (new PeppolService())->sendInvoice($xml, $filename);
+            $internalResponse = json_decode($result['response'] ?? '', true);
+
+            if (isset($internalResponse['status']) && $internalResponse['status'] === 'OK') {
+                return response()->json([
+                    'message' => 'Document Peppol généré et envoyé avec succès.',
+                    'digiteal_response' => $result,
+                    'filename' => $filename,
+                ]);
+            }
+
+            if (!empty($internalResponse['status']) && $internalResponse['status'] !== 'RECIPIENT_NOT_IN_PEPPOL') {
+                return response()->json([
+                    'error' => true,
+                    'message' => $internalResponse['message'] ?? 'Erreur inconnue lors de l’envoi du document.',
+                    'digiteal_response' => $result,
+                ], 400);
+            }
+
         }
 
         return response()->json([
-            'message' => 'Document Peppol généré et envoyé avec succès.',
-            'digiteal_response' => $result,
-            'filename' => $filename,
-        ]);
+            'error' => true,
+            'message' => 'Aucun identifiant Peppol n’a permis d’envoyer le document.',
+            'digiteal_response' => $result ?? null,
+        ], 400);
     }
 }
