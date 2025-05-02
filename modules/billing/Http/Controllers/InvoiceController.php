@@ -14,7 +14,6 @@ use Diji\Billing\Resources\InvoiceResource;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Services\PeppolService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use ZipArchive;
@@ -209,7 +208,6 @@ class InvoiceController extends Controller
         ]);
     }
 
-
     public function email(Request $request, int $invoice_id)
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
@@ -248,9 +246,9 @@ class InvoiceController extends Controller
         return response()->noContent();
     }
 
-    public function sendToPeppol(Request $request, int $invoice_id)
+    public function sendToPeppol(int $invoice_id)
     {
-        $invoice = Invoice::findOrFail($invoice_id)->load('items');
+        $invoice = Invoice::findOrFail($invoice_id)->load('items', 'contact');
         $payload = PeppolPayloadDTOBuilder::fromInvoice(new InvoiceResource($invoice));
 
         $xml = (new PeppolBuilder())
@@ -263,10 +261,20 @@ class InvoiceController extends Controller
 
         $result = (new PeppolService())->sendInvoice($xml, $filename);
 
+        $internalResponse = json_decode($result['response'] ?? '', true);
+
+        if (!isset($internalResponse['status']) || $internalResponse['status'] !== 'OK') {
+            return response()->json([
+                'error' => true,
+                'message' => $internalResponse['message'] ?? 'Erreur inconnue lors de l’envoi du document.',
+                'digiteal_response' => $result,
+            ], 400);
+        }
+
         return response()->json([
             'message' => 'Document Peppol généré et envoyé avec succès.',
             'digiteal_response' => $result,
-            'filename' => $filename
+            'filename' => $filename,
         ]);
     }
 }

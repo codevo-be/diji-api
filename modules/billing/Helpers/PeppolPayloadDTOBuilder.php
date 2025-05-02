@@ -64,10 +64,16 @@ class PeppolPayloadDTOBuilder
             email: $receiver['email']
         );
 
-        $cleanVat = preg_replace('/[^0-9]/', '', $receiver['vat_number'] ?? '');
+        $peppolIdentifier = $invoice['contact']['peppol_identifier'] ?? null;
+
+        if (!$peppolIdentifier && isset($receiver['vat_number'])) {
+            $cleanVat = preg_replace('/[^0-9]/', '', $receiver['vat_number']);
+            $peppolIdentifier = "0208:" . $cleanVat;
+        }
+
         $receiver = new ReceiverDTO(
             name: $receiver['name'],
-            peppolIdentifier: "0208:" . $cleanVat,
+            peppolIdentifier: $peppolIdentifier,
             vatNumber: $receiver['vat_number'],
             contact: $receiverContact,
             address: $receiverAddress
@@ -182,14 +188,21 @@ class PeppolPayloadDTOBuilder
             email: $receiver['email']
         );
 
-        $cleanVat = preg_replace('/[^0-9]/', '', $receiver['vat_number'] ?? '');
+        $peppolIdentifier = $invoice['contact']['peppol_identifier'] ?? null;
+
+        if (!$peppolIdentifier && isset($receiver['vat_number'])) {
+            $cleanVat = preg_replace('/[^0-9]/', '', $receiver['vat_number']);
+            $peppolIdentifier = "0208:" . $cleanVat;
+        }
+
         $receiver = new ReceiverDTO(
             name: $receiver['name'],
-            peppolIdentifier: "0208:" . $cleanVat,
+            peppolIdentifier: $peppolIdentifier,
             vatNumber: $receiver['vat_number'],
             contact: $receiverContact,
             address: $receiverAddress
         );
+
 
         // Livraison
         $delivery = new DeliveryDTO(
@@ -253,7 +266,6 @@ class PeppolPayloadDTOBuilder
         );
     }
 
-
     public static function getPeppolVatCode(float $taxPercentage): string
     {
         return match ((int) $taxPercentage) {
@@ -262,6 +274,3 @@ class PeppolPayloadDTOBuilder
         };
     }
 }
-
-
-

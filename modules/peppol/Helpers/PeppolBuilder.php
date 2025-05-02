@@ -170,10 +170,19 @@ class PeppolBuilder
         $party = $this->doc->createElement('cac:AccountingCustomerParty');
         $partyNode = $this->doc->createElement('cac:Party');
 
-        // EndpointID (généré depuis le numéro de TVA)
+        // EndpointID (custom ou basé sur la TVA)
         $vatNumber = strtoupper($receiver->vatNumber);
-        $endpointId = $this->doc->createElement('cbc:EndpointID', $vatNumber);
-        $endpointId->setAttribute('schemeID', $this->getPeppolSchemeId($vatNumber));
+        $identifier = $receiver->peppolIdentifier ?? null;
+
+        if ($identifier && str_contains($identifier, ':')) {
+            [$scheme, $id] = explode(':', $identifier, 2);
+            $endpointId = $this->doc->createElement('cbc:EndpointID', $id);
+            $endpointId->setAttribute('schemeID', $scheme);
+        } else {
+            $endpointId = $this->doc->createElement('cbc:EndpointID', $vatNumber);
+            $endpointId->setAttribute('schemeID', $this->getPeppolSchemeId($vatNumber));
+        }
+
         $partyNode->appendChild($endpointId);
 
         // Nom
