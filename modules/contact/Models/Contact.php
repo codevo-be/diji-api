@@ -19,7 +19,8 @@ class Contact extends Model
         "company_name",
         "vat_number",
         "iban",
-        "billing_address"
+        "billing_address",
+        "peppol_identifier"
     ];
 
     protected $casts = [

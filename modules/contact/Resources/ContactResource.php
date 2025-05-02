@@ -26,6 +26,7 @@ class ContactResource extends JsonResource
             'vat_number'                => $this->vat_number,
             'iban'                      => $this->iban,
             'billing_address'           => $this->billing_address,
+            'peppol_identifier'         => $this->peppol_identifier,
         ];
     }
 }

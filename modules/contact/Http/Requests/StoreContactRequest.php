@@ -27,6 +27,7 @@ class StoreContactRequest extends FormRequest
             'billing_address.city' => 'string|nullable',
             'billing_address.zipcode' => 'string|nullable',
             'billing_address.country' => 'string|nullable',
+            'peppol_identifier' => 'string|nullable',
         ];
     }
 

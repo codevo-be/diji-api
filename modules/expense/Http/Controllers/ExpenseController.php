@@ -3,7 +3,6 @@
 namespace Diji\Expense\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Diji\Contact\Models\Contact;
 use Diji\Contact\Resources\ContactResource;
 use Diji\Peppol\Models\PeppolDocument;
 use Illuminate\Http\JsonResponse;
