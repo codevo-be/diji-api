@@ -24,6 +24,7 @@ class PeppolDocument extends Model
         'structured_communication',
         'lines',
         'raw_xml',
+        'payment',
     ];
 
     protected $casts = [

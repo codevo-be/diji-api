@@ -53,11 +53,15 @@ class ExpenseResource extends JsonResource
                     'name' => $line['name'] ?? '',
                     'price' => $line['price'] ?? 0,
                     'quantity' => $line['quantity'] ?? 0,
+                    'vat' => $line['vat'] ?? 0,
                 ];
             })->toArray(),
             'raw_xml' => $this->raw_xml,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
+            'payment' => [
+                'iban' => $this->sender['iban'] ?? null,
+            ],
         ];
     }
 }

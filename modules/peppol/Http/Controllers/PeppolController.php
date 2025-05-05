@@ -80,6 +80,7 @@ class PeppolController extends Controller
             $sender = [
                 'name' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyName/cbc:Name)'),
                 'vatNumber' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID)'),
+                'iban' => $xpath->evaluate('string(//cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID)'),
             ];
             $senderAddress = [
                 'line1' => $xpath->evaluate('string(//cac:AccountingSupplierParty//cac:PostalAddress/cbc:StreetName)'),
@@ -107,6 +108,7 @@ class PeppolController extends Controller
                     'name' => $xpath->evaluate('string(cac:Item/cbc:Name)', $line),
                     'quantity' => (float) $xpath->evaluate('string(cbc:InvoicedQuantity)', $line),
                     'price' => (float) $xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
+                    'vat' => (float) $xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
                 ];
             }
 
