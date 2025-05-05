@@ -3,15 +3,17 @@
 namespace Diji\Expense\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Diji\Contact\Resources\ContactResource;
+use Diji\Expense\Resources\ExpenseResource;
 use Diji\Peppol\Models\PeppolDocument;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ExpenseController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        Log::info("Expense controller : Index");
         $query = PeppolDocument::query();
 
         $documents = $request->has('page')
@@ -25,12 +27,12 @@ class ExpenseController extends Controller
 
     public function show(int $expense_id): JsonResponse
     {
-        $contact = PeppolDocument::find($expense_id);
+        Log::info("Expense controller : Show");
+
+        $expense = PeppolDocument::find($expense_id);
 
         return response()->json([
-            'data' => new ContactResource($contact)
+            'data' => new ExpenseResource($expense)
         ]);
     }
-
-    // Todo : je suis en train de faire la méthode show pour afficher une dépense
 }

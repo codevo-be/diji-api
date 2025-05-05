@@ -5,7 +5,6 @@ namespace Diji\Billing\Resources;
 use Diji\Contact\Resources\ContactResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Log;
 
 class InvoiceResource extends JsonResource
 {
