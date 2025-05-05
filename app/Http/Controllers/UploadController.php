@@ -62,32 +62,46 @@ class UploadController extends Controller
         $model = $data['model'];
         $modelId = $data['model_id'];
 
-        $createdFiles = [];
-
         $files = $data['files'] ?? [];
         foreach ($files as $file) {
-            $createdFiles[] = $this->uploadService->save($file, $tenant->id, $model, $modelId);
+            $this->uploadService->save($file, $tenant->id, $model, $modelId);
         }
 
         return response()->json([
             "message" => "Les fichiers ont été téléchargés avec succès",
-            "data" => $createdFiles,
         ], 201);
     }
 
-    public function show(Request $request, string $model, string $modelId): JsonResponse
+    public function show(string $model, string $modelId): JsonResponse
     {
         $tenant = tenant();
 
         $files = $this->uploadService->getFiles($tenant->id, $model, $modelId);
 
-        return response()->json([
-            "message" => "Tried to get files",
-            "files" => $files,
-        ]);
+        return response()->json(
+            $files
+        );
     }
 
-    public function destroy(Request $request, string $uploadId)
+    public function preview($model, $year, $month, $filename)
+    {
+        $tenantId = tenant()->id;
+        $path = "{$tenantId}/uploads/{$model}/{$year}/{$month}/{$filename}";
+
+        if (!Storage::disk('uploads')->exists($path)) {
+            abort(404, "Fichier introuvable");
+        }
+
+        $file = Storage::disk('uploads')->get($path);
+        $mimeType = Storage::disk('uploads')->mimeType($path);
+
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
+    }
+
+
+    public function destroy(string $uploadId)
     {
         try {
             $this->uploadService->delete($uploadId);
