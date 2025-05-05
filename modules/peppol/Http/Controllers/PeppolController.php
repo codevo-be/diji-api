@@ -3,6 +3,7 @@
 namespace Diji\Peppol\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Helpers\PeppolPayloadBuilder;
 use Diji\Peppol\Models\PeppolDocument;
@@ -52,13 +53,28 @@ class PeppolController extends Controller
         $xmlString = base64_decode($request->peppolFileContent);
 
         try {
+            $receiverPeppolId = strtoupper($request->input('recipientPeppolIdentifier'));
+            Log::info("Receiver Peppol ID détecté (via JSON) : {$receiverPeppolId}");
+
+            $tenant = Tenant::where('peppol_identifier', $receiverPeppolId)->first();
+
+            if (!$tenant) {
+                Log::warning("Aucun tenant trouvé avec le Peppol ID : {$receiverPeppolId}");
+                return response()->json([
+                    'error' => true,
+                    'message' => "Aucun client ne correspond à l'identifiant Peppol reçu.",
+                    'peppol_identifier' => $receiverPeppolId,
+                ], 404);
+            }
+
+            tenancy()->initialize($tenant);
+
             $dom = new DOMDocument();
             $dom->loadXML($xmlString);
             $xpath = new DOMXPath($dom);
             $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
             $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
 
-            // Récupération des données principales
             $documentIdentifier = $xpath->evaluate('string(//cbc:ID)');
             $documentType = match ($xpath->evaluate('string(//cbc:InvoiceTypeCode)')) {
                 '380' => 'INVOICE',
@@ -70,14 +86,10 @@ class PeppolController extends Controller
             $currency = $xpath->evaluate('string(//cbc:DocumentCurrencyCode)');
             $structuredCommunication = $xpath->evaluate('string(//cbc:PaymentID)');
 
-            // Montants
             $subtotal = (float) $xpath->evaluate('string(//cbc:TaxExclusiveAmount)') ?: 0;
             $total = (float) $xpath->evaluate('string(//cbc:PayableAmount)') ?: 0;
-
-            // TVA
             $taxAmount = $xpath->evaluate('string(//cac:TaxTotal/cbc:TaxAmount)');
 
-            // Expéditeur
             $sender = [
                 'name' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyName/cbc:Name)'),
                 'vatNumber' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID)'),
@@ -90,7 +102,6 @@ class PeppolController extends Controller
                 'country' => $xpath->evaluate('string(//cac:AccountingSupplierParty//cac:PostalAddress/cac:Country/cbc:IdentificationCode)'),
             ];
 
-            // Destinataire
             $recipient = [
                 'name' => $xpath->evaluate('string(//cac:AccountingCustomerParty/cac:Party/cac:PartyName/cbc:Name)'),
                 'vatNumber' => $xpath->evaluate('string(//cac:AccountingCustomerParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID)'),
@@ -102,7 +113,6 @@ class PeppolController extends Controller
                 'country' => $xpath->evaluate('string(//cac:AccountingCustomerParty//cac:PostalAddress/cac:Country/cbc:IdentificationCode)'),
             ];
 
-            // Lignes de facturation
             $lines = [];
             foreach ($xpath->query('//cac:InvoiceLine') as $line) {
                 $lines[] = [
@@ -131,6 +141,9 @@ class PeppolController extends Controller
                 'raw_xml' => $xmlString,
             ]);
 
+            return response()->json([
+                'message' => 'Hook reçu et document Peppol enregistré avec succès.',
+            ]);
         } catch (Exception $e) {
             Log::error('[HOOK PEPPOL] Erreur DOM/XML : ' . $e->getMessage());
 
@@ -139,14 +152,5 @@ class PeppolController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-
-        return response()->json([
-            'message' => 'Hook reçu et document Peppol enregistré avec succès.',
-        ]);
     }
 }
-
-/**
- * Todo:
- * - Quand on mets a jours un numéro de TVA, il faut générer un nouvelle identifiant Peppol via Digiteal
- */
