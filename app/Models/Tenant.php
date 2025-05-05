@@ -45,4 +45,17 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         $settings[$key] = $value;
         $this->settings = $settings;
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Tenant $tenant) {
+            $vat = $tenant->settings['vat_number'] ?? null;
+
+            if ($vat && str_starts_with(strtoupper($vat), 'BE')) {
+                $normalizedVat = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $vat)); // BE1016227032
+                $tenant->peppol_identifier = '9925:' . $normalizedVat;
+            }
+        });
+    }
+
 }
