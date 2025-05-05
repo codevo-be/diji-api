@@ -149,5 +149,4 @@ class PeppolController extends Controller
 /**
  * Todo:
  * - Quand on mets a jours un numéro de TVA, il faut générer un nouvelle identifiant Peppol via Digiteal
- * - Quand je mets a ours mon numéro de TVA le changer dans la db au dessus du tenant
  */
