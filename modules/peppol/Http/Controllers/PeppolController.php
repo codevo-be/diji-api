@@ -46,6 +46,7 @@ class PeppolController extends Controller
 
     public function hook(Request $request): JsonResponse
     {
+        Log::info("Hook reçu");
         Log::info('[HOOK PEPPOL] Données reçues :' . json_encode($request->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         $xmlString = base64_decode($request->peppolFileContent);
