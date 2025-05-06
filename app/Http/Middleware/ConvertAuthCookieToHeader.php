@@ -17,8 +17,14 @@ class ConvertAuthCookieToHeader
     {
         $token = $request->cookies->get('Authorization');
         $tenantId = $request->cookies->get('X-tenant');
-        $request->headers->set('Authorization', $token);
-        $request->headers->set('X-tenant', $tenantId);
+
+        if ($token) {
+            $request->headers->set('Authorization', $token);
+        }
+        if ($tenantId) {
+            $request->headers->set('X-tenant', $tenantId);
+        }
+
 
         return $next($request);
     }

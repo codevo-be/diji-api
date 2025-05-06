@@ -27,33 +27,6 @@ class UploadController extends Controller
         $this->uploadService = new UploadService();
     }
 
-    /*public function store(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file'
-        ]);
-
-        $tenant = tenant();
-
-        $file = $request->file('file');
-        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $fileName_hashed = sha1($filename) . '.' . $file->getClientOriginalExtension();
-        $year = Carbon::now()->year;
-        $month = Carbon::now()->month;
-
-        $path = Storage::disk('uploads')->putFileAs("/{$tenant->id}/uploads/{$year}/{$month}", $file, $fileName_hashed);
-
-        $upload = Upload::create([
-            'filename' => $filename,
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
-        ]);
-
-        return response()->json([
-            "data" => $upload
-        ]);
-    }*/
-
     public function store(PostUpload $request): JsonResponse
     {
         $data = $request->validated();
@@ -76,14 +49,14 @@ class UploadController extends Controller
     {
         $tenant = tenant();
 
-        $files = $this->uploadService->getFiles($tenant->id, $model, $modelId);
+        $files = $this->uploadService->getFiles($model, $modelId);
 
         return response()->json(
             $files
         );
     }
 
-    public function preview($model, $year, $month, $filename)
+    public function preview(Request $request, $model, $year, $month, $filename)
     {
         $tenantId = tenant()->id;
         $path = "{$tenantId}/uploads/{$model}/{$year}/{$month}/{$filename}";
@@ -92,12 +65,14 @@ class UploadController extends Controller
             abort(404, "Fichier introuvable");
         }
 
+        $disposition = $request->header('X-Disposition') ?? 'inline';
+
         $file = Storage::disk('uploads')->get($path);
         $mimeType = Storage::disk('uploads')->mimeType($path);
 
         return response($file, 200)
             ->header('Content-Type', $mimeType)
-            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
+            ->header('Content-Disposition', "{$disposition}; filename=\"{$filename}\"");
     }
 
 
@@ -112,32 +87,4 @@ class UploadController extends Controller
             ], 500);
         }
     }
-
-//    public function show(string $tenant, string $year, string $month, string $filename)
-//    {
-//       /* $user = Auth::user();
-//
-//        if(!$user){
-//            return response()->json([
-//                "message" => "Vous n'êtes pas autorisé à accéder à ce fichier !",
-//                "user" => $user
-//            ]);
-//        }*/
-//
-//        $path = storage_path("app/private/{$tenant}/uploads");
-//
-//        if (!file_exists("{$path}/{$year}/{$month}/{$filename}")) {
-//            return response()->json(['error' => "Le fichier n'existe pas"], 404);
-//        }
-//
-//        $disk = Storage::build([
-//            'driver' => 'local',
-//            'root' => $path,
-//            'visibility' => 'private',
-//        ]);
-//
-//        $filePath = $disk->path("{$year}/{$month}/{$filename}");
-//
-//        return response()->file($filePath);
-//    }
 }

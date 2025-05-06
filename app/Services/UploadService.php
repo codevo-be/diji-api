@@ -20,7 +20,7 @@ class UploadService
         return $models[$modelType] ?? null;
     }
 
-    public function getFiles(string $tenantId, string $model, string $modelId)
+    public function getFiles(string $model, string $modelId)
     {
         $modelClass = $this->getModelClass($model);
 
@@ -76,29 +76,6 @@ class UploadService
             $this->deleteEmptyParentDirectories($folderPath);
         } catch (ModelNotFoundException $exception) {
             throw new Exception("Impossible de trouver le fichier avec l'ID {$uploadId}.");
-        }
-    }
-
-    public function deleteFromModel(string $model, string $modelId): void
-    {
-        $modelClass = $this->getModelClass($model);
-
-        // Récupérer tous les fichiers liés à ce modèle
-        $uploads = Upload::where('model_type', $modelClass)
-            ->where('model_id', $modelId)
-            ->get();
-
-        foreach ($uploads as $upload) {
-            // Supprimer le fichier du disque
-            $path = $upload->path;
-            $folderPath = dirname($path);
-
-            Storage::disk('uploads')->delete($path);
-
-            // Supprimer la ligne de la base de données
-            $upload->delete();
-
-            $this->deleteEmptyParentDirectories($folderPath);
         }
     }
 
