@@ -10,15 +10,10 @@ use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Models\CreditNote;
-use Diji\Billing\Models\Invoice;
-use Diji\Billing\Models\SelfInvoice;
 use Diji\Billing\Resources\CreditNoteResource;
-use Diji\Billing\Resources\InvoiceResource;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Services\PeppolService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
