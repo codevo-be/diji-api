@@ -66,6 +66,9 @@ class UploadController extends Controller
         }
 
         $disposition = $request->header('X-Disposition') ?? 'inline';
+        if ($disposition !== 'inline' && $disposition !== 'attachment') {
+            abort(400, 'X-Disposition header must be either "inline" or "attachment".');
+        }
 
         $file = Storage::disk('uploads')->get($path);
         $mimeType = Storage::disk('uploads')->mimeType($path);
