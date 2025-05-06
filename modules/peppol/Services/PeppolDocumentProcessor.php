@@ -6,6 +6,7 @@ use DOMDocument;
 use DOMXPath;
 use Diji\Peppol\Models\PeppolDocument;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class PeppolDocumentProcessor
 {
@@ -14,9 +15,9 @@ class PeppolDocumentProcessor
         $changeType = $request->input('changeType');
 
         match ($changeType) {
-            'INVOICE_RECEIVED' => fn() => $this->handleInvoice($request),
-            'CREDIT_NOTE_RECEIVED' => fn() => $this->handleCreditNote($request),
-            default => throw new \InvalidArgumentException("Type de document non supporté : $changeType")
+            'INVOICE_RECEIVED' => $this->handleInvoice($request),
+            'CREDIT_NOTE_RECEIVED' => $this->handleCreditNote($request),
+            default => throw new InvalidArgumentException("Type de document non supporté : $changeType")
         };
     }
 

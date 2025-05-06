@@ -48,29 +48,8 @@ class PeppolController extends Controller
 
     public function hook(Request $request): JsonResponse
     {
-        try {
-            app(PeppolDocumentProcessor::class)->handle($request);
-
-            return response()->json([
-                'message' => 'Hook traité avec succès.'
-            ]);
-        } catch (\Throwable $e) {
-            Log::error('[HOOK PEPPOL] Erreur lors du traitement : ' . $e->getMessage());
-
-            return response()->json([
-                'message' => 'Erreur interne lors du traitement.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-
-    public function hook1(Request $request): JsonResponse
-    {
         Log::info("Hook reçu");
         Log::info('[HOOK PEPPOL] Données reçues :' . json_encode($request->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        $xmlString = base64_decode($request->peppolFileContent);
 
         try {
             $receiverPeppolId = strtoupper($request->input('recipientPeppolIdentifier'));
@@ -89,88 +68,14 @@ class PeppolController extends Controller
 
             tenancy()->initialize($tenant);
 
-            $dom = new DOMDocument();
-            $dom->loadXML($xmlString);
-            $xpath = new DOMXPath($dom);
-            $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
-            $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
-
-            $documentIdentifier = $xpath->evaluate('string(//cbc:ID)');
-            $documentType = match ($request->input('changeType')) {
-                'INVOICE_RECEIVED' => 'INVOICE',
-                'CREDIT_NOTE_RECEIVED' => 'CREDIT_NOTE',
-                default => null,
-            };
-            $issueDate = $xpath->evaluate('string(//cbc:IssueDate)');
-            $dueDateRaw = $xpath->evaluate('string(//cbc:DueDate)');
-            $dueDate = $dueDateRaw ?: null; // Les note de crédit n'ont pas de date d'échéance
-            $currency = $xpath->evaluate('string(//cbc:DocumentCurrencyCode)');
-            $structuredCommunication = $xpath->evaluate('string(//cbc:PaymentID)');
-
-            $subtotal = (float) $xpath->evaluate('string(//cbc:TaxExclusiveAmount)') ?: 0;
-            $total = (float) $xpath->evaluate('string(//cbc:PayableAmount)') ?: 0;
-            $taxAmount = $xpath->evaluate('string(//cac:TaxTotal/cbc:TaxAmount)');
-
-            $sender = [
-                'name' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyName/cbc:Name)'),
-                'vatNumber' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID)'),
-                'iban' => $xpath->evaluate('string(//cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID)'),
-            ];
-            $senderAddress = [
-                'line1' => $xpath->evaluate('string(//cac:AccountingSupplierParty//cac:PostalAddress/cbc:StreetName)'),
-                'zipCode' => $xpath->evaluate('string(//cac:AccountingSupplierParty//cac:PostalAddress/cbc:PostalZone)'),
-                'city' => $xpath->evaluate('string(//cac:AccountingSupplierParty//cac:PostalAddress/cbc:CityName)'),
-                'country' => $xpath->evaluate('string(//cac:AccountingSupplierParty//cac:PostalAddress/cac:Country/cbc:IdentificationCode)'),
-            ];
-
-            $recipient = [
-                'name' => $xpath->evaluate('string(//cac:AccountingCustomerParty/cac:Party/cac:PartyName/cbc:Name)'),
-                'vatNumber' => $xpath->evaluate('string(//cac:AccountingCustomerParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID)'),
-            ];
-            $recipientAddress = [
-                'line1' => $xpath->evaluate('string(//cac:AccountingCustomerParty//cac:PostalAddress/cbc:StreetName)'),
-                'zipCode' => $xpath->evaluate('string(//cac:AccountingCustomerParty//cac:PostalAddress/cbc:PostalZone)'),
-                'city' => $xpath->evaluate('string(//cac:AccountingCustomerParty//cac:PostalAddress/cbc:CityName)'),
-                'country' => $xpath->evaluate('string(//cac:AccountingCustomerParty//cac:PostalAddress/cac:Country/cbc:IdentificationCode)'),
-            ];
-
-            $lines = [];
-
-            $lineTag = $documentType === 'CREDIT_NOTE' ? 'cac:CreditNoteLine' : 'cac:InvoiceLine';
-            $quantityTag = $documentType === 'CREDIT_NOTE' ? 'cbc:CreditedQuantity' : 'cbc:InvoicedQuantity';
-
-            foreach ($xpath->query("//{$lineTag}") as $line) {
-                $lines[] = [
-                    'name' => $xpath->evaluate('string(cac:Item/cbc:Name)', $line),
-                    'quantity' => (float) $xpath->evaluate("string({$quantityTag})", $line),
-                    'price' => (float) $xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
-                    'vat' => (float) $xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
-                ];
-            }
-
-            PeppolDocument::create([
-                'document_identifier' => $documentIdentifier,
-                'document_type' => $documentType,
-                'issue_date' => $issueDate,
-                'due_date' => $dueDate,
-                'currency' => $currency,
-                'structured_communication' => $structuredCommunication,
-                'subtotal' => $subtotal,
-                'total' => $total,
-                'taxes' => ['total' => $taxAmount],
-                'sender' => $sender,
-                'recipient' => $recipient,
-                'sender_address' => $senderAddress,
-                'recipient_address' => $recipientAddress,
-                'lines' => $lines,
-                'raw_xml' => $xmlString,
-            ]);
+            app(PeppolDocumentProcessor::class)->handle($request);
 
             return response()->json([
                 'message' => 'Hook reçu et document Peppol enregistré avec succès.',
             ]);
-        } catch (Exception $e) {
-            Log::error('[HOOK PEPPOL] Erreur DOM/XML : ' . $e->getMessage());
+
+        } catch (\Throwable $e) {
+            Log::error('[HOOK PEPPOL] Erreur lors du traitement : ' . $e->getMessage());
 
             return response()->json([
                 'message' => 'Erreur lors du traitement du XML.',
