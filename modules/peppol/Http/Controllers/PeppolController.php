@@ -76,13 +76,14 @@ class PeppolController extends Controller
             $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
 
             $documentIdentifier = $xpath->evaluate('string(//cbc:ID)');
-            $documentType = match ($xpath->evaluate('string(//cbc:InvoiceTypeCode)')) {
-                '380' => 'INVOICE',
-                '381' => 'CREDIT_NOTE',
+            $documentType = match ($request->input('changeType')) {
+                'INVOICE_RECEIVED' => 'INVOICE',
+                'CREDIT_NOTE_RECEIVED' => 'CREDIT_NOTE',
                 default => null,
             };
             $issueDate = $xpath->evaluate('string(//cbc:IssueDate)');
-            $dueDate = $xpath->evaluate('string(//cbc:DueDate)');
+            $dueDateRaw = $xpath->evaluate('string(//cbc:DueDate)');
+            $dueDate = $dueDateRaw ?: null; // Les note de crédit n'ont pas de date d'échéance
             $currency = $xpath->evaluate('string(//cbc:DocumentCurrencyCode)');
             $structuredCommunication = $xpath->evaluate('string(//cbc:PaymentID)');
 
@@ -114,10 +115,14 @@ class PeppolController extends Controller
             ];
 
             $lines = [];
-            foreach ($xpath->query('//cac:InvoiceLine') as $line) {
+
+            $lineTag = $documentType === 'CREDIT_NOTE' ? 'cac:CreditNoteLine' : 'cac:InvoiceLine';
+            $quantityTag = $documentType === 'CREDIT_NOTE' ? 'cbc:CreditedQuantity' : 'cbc:InvoicedQuantity';
+
+            foreach ($xpath->query("//{$lineTag}") as $line) {
                 $lines[] = [
                     'name' => $xpath->evaluate('string(cac:Item/cbc:Name)', $line),
-                    'quantity' => (float) $xpath->evaluate('string(cbc:InvoicedQuantity)', $line),
+                    'quantity' => (float) $xpath->evaluate("string({$quantityTag})", $line),
                     'price' => (float) $xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
                     'vat' => (float) $xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
                 ];
