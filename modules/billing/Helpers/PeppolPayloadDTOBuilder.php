@@ -162,14 +162,14 @@ class PeppolPayloadDTOBuilder
             ->all();
     }
 
-    public static function fromCreditNote(CreditNoteResource $creditNote, string $referenceInvoiceId): PeppolPayloadDTO
+    public static function fromCreditNote(CreditNoteResource $creditNote, string $referenceInvoiceId): array
     {
         // Document
         $document = new DocumentDTO(
             documentType: 'CreditNote',
             billName: $creditNote["identifier"],
             issueDate: $creditNote["date"],
-            dueDate: "",
+            dueDate: "", // Les notes de crédit n'ont pas toujours de dueDate
             currency: 'EUR',
             buyerReference: $creditNote['identifier'],
             structuredCommunication: "",
@@ -194,48 +194,42 @@ class PeppolPayloadDTOBuilder
         );
 
         // Destinataire
-        $receiver = (array)$creditNote->recipient;
+        $receiverRaw = (array)$creditNote->recipient;
 
         $receiverAddress = new AddressDTO(
-            line1: $receiver['street'] . ' ' . $receiver['street_number'],
-            city: $receiver["city"],
-            zipCode: $receiver["zipcode"],
-            country: strtoupper($receiver['country'])
+            line1: $receiverRaw['street'] . ' ' . $receiverRaw['street_number'],
+            city: $receiverRaw["city"],
+            zipCode: $receiverRaw["zipcode"],
+            country: strtoupper($receiverRaw['country'])
         );
 
         $receiverContact = new ReceiverContactDTO(
-            name: $receiver['name'],
-            phone: $receiver['phone'],
-            email: $receiver['email']
+            name: $receiverRaw['name'],
+            phone: $receiverRaw['phone'],
+            email: $receiverRaw['email']
         );
 
-        $peppolIdentifier = $invoice['contact']['peppol_identifier'] ?? null;
+        $vatNumber = $receiverRaw['vat_number'] ?? null;
+        $cleanVat = $vatNumber ? strtoupper(preg_replace('/\D/', '', $vatNumber)) : null;
 
-        if (!$peppolIdentifier && isset($receiver['vat_number'])) {
-            $cleanVat = preg_replace('/[^0-9]/', '', $receiver['vat_number']);
-            $peppolIdentifier = "0208:" . $cleanVat;
+        $identifiers = [];
+
+        // 1. Identifiant personnalisé
+        if (!empty($creditNote['contact']['peppol_identifier'])) {
+            $identifiers[] = $creditNote['contact']['peppol_identifier'];
         }
 
-        $receiver = new ReceiverDTO(
-            name: $receiver['name'],
-            peppolIdentifier: $peppolIdentifier,
-            vatNumber: $receiver['vat_number'],
-            contact: $receiverContact,
-            address: $receiverAddress
-        );
+        // 2. Numéro BCE (0208)
+        if ($cleanVat && strlen($cleanVat) === 10) {
+            $identifiers[] = '0208:' . $cleanVat;
+        }
 
+        // 3. Numéro de TVA (9925)
+        if ($vatNumber) {
+            $identifiers[] = '9925:' . strtoupper($vatNumber);
+        }
 
-        // Livraison
-        $delivery = new DeliveryDTO(
-            date: $creditNote["date"],
-        );
-
-        // Paiement
-        $payment = new PaymentDTO(
-            paymentDelay: 30
-        );
-
-        // Lignes de facture
+        // Lignes
         $lines = collect($creditNote['items'] ?? [])
             ->map(function ($item) {
                 return new InvoiceLineDTO(
@@ -243,12 +237,11 @@ class PeppolPayloadDTOBuilder
                     quantity: $item['quantity'],
                     unitPrice: $item['retail']['subtotal'],
                     taxableAmount: $item['retail']['subtotal'] * $item['quantity'],
-                    vatCode: self::getPeppolVatCode($item['vat']),
+                    vatCode: PeppolPayloadDTOBuilder::getPeppolVatCode($item['vat']),
                     taxPercentage: $item['vat']
                 );
             })
             ->all();
-
 
         // Taxes
         $taxes = collect($lines)
@@ -275,16 +268,42 @@ class PeppolPayloadDTOBuilder
             totalAmount: (float) $creditNote['total']
         );
 
-        return new PeppolPayloadDTO(
-            document: $document,
-            sender: $sender,
-            receiver: $receiver,
-            delivery: $delivery,
-            payment: $payment,
-            lines: $lines,
-            taxes: $taxes,
-            totals: $totals
-        );
+        // Générer un payload par identifiant
+        return collect($identifiers)
+            ->unique()
+            ->map(function ($identifier) use (
+                $document,
+                $sender,
+                $receiverRaw,
+                $receiverAddress,
+                $receiverContact,
+                $lines,
+                $taxes,
+                $totals
+            ) {
+                $receiver = new ReceiverDTO(
+                    name: $receiverRaw['name'],
+                    peppolIdentifier: $identifier,
+                    vatNumber: $receiverRaw['vat_number'],
+                    contact: $receiverContact,
+                    address: $receiverAddress
+                );
+
+                $delivery = new DeliveryDTO(date: now()->toDateString());
+                $payment = new PaymentDTO(paymentDelay: 30);
+
+                return new PeppolPayloadDTO(
+                    document: $document,
+                    sender: $sender,
+                    receiver: $receiver,
+                    delivery: $delivery,
+                    payment: $payment,
+                    lines: $lines,
+                    taxes: $taxes,
+                    totals: $totals
+                );
+            })
+            ->all();
     }
 
     public static function getPeppolVatCode(float $taxPercentage): string

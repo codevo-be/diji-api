@@ -198,25 +198,55 @@ class CreditNoteController extends Controller
         return response()->noContent();
     }
 
-    public function sendToPeppol(Request $request, int $credit_note_id)
+    public function sendToPeppol(int $credit_note_id)
     {
-        $creditNote = CreditNote::findOrFail($credit_note_id)->load('items');
-        $payload = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), "Invoice-2025/001");
+        $creditNote = CreditNote::findOrFail($credit_note_id)->load('items', 'contact');
+        $payloads = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), "Invoice-2025/001");
 
-        $xml = (new PeppolBuilder())
-            ->withPayload($payload)
-            ->build();
+        foreach ($payloads as $index => $payload) {
+            $identifier = $payload->receiver->peppolIdentifier ?? 'inconnu';
 
-        // Juste pour les tests
-        $filename = 'bbbbb.xml';
-        Storage::disk('local')->put("peppol/{$filename}", $xml);
+            if (str_starts_with($identifier, '0088')) {
+                info("Tentative $index : Test avec identifiant personnalisé ($identifier)");
+            } elseif (str_starts_with($identifier, '0208')) {
+                info("Tentative $index : Test avec numéro d’entreprise ($identifier)");
+            } elseif (str_starts_with($identifier, '9925')) {
+                info("Tentative $index : Test avec numéro de TVA ($identifier)");
+            } else {
+                info("Tentative $index : Test avec identifiant inconnu ($identifier)");
+            }
 
-        $result = (new PeppolService())->sendInvoice($xml, $filename);
+            $xml = (new PeppolBuilder())
+                ->withPayload($payload)
+                ->build();
+
+            $filename = "peppol_credit_note_try_{$index}.xml";
+            Storage::disk('local')->put("peppol/{$filename}", $xml);
+
+            $result = (new PeppolService())->sendInvoice($xml, $filename);
+            $internalResponse = json_decode($result['response'] ?? '', true);
+
+            if (isset($internalResponse['status']) && $internalResponse['status'] === 'OK') {
+                return response()->json([
+                    'message' => 'Note de crédit Peppol envoyée avec succès.',
+                    'digiteal_response' => $result,
+                    'filename' => $filename,
+                ]);
+            }
+
+            if (!empty($internalResponse['status']) && $internalResponse['status'] !== 'RECIPIENT_NOT_IN_PEPPOL') {
+                return response()->json([
+                    'error' => true,
+                    'message' => $internalResponse['message'] ?? 'Erreur inconnue lors de l’envoi de la note de crédit.',
+                    'digiteal_response' => $result,
+                ], 400);
+            }
+        }
 
         return response()->json([
-            'message' => 'Document Peppol généré et envoyé avec succès.',
-            'digiteal_response' => $result,
-            'filename' => $filename
-        ]);
+            'error' => true,
+            'message' => 'Aucun identifiant Peppol n’a permis d’envoyer la note de crédit.',
+            'digiteal_response' => $result ?? null,
+        ], 400);
     }
 }
