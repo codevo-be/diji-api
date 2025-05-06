@@ -8,13 +8,14 @@ use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Helpers\PeppolPayloadBuilder;
 use Diji\Peppol\Models\PeppolDocument;
 use Diji\Peppol\Requests\PeppolSendRequest;
+use Diji\Peppol\Services\PeppolDocumentProcessor;
 use Diji\Peppol\Services\PeppolService;
 use DOMDocument;
 use DOMXPath;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PeppolController extends Controller
@@ -46,6 +47,25 @@ class PeppolController extends Controller
     }
 
     public function hook(Request $request): JsonResponse
+    {
+        try {
+            app(PeppolDocumentProcessor::class)->handle($request);
+
+            return response()->json([
+                'message' => 'Hook traité avec succès.'
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[HOOK PEPPOL] Erreur lors du traitement : ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur interne lors du traitement.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function hook1(Request $request): JsonResponse
     {
         Log::info("Hook reçu");
         Log::info('[HOOK PEPPOL] Données reçues :' . json_encode($request->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
