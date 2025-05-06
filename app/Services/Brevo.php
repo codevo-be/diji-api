@@ -22,7 +22,7 @@ class Brevo {
 
     public function __construct()
     {
-        /*$settings = Meta::getValue("brevo_settings");
+        $settings = Meta::getValue("brevo_settings");
 
         if (!$settings || !isset($settings['api_key'], $settings['sender']['email'])) {
             throw new \Exception('Brevo configuration is missing or invalid.');
@@ -30,13 +30,7 @@ class Brevo {
 
         $config = Configuration::getDefaultConfiguration()->setApiKey('api-key', $settings["api_key"]);
         $this->apiInstance = new TransactionalEmailsApi(new Client(), $config);
-        $this->sender = $settings["sender"];*/
-        $config = Configuration::getDefaultConfiguration()->setApiKey('api-key', env('BREVO_API_KEY'));
-        $this->apiInstance = new TransactionalEmailsApi(new Client(), $config);
-        $this->sender = [
-            'email' => env('MAIL_FROM_ADDRESS'),
-            'name' => env('APP_NAME'),
-        ];
+        $this->sender = $settings["sender"];
     }
 
     public function to(string $email): self
