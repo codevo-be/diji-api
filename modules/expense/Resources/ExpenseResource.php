@@ -44,9 +44,7 @@ class ExpenseResource extends JsonResource
             'currency' => $this->currency,
             'subtotal' => $this->subtotal,
             'total' => $this->total,
-            'taxes' => [
-                'total' => $this->taxes['total'] ?? null,
-            ],
+            'taxes' => (object) $this->taxes,
             'structured_communication' => $this->structured_communication,
             'lines' => collect($this->lines ?? [])->map(function ($line) {
                 return [

@@ -60,7 +60,11 @@ class PeppolDocumentProcessor
             'structured_communication' => $xpath->evaluate('string(//cbc:PaymentID)'),
             'subtotal' => (float) $xpath->evaluate('string(//cbc:TaxExclusiveAmount)') ?: 0,
             'total' => (float) $xpath->evaluate('string(//cbc:PayableAmount)') ?: 0,
-            'taxes' => ['total' => $xpath->evaluate('string(//cac:TaxTotal/cbc:TaxAmount)')],
+            'taxes' => collect($xpath->query('//cac:TaxSubtotal'))->mapWithKeys(function ($node) use ($xpath) {
+                $percent = (string) $xpath->evaluate('string(cac:TaxCategory/cbc:Percent)', $node);
+                $amount = (float) $xpath->evaluate('string(cbc:TaxAmount)', $node);
+                return [$percent => $amount];
+            })->all(),
             'sender' => [
                 'name' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyName/cbc:Name)'),
                 'vatNumber' => $xpath->evaluate('string(//cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID)'),

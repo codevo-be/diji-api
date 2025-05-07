@@ -31,6 +31,10 @@ class ExpenseController extends Controller
 
         $expense = PeppolDocument::find($expense_id);
 
+        Log::info("Expense", [
+            'expense' => $expense,
+        ]);
+
         return response()->json([
             'data' => new ExpenseResource($expense)
         ]);

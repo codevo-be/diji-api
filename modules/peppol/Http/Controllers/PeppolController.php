@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class PeppolController extends Controller
 {
@@ -44,13 +45,8 @@ class PeppolController extends Controller
 
     public function hook(Request $request): JsonResponse
     {
-        Log::info("Hook reçu");
-        Log::info('[HOOK PEPPOL] Données reçues :' . json_encode($request->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
         try {
             $receiverPeppolId = strtoupper($request->input('recipientPeppolIdentifier'));
-            Log::info("Receiver Peppol ID détecté (via JSON) : {$receiverPeppolId}");
-
             $tenant = Tenant::where('peppol_identifier', $receiverPeppolId)->first();
 
             if (!$tenant) {
@@ -63,16 +59,12 @@ class PeppolController extends Controller
             }
 
             tenancy()->initialize($tenant);
-
             app(PeppolDocumentProcessor::class)->handle($request);
-
             return response()->json([
                 'message' => 'Hook reçu et document Peppol enregistré avec succès.',
             ]);
 
-        } catch (\Throwable $e) {
-            Log::error('[HOOK PEPPOL] Erreur lors du traitement : ' . $e->getMessage());
-
+        } catch (Throwable $e) {
             return response()->json([
                 'message' => 'Erreur lors du traitement du XML.',
                 'error' => $e->getMessage()
