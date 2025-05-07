@@ -19,9 +19,9 @@ class CalendarEventResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'start' => $this->start?->toISOString(),
-            'end' => $this->end?->toISOString(),
-            'allDay' => (bool)$this->all_day,
+            'start' => $this->start,
+            'end' => $this->end,
+            'allDay' => $this->all_day,
         ];
     }
 }
