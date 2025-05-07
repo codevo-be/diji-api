@@ -33,6 +33,7 @@
             "Diji\\Team\\": "modules/team",
             "Diji\\Module\\": "modules/module",
             "Diji\\Task\\": "modules/task",
+            "Diji\\Calendar\\": "modules/calendar",
             "Diji\\Project\\": "modules/project"
         }
     },

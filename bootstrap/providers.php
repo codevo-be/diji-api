@@ -11,5 +11,6 @@ return [
     \Diji\Team\TeamServiceProvider::class,
     \Diji\Task\TaskServiceProvider::class,
     \Diji\Project\ProjectServiceProvider::class,
+    \Diji\Calendar\CalendarServiceProvider::class,
     \Diji\Module\ModuleServiceProvider::class
 ];
