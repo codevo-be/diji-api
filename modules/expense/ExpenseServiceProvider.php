@@ -13,7 +13,9 @@ class ExpenseServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/Routes/api.php');
     }
 
-    public function boot() {}
+    public function boot()
+    {
+    }
 
     protected function registerTenantMigrations(): void
     {

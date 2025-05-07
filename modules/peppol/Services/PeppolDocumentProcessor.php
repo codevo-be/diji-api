@@ -10,6 +10,9 @@ use InvalidArgumentException;
 
 class PeppolDocumentProcessor
 {
+    /**
+     * Traite un document Peppol reçu via webhook, selon son type (facture ou note de crédit).
+     */
     public function handle(Request $request): void
     {
         $changeType = $request->input('changeType');
@@ -58,11 +61,11 @@ class PeppolDocumentProcessor
             'due_date' => $xpath->evaluate('string(//cbc:DueDate)') ?: null,
             'currency' => $xpath->evaluate('string(//cbc:DocumentCurrencyCode)'),
             'structured_communication' => $xpath->evaluate('string(//cbc:PaymentID)'),
-            'subtotal' => (float) $xpath->evaluate('string(//cbc:TaxExclusiveAmount)') ?: 0,
-            'total' => (float) $xpath->evaluate('string(//cbc:PayableAmount)') ?: 0,
+            'subtotal' => (float)$xpath->evaluate('string(//cbc:TaxExclusiveAmount)') ?: 0,
+            'total' => (float)$xpath->evaluate('string(//cbc:PayableAmount)') ?: 0,
             'taxes' => collect($xpath->query('//cac:TaxSubtotal'))->mapWithKeys(function ($node) use ($xpath) {
-                $percent = (string) $xpath->evaluate('string(cac:TaxCategory/cbc:Percent)', $node);
-                $amount = (float) $xpath->evaluate('string(cbc:TaxAmount)', $node);
+                $percent = (string)$xpath->evaluate('string(cac:TaxCategory/cbc:Percent)', $node);
+                $amount = (float)$xpath->evaluate('string(cbc:TaxAmount)', $node);
                 return [$percent => $amount];
             })->all(),
             'sender' => [
@@ -97,9 +100,9 @@ class PeppolDocumentProcessor
         foreach ($xpath->query('//cac:InvoiceLine') as $line) {
             $lines[] = [
                 'name' => $xpath->evaluate('string(cac:Item/cbc:Name)', $line),
-                'quantity' => (float) $xpath->evaluate('string(cbc:InvoicedQuantity)', $line),
-                'price' => (float) $xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
-                'vat' => (float) $xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
+                'quantity' => (float)$xpath->evaluate('string(cbc:InvoicedQuantity)', $line),
+                'price' => (float)$xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
+                'vat' => (float)$xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
             ];
         }
 
@@ -113,15 +116,18 @@ class PeppolDocumentProcessor
         foreach ($xpath->query('//cac:CreditNoteLine') as $line) {
             $lines[] = [
                 'name' => $xpath->evaluate('string(cac:Item/cbc:Name)', $line),
-                'quantity' => (float) $xpath->evaluate('string(cbc:CreditedQuantity)', $line),
-                'price' => (float) $xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
-                'vat' => (float) $xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
+                'quantity' => (float)$xpath->evaluate('string(cbc:CreditedQuantity)', $line),
+                'price' => (float)$xpath->evaluate('string(cac:Price/cbc:PriceAmount)', $line),
+                'vat' => (float)$xpath->evaluate('string(cac:Item/cac:ClassifiedTaxCategory/cbc:Percent)', $line),
             ];
         }
 
         return $lines;
     }
 
+    /**
+     * Charge un XML et retourne un XPath configuré avec les namespaces UBL nécessaires.
+     */
     private function getXpath(string $xmlString): DOMXPath
     {
         $dom = new DOMDocument();

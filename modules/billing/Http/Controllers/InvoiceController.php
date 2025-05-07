@@ -246,30 +246,21 @@ class InvoiceController extends Controller
         return response()->noContent();
     }
 
+    /**
+     * Envoie une facture au réseau Peppol via Digiteal.
+     * Plusieurs tentatives sont effectuées avec différents payloads si nécessaire.
+     */
     public function sendToPeppol(int $invoice_id)
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items', 'contact');
         $payloads = PeppolPayloadDTOBuilder::fromInvoice(new InvoiceResource($invoice));
 
         foreach ($payloads as $index => $payload) {
-            $identifier = $payload->receiver->peppolIdentifier ?? 'inconnu';
-
-            if (str_starts_with($identifier, '0088')) {
-                info("Tentative $index : Test avec identifiant personnalisé ($identifier)");
-            } elseif (str_starts_with($identifier, '0208')) {
-                info("Tentative $index : Test avec numéro d’entreprise ($identifier)");
-            } elseif (str_starts_with($identifier, '9925')) {
-                info("Tentative $index : Test avec numéro de TVA ($identifier)");
-            } else {
-                info("Tentative $index : Test avec identifiant inconnu ($identifier)");
-            }
-
             $xml = (new PeppolBuilder())
                 ->withPayload($payload)
                 ->build();
 
             $filename = "peppol_try_{$index}.xml";
-            Storage::disk('local')->put("peppol/{$filename}", $xml);
 
             $result = (new PeppolService())->sendInvoice($xml, $filename);
             $internalResponse = json_decode($result['response'] ?? '', true);
@@ -289,7 +280,6 @@ class InvoiceController extends Controller
                     'digiteal_response' => $result,
                 ], 400);
             }
-
         }
 
         return response()->json([

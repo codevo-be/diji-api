@@ -14,7 +14,6 @@ use Diji\Billing\Resources\CreditNoteResource;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Services\PeppolService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class CreditNoteController extends Controller
@@ -28,7 +27,7 @@ class CreditNoteController extends Controller
             ->when(isset($request->month) &&
                 is_string($request->month) &&
                 trim($request->month) !== '' &&
-                strtolower($request->month) !== 'undefined', function ($query) use($request){
+                strtolower($request->month) !== 'undefined', function ($query) use ($request) {
                 return $query->whereMonth('date', $request->month);
             })
             ->orderByDesc('id');
@@ -130,7 +129,7 @@ class CreditNoteController extends Controller
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["body" => $request->body])
                 ->send();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ]);
@@ -150,9 +149,9 @@ class CreditNoteController extends Controller
         $credit_notes = CreditNote::whereIn('id', $request->credit_note_ids)->get();
 
         foreach ($credit_notes as $credit_note) {
-            try{
+            try {
                 $credit_note->delete();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
         }
@@ -193,32 +192,26 @@ class CreditNoteController extends Controller
         return response()->noContent();
     }
 
+    /**
+     * Envoie une note de crédit au réseau Peppol via Digiteal.
+     * Si la facture d’origine est liée, utilise son identifiant comme référence.
+     * Plusieurs tentatives sont effectuées avec différents payloads si nécessaire.
+     */
     public function sendToPeppol(int $credit_note_id)
     {
         $creditNote = CreditNote::findOrFail($credit_note_id)->load('items', 'contact');
-        $payloads = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), "Invoice-2025/001");
+        $invoiceIdentifier = $creditNote->invoice?->identifier ?? 'Invoice';
+        $payloads = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), $invoiceIdentifier);
 
         foreach ($payloads as $index => $payload) {
-            $identifier = $payload->receiver->peppolIdentifier ?? 'inconnu';
-
-            if (str_starts_with($identifier, '0088')) {
-                info("Tentative $index : Test avec identifiant personnalisé ($identifier)");
-            } elseif (str_starts_with($identifier, '0208')) {
-                info("Tentative $index : Test avec numéro d’entreprise ($identifier)");
-            } elseif (str_starts_with($identifier, '9925')) {
-                info("Tentative $index : Test avec numéro de TVA ($identifier)");
-            } else {
-                info("Tentative $index : Test avec identifiant inconnu ($identifier)");
-            }
-
             $xml = (new PeppolBuilder())
                 ->withPayload($payload)
                 ->build();
 
             $filename = "peppol_credit_note_try_{$index}.xml";
-            Storage::disk('local')->put("peppol/{$filename}", $xml);
 
             $result = (new PeppolService())->sendInvoice($xml, $filename);
+
             $internalResponse = json_decode($result['response'] ?? '', true);
 
             if (isset($internalResponse['status']) && $internalResponse['status'] === 'OK') {

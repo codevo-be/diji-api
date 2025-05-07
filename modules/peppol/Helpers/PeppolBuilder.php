@@ -4,6 +4,7 @@ namespace Diji\Peppol\Helpers;
 
 use Diji\Peppol\DTO\PeppolPayloadDTO;
 
+use Diji\Peppol\DTO\TaxDTO;
 use DOMDocument;
 use DOMElement;
 
@@ -48,6 +49,7 @@ class PeppolBuilder
 
         return $this->doc->saveXML();
     }
+
     protected function prepareRootElement(): void
     {
         $root = $this->doc->createElementNS(
@@ -70,6 +72,7 @@ class PeppolBuilder
         $this->doc->appendChild($root);
         $this->documentElement = $root;
     }
+
     protected function addPeppolMetadata(): void
     {
         $this->documentElement->appendChild(
@@ -80,6 +83,7 @@ class PeppolBuilder
             $this->doc->createElement('cbc:ProfileID', 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0')
         );
     }
+
     protected function addDocumentInfo(): void
     {
         $document = $this->payload->document;
@@ -102,6 +106,7 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($this->doc->createElement('cbc:DocumentCurrencyCode', $document->currency));
     }
+
     protected function addBuyerReference(): void
     {
         $reference = $this->payload->document->buyerReference;
@@ -112,9 +117,11 @@ class PeppolBuilder
             );
         }
     }
+
     protected function addAttachments(): void
     {
     }
+
     protected function addSender(): void
     {
         $sender = $this->payload->sender;
@@ -161,6 +168,7 @@ class PeppolBuilder
         $party->appendChild($partyNode);
         $this->documentElement->appendChild($party);
     }
+
     protected function addReceiver(): void
     {
         $receiver = $this->payload->receiver;
@@ -241,6 +249,7 @@ class PeppolBuilder
         $party->appendChild($partyNode);
         $this->documentElement->appendChild($party);
     }
+
     protected function addDelivery(): void
     {
         $deliveryData = $this->payload->delivery;
@@ -263,13 +272,14 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($delivery);
     }
+
     protected function addTaxes(): void
     {
         $taxTotal = $this->doc->createElement('cac:TaxTotal');
 
         $totalTaxAmount = array_reduce(
             $this->payload->taxes,
-            fn($carry, \Diji\Peppol\DTO\TaxDTO $t) => $carry + $t->taxAmount,
+            fn($carry, TaxDTO $t) => $carry + $t->taxAmount,
             0.0
         );
 
@@ -287,7 +297,7 @@ class PeppolBuilder
             $category->appendChild($this->doc->createElement('cbc:ID', $tax->vatCode));
             $category->appendChild($this->doc->createElement('cbc:Percent', $tax->taxPercentage));
 
-            if ((float) $tax->taxPercentage === 0.0) {
+            if ((float)$tax->taxPercentage === 0.0) {
                 $category->appendChild($this->doc->createElement('cbc:TaxExemptionReasonCode', 'VATEX-EU-IC'));
             }
 
@@ -301,6 +311,7 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($taxTotal);
     }
+
     protected function addMonetaryTotal(): void
     {
         $total = $this->doc->createElement('cac:LegalMonetaryTotal');
@@ -315,6 +326,7 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($total);
     }
+
     protected function addInvoiceLines(): void
     {
         foreach ($this->payload->lines as $index => $line) {
@@ -362,6 +374,7 @@ class PeppolBuilder
             $this->documentElement->appendChild($itemLine);
         }
     }
+
     protected function addPayment(): void
     {
         $payment = $this->payload->payment;
@@ -396,6 +409,7 @@ class PeppolBuilder
 
         $this->documentElement->appendChild($paymentTerms);
     }
+
     protected function addBillingReference(): void
     {
         $reference = $this->payload->document->referenceInvoiceId;
@@ -407,6 +421,7 @@ class PeppolBuilder
         $billingReference->appendChild($invoiceRef);
         $this->documentElement->appendChild($billingReference);
     }
+
     protected function getPeppolSchemeId(string $vatNumber): ?string
     {
         $countryCode = strtoupper(substr($vatNumber, 0, 2));
@@ -449,6 +464,7 @@ class PeppolBuilder
             default => '9925',
         };
     }
+
     protected function createElementWithCurrency(string $name, float $value): DOMElement
     {
         $el = $this->doc->createElement($name, number_format($value, 2, '.', ''));

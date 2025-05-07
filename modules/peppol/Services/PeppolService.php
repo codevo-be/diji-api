@@ -21,6 +21,9 @@ class PeppolService
         ]);
     }
 
+    /**
+     * Envoie un document UBL à Digiteal via Peppol.
+     */
     public function sendInvoice(string $ublXml, string $filename = 'invoice.xml'): array
     {
         $authHeader = 'Basic ' . base64_encode("{$this->username}:{$this->password}");
@@ -29,14 +32,14 @@ class PeppolService
             $response = $this->client->request('POST', 'outbound-ubl-documents', [
                 'headers' => [
                     'Authorization' => $authHeader,
-                    'Accept'        => 'application/json',
+                    'Accept' => 'application/json',
                 ],
                 'multipart' => [
                     [
-                        'name'     => 'document',
+                        'name' => 'document',
                         'contents' => $ublXml,
                         'filename' => $filename,
-                        'headers'  => ['Content-Type' => 'application/xml'],
+                        'headers' => ['Content-Type' => 'application/xml'],
                     ]
                 ]
             ]);

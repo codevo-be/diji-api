@@ -10,7 +10,7 @@ class ExpenseResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return array
      */
     public function toArray($request)
@@ -44,7 +44,7 @@ class ExpenseResource extends JsonResource
             'currency' => $this->currency,
             'subtotal' => $this->subtotal,
             'total' => $this->total,
-            'taxes' => (object) $this->taxes,
+            'taxes' => (object)$this->taxes,
             'structured_communication' => $this->structured_communication,
             'lines' => collect($this->lines ?? [])->map(function ($line) {
                 return [
