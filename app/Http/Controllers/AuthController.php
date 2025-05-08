@@ -53,7 +53,7 @@ class AuthController extends Controller
                     'access_token' => $content['access_token'],
                     'expires_in' => $content['expires_in'] ?? null,
                     'user' => $user,
-                    'tenant' => $user->tenants->first()
+                    'tenants' => $user->tenants
                 ]
             ]);
 
@@ -68,14 +68,18 @@ class AuthController extends Controller
         }
     }
 
-    public function getAuthenticatedUser(Request $request): \Illuminate\Http\JsonResponse
+    public function getAuthenticatedUser(): \Illuminate\Http\JsonResponse
     {
         $user = Auth::user();
+        $userId = $user->getAuthIdentifier();
+        $tenants = User::on('mysql')->findOrFail($userId)->tenants;
+
         $tenant = tenant();
 
         return response()->json([
             "data" => [
                 "user" => $user,
+                "tenants" => $tenants,
                 "tenant" => $tenant,
                 "modules" => $tenant->modules
             ]
