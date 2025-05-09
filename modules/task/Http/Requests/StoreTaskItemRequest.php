@@ -19,7 +19,9 @@ class StoreTaskItemRequest extends FormRequest
             'description' => 'nullable|string',
             'status' => ['sometimes', 'string'],
             'priority' => 'sometimes|integer|min:1|max:5',
-            'position' => 'sometimes|integer'
+            'position' => 'sometimes|integer',
+            'assigned_user_ids' => 'sometimes|array',
+            'assigned_user_ids.*' => 'integer',
         ];
     }
 
@@ -42,7 +44,10 @@ class StoreTaskItemRequest extends FormRequest
             'priority.min' => 'La priorité doit être au minimum 1.',
             'priority.max' => 'La priorité doit être au maximum 5.',
 
-            'order.integer' => 'L’ordre doit être un nombre entier.',
+            'position.integer' => 'La position doit être un nombre entier.',
+
+            'assigned_user_ids.array' => 'Les utilisateurs assignés doivent être un tableau.',
+            'assigned_user_ids.*.integer' => 'Chaque ID utilisateur doit être un nombre entier.',
         ];
     }
 }

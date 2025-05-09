@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Resources\UserResource;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -104,12 +105,8 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $users = User::whereHas('tenants', function ($query) use ($tenant) {
-            $query->where('tenant_id', $tenant->id);
-        })->get();
-
         return response()->json([
-            'data' => $users
+            'data' => UserResource::collection($tenant->users()->get())
         ]);
     }
 }

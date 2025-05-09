@@ -2,6 +2,7 @@
 
 namespace Diji\Task\Models;
 
+use App\Models\User;
 use App\Traits\AutoloadRelationships;
 use App\Traits\Filterable;
 use App\Traits\QuerySearch;
@@ -34,6 +35,7 @@ class TaskItem extends Model
         'status',
         'priority',
         'position',
+        'assigned_user_ids',
     ];
 
     protected static function boot()
@@ -75,5 +77,10 @@ class TaskItem extends Model
     public function group()
     {
         return $this->belongsTo(TaskGroup::class, 'task_group_id');
+    }
+
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'task_user', 'task_item_id', 'user_id');
     }
 }
