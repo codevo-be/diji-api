@@ -3,6 +3,7 @@
 namespace Diji\Calendar\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Diji\Calendar\Models\CalendarEvent;
 use Diji\Calendar\Http\Requests\StoreCalendarEventRequest;
 use Diji\Calendar\Http\Requests\UpdateCalendarEventRequest;
@@ -10,23 +11,41 @@ use Diji\Calendar\Resources\CalendarEventResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class CalendarEventController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = CalendarEvent::with('assignedUsers')->orderBy('start');
+        $query = CalendarEvent::orderBy('start');
 
         $events = $request->has('page')
             ? $query->paginate()
             : $query->get();
+
+        // Ajout manuel des utilisateurs assignés
+        foreach ($events as $event) {
+            $event->assigned_users = User::on('mysql')
+                ->whereIn('id', DB::connection('tenant')
+                    ->table('calendar_event_user')
+                    ->where('calendar_event_id', $event->id)
+                    ->pluck('user_id')
+                )->get();
+        }
 
         return CalendarEventResource::collection($events)->response();
     }
 
     public function show(int $event_id): JsonResponse
     {
-        $event = CalendarEvent::with('assignedUsers')->findOrFail($event_id);
+        $event = CalendarEvent::findOrFail($event_id);
+
+        $event->assigned_users = User::on('mysql')
+            ->whereIn('id', DB::connection('tenant')
+                ->table('calendar_event_user')
+                ->where('calendar_event_id', $event->id)
+                ->pluck('user_id')
+            )->get();
 
         return response()->json([
             'data' => new CalendarEventResource($event)
@@ -43,11 +62,22 @@ class CalendarEventController extends Controller
         $event = CalendarEvent::create($data);
 
         if (!empty($assignedUserIds)) {
-            $event->assignedUsers()->sync($assignedUserIds);
+            $rows = collect($assignedUserIds)->map(fn ($id) => [
+                'calendar_event_id' => $event->id,
+                'user_id' => $id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->toArray();
+
+            DB::connection('tenant')->table('calendar_event_user')->insert($rows);
         }
 
+        $event->assigned_users = User::on('mysql')
+            ->whereIn('id', $assignedUserIds)
+            ->get();
+
         return response()->json([
-            'data' => new CalendarEventResource($event->fresh(['assignedUsers']))
+            'data' => new CalendarEventResource($event)
         ], 201);
     }
 
@@ -63,20 +93,43 @@ class CalendarEventController extends Controller
         $event->update($data);
 
         if (is_array($assignedUserIds)) {
-            $event->assignedUsers()->sync($assignedUserIds);
+            DB::connection('tenant')
+                ->table('calendar_event_user')
+                ->where('calendar_event_id', $event->id)
+                ->delete();
+
+            if (!empty($assignedUserIds)) {
+                $rows = collect($assignedUserIds)->map(fn ($id) => [
+                    'calendar_event_id' => $event->id,
+                    'user_id' => $id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->toArray();
+
+                DB::connection('tenant')->table('calendar_event_user')->insert($rows);
+            }
         }
 
+        $event->assigned_users = User::on('mysql')
+            ->whereIn('id', DB::connection('tenant')
+                ->table('calendar_event_user')
+                ->where('calendar_event_id', $event->id)
+                ->pluck('user_id')
+            )->get();
+
         return response()->json([
-            'data' => new CalendarEventResource($event->fresh(['assignedUsers']))
+            'data' => new CalendarEventResource($event)
         ]);
     }
 
     public function destroy(int $event_id): Response
     {
-        $event = CalendarEvent::findOrFail($event_id);
+        DB::connection('tenant')
+            ->table('calendar_event_user')
+            ->where('calendar_event_id', $event_id)
+            ->delete();
 
-        $event->assignedUsers()->detach();
-        $event->delete();
+        CalendarEvent::findOrFail($event_id)->delete();
 
         return response()->noContent();
     }
