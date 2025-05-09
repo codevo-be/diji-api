@@ -13,7 +13,9 @@ class Project extends Model
     use AutoloadRelationships, HasFactory, QuerySearch, Filterable;
 
     protected $fillable = [
-        'name'
+        'name',
+        'start_date',
+        'end_date',
     ];
 
     protected array $searchable = ['name'];
