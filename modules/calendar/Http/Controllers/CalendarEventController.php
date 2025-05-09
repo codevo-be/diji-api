@@ -15,9 +15,7 @@ class CalendarEventController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CalendarEvent::query();
-
-        $query->orderBy('start');
+        $query = CalendarEvent::with('assignedUsers')->orderBy('start');
 
         $events = $request->has('page')
             ? $query->paginate()
@@ -28,21 +26,28 @@ class CalendarEventController extends Controller
 
     public function show(int $event_id): JsonResponse
     {
-        $event = CalendarEvent::findOrFail($event_id);
+        $event = CalendarEvent::with('assignedUsers')->findOrFail($event_id);
 
         return response()->json([
             'data' => new CalendarEventResource($event)
         ]);
     }
 
-    public function store(StoreCalendarEventRequest $request)
+    public function store(StoreCalendarEventRequest $request): JsonResponse
     {
         $data = $request->validated();
 
+        $assignedUserIds = $data['assigned_user_ids'] ?? [];
+        unset($data['assigned_user_ids']);
+
         $event = CalendarEvent::create($data);
 
+        if (!empty($assignedUserIds)) {
+            $event->assignedUsers()->sync($assignedUserIds);
+        }
+
         return response()->json([
-            'data' => new CalendarEventResource($event)
+            'data' => new CalendarEventResource($event->fresh(['assignedUsers']))
         ], 201);
     }
 
@@ -52,10 +57,17 @@ class CalendarEventController extends Controller
 
         $event = CalendarEvent::findOrFail($event_id);
 
+        $assignedUserIds = $data['assigned_user_ids'] ?? null;
+        unset($data['assigned_user_ids']);
+
         $event->update($data);
 
+        if (is_array($assignedUserIds)) {
+            $event->assignedUsers()->sync($assignedUserIds);
+        }
+
         return response()->json([
-            'data' => new CalendarEventResource($event)
+            'data' => new CalendarEventResource($event->fresh(['assignedUsers']))
         ]);
     }
 
@@ -63,6 +75,7 @@ class CalendarEventController extends Controller
     {
         $event = CalendarEvent::findOrFail($event_id);
 
+        $event->assignedUsers()->detach();
         $event->delete();
 
         return response()->noContent();

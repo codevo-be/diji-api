@@ -19,6 +19,8 @@ class UpdateCalendarEventRequest extends FormRequest
             'start' => 'sometimes|required|date',
             'end' => 'sometimes|nullable|date|after_or_equal:start',
             'all_day' => 'sometimes|boolean',
+            'assigned_user_ids' => 'sometimes|nullable|array',
+            'assigned_user_ids.*' => 'integer|exists:mysql.users,id',
         ];
     }
 
@@ -32,6 +34,9 @@ class UpdateCalendarEventRequest extends FormRequest
             'end.date' => 'La date de fin doit être une date valide.',
             'end.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
             'all_day.boolean' => 'Le champ all_day doit être vrai ou faux.',
+            'assigned_user_ids.array' => 'Les utilisateurs assignés doivent être une liste.',
+            'assigned_user_ids.*.integer' => 'Chaque utilisateur assigné doit être un identifiant valide.',
+            'assigned_user_ids.*.exists' => 'Un ou plusieurs utilisateurs sélectionnés n’existent pas.',
         ];
     }
 }
