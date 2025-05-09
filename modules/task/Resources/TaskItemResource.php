@@ -4,6 +4,7 @@ namespace Diji\Task\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 
 class TaskItemResource extends JsonResource
 {
@@ -13,7 +14,7 @@ class TaskItemResource extends JsonResource
      * @param Request $request
      * @return array
      */
-    public function toArray($request)
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,
@@ -24,6 +25,11 @@ class TaskItemResource extends JsonResource
             'status' => $this->status,
             'priority' => $this->priority,
             'position' => $this->position,
+            'assigned_user_ids' => DB::connection('tenant')
+                ->table('task_user')
+                ->where('task_item_id', $this->id)
+                ->pluck('user_id')
+                ->toArray(),
         ];
     }
 }

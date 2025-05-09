@@ -9,6 +9,7 @@ use Diji\Task\Models\TaskItem;
 use Diji\Task\Resources\TaskItemResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class TaskItemController extends Controller
 {
@@ -16,18 +17,23 @@ class TaskItemController extends Controller
     {
         $data = $request->validated();
 
-        // On extrait les utilisateurs assignés s'ils sont présents
         $assignedUserIds = $data['assigned_user_ids'] ?? [];
         unset($data['assigned_user_ids']);
 
         $item = TaskItem::create($data);
 
         if (!empty($assignedUserIds)) {
-            $item->assignedUsers()->sync($assignedUserIds);
+            $rows = collect($assignedUserIds)->map(fn ($userId) => [
+                'task_item_id' => $item->id,
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            DB::connection('tenant')->table('task_user')->insert($rows->toArray());
         }
 
         return response()->json([
-            'data' => new TaskItemResource($item->fresh(['assignedUsers'])),
+            'data' => new TaskItemResource($item),
         ], 201);
     }
 
@@ -37,18 +43,25 @@ class TaskItemController extends Controller
 
         $taskItem = TaskItem::findOrFail($item);
 
-        // On extrait les utilisateurs assignés s'ils sont présents
         $assignedUserIds = $data['assigned_user_ids'] ?? null;
         unset($data['assigned_user_ids']);
 
         $taskItem->update($data);
 
         if (is_array($assignedUserIds)) {
-            $taskItem->assignedUsers()->sync($assignedUserIds);
+            DB::connection('tenant')->table('task_user')->where('task_item_id', $taskItem->id)->delete();
+
+            $rows = collect($assignedUserIds)->map(fn ($userId) => [
+                'task_item_id' => $taskItem->id,
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            DB::connection('tenant')->table('task_user')->insert($rows->toArray());
         }
 
         return response()->json([
-            'data' => new TaskItemResource($taskItem->fresh(['assignedUsers'])),
+            'data' => new TaskItemResource($taskItem),
         ]);
     }
 
@@ -56,7 +69,7 @@ class TaskItemController extends Controller
     {
         $taskItem = TaskItem::findOrFail($item);
 
-        $taskItem->assignedUsers()->detach();
+        DB::connection('tenant')->table('task_user')->where('task_item_id', $taskItem->id)->delete();
         $taskItem->delete();
 
         return response()->noContent();

@@ -78,9 +78,4 @@ class TaskItem extends Model
     {
         return $this->belongsTo(TaskGroup::class, 'task_group_id');
     }
-
-    public function assignedUsers()
-    {
-        return $this->belongsToMany(User::class, 'task_user', 'task_item_id', 'user_id');
-    }
 }
