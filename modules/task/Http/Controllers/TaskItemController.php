@@ -9,6 +9,7 @@ use Diji\Task\Models\TaskItem;
 use Diji\Task\Resources\TaskItemResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class TaskItemController extends Controller
 {
@@ -16,7 +17,20 @@ class TaskItemController extends Controller
     {
         $data = $request->validated();
 
+        $assignedUserIds = $data['assigned_user_ids'] ?? [];
+        unset($data['assigned_user_ids']);
+
         $item = TaskItem::create($data);
+
+        if (!empty($assignedUserIds)) {
+            $rows = collect($assignedUserIds)->map(fn ($userId) => [
+                'task_item_id' => $item->id,
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            DB::connection('tenant')->table('task_user')->insert($rows->toArray());
+        }
 
         return response()->json([
             'data' => new TaskItemResource($item),
@@ -27,20 +41,36 @@ class TaskItemController extends Controller
     {
         $data = $request->validated();
 
-        $item = TaskItem::findOrFail($item);
+        $taskItem = TaskItem::findOrFail($item);
 
-        $item->update($data);
+        $assignedUserIds = $data['assigned_user_ids'] ?? null;
+        unset($data['assigned_user_ids']);
+
+        $taskItem->update($data);
+
+        if (is_array($assignedUserIds)) {
+            DB::connection('tenant')->table('task_user')->where('task_item_id', $taskItem->id)->delete();
+
+            $rows = collect($assignedUserIds)->map(fn ($userId) => [
+                'task_item_id' => $taskItem->id,
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            DB::connection('tenant')->table('task_user')->insert($rows->toArray());
+        }
 
         return response()->json([
-            'data' => new TaskItemResource($item),
+            'data' => new TaskItemResource($taskItem),
         ]);
     }
 
     public function destroy(int $project, int $group, int $item): Response
     {
-        $item = TaskItem::findOrFail($item);
+        $taskItem = TaskItem::findOrFail($item);
 
-        $item->delete();
+        DB::connection('tenant')->table('task_user')->where('task_item_id', $taskItem->id)->delete();
+        $taskItem->delete();
 
         return response()->noContent();
     }
