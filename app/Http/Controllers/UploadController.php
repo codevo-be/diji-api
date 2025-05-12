@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GetModelUpload;
 use App\Http\Requests\PostUpload;
 use App\Http\Requests\StoreMetaRequest;
-use App\Models\Meta;
 use App\Models\Tenant;
 use App\Models\Upload;
 use App\Resources\MetaResource;
@@ -34,11 +33,6 @@ class UploadController extends Controller
         $tenant = tenant();
         $model = $data['model'];
         $modelId = $data['model_id'];
-
-        if ($model === 'metas')
-        {
-            $modelId = Meta::findByKey($data['model_id'])->id;
-        }
 
         $files = $data['files'] ?? [];
         foreach ($files as $file) {

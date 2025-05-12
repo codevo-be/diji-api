@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Meta;
 use App\Models\Upload;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -24,6 +25,10 @@ class UploadService
     public function getFiles(string $model, string $modelId)
     {
         $modelClass = $this->getModelClass($model);
+        if ($model === 'metas')
+        {
+            $modelId = Meta::findByKey($modelId)->id;
+        }
 
         // Récupérer tous les fichiers liés à ce modèle
         return Upload::where('model_type', $modelClass)
@@ -49,6 +54,10 @@ class UploadService
         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $mimeType = $file->getMimeType();
         $modelClass = $this->getModelClass($model);
+        if ($model === 'metas')
+        {
+            $modelId = Meta::findByKey($modelId)->id;
+        }
 
         //Retourner le modèle créé
         return Upload::create([
