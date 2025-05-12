@@ -16,7 +16,9 @@ class TaskGroupController extends Controller
      */
     public function index(Request $request, int $project)
     {
-        $query = TaskGroup::where('project_id', $project)->orderBy('position');
+        $query = TaskGroup::with(['items' => function ($query) {
+            $query->orderBy('position');
+        }])->where('project_id', $project)->orderBy('position');
 
         $groups = $request->has('page')
             ? $query->paginate()
@@ -24,6 +26,7 @@ class TaskGroupController extends Controller
 
         return TaskGroupResource::collection($groups)->response();
     }
+
 
     public function show(int $project_id, int $group_id)
     {
