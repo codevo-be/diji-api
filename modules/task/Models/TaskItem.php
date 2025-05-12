@@ -2,6 +2,7 @@
 
 namespace Diji\Task\Models;
 
+use App\Models\User;
 use App\Traits\AutoloadRelationships;
 use App\Traits\Filterable;
 use App\Traits\QuerySearch;
@@ -34,6 +35,7 @@ class TaskItem extends Model
         'status',
         'priority',
         'position',
+        'assigned_user_ids',
         'tracked_time'
     ];
 

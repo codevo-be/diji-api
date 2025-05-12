@@ -1,12 +1,12 @@
 <?php
 
-namespace Diji\Task\Resources;
+namespace Diji\Calendar\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 
-class TaskItemResource extends JsonResource
+class CalendarEventResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,17 +18,14 @@ class TaskItemResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'task_group_id' => $this->task_group_id,
-            'task_number' => $this->task_number,
-            'name' => $this->name,
+            'title' => $this->title,
             'description' => $this->description,
-            'status' => $this->status,
-            'priority' => $this->priority,
-            'position' => $this->position,
-            'tracked_time' => $this->tracked_time,
+            'start' => $this->start,
+            'end' => $this->end,
+            'allDay' => $this->all_day,
             'assigned_user_ids' => DB::connection('tenant')
-                ->table('task_user')
-                ->where('task_item_id', $this->id)
+                ->table('calendar_event_user')
+                ->where('calendar_event_id', $this->id)
                 ->pluck('user_id')
                 ->toArray(),
         ];

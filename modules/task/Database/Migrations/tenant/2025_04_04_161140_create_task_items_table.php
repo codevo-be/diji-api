@@ -1,5 +1,6 @@
 <?php
 
+use Diji\Task\Models\TaskItem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
 
-            $table->enum('status', \Diji\Task\Models\TaskItem::STATUSES)->default('pending');
+            $table->enum('status', TaskItem::STATUSES)->default('pending');
 
             $table->integer('priority')->default(1);
             $table->integer('position')->default(1);

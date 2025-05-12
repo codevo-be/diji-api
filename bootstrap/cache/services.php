@@ -42,7 +42,8 @@
     38 => 'Diji\\Team\\TeamServiceProvider',
     39 => 'Diji\\Task\\TaskServiceProvider',
     40 => 'Diji\\Project\\ProjectServiceProvider',
-    41 => 'Diji\\Module\\ModuleServiceProvider',
+    41 => 'Diji\\Calendar\\CalendarServiceProvider',
+    42 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'eager' => 
   array (
@@ -72,7 +73,8 @@
     23 => 'Diji\\Team\\TeamServiceProvider',
     24 => 'Diji\\Task\\TaskServiceProvider',
     25 => 'Diji\\Project\\ProjectServiceProvider',
-    26 => 'Diji\\Module\\ModuleServiceProvider',
+    26 => 'Diji\\Calendar\\CalendarServiceProvider',
+    27 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'deferred' => 
   array (

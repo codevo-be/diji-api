@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Resources\UserResource;
 use GuzzleHttp\Psr7\ServerRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\Exceptions\OAuthServerException;
@@ -12,7 +14,7 @@ use Laravel\Passport\Http\Controllers\AccessTokenController;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): \Illuminate\Http\JsonResponse
+    public function login(Request $request): JsonResponse
     {
         $clientId = config('services.passport.password_grant_client.id');
         $clientSecret = config('services.passport.password_grant_client.secret');
@@ -68,7 +70,7 @@ class AuthController extends Controller
         }
     }
 
-    public function getAuthenticatedUser(Request $request): \Illuminate\Http\JsonResponse
+    public function getAuthenticatedUser(Request $request): JsonResponse
     {
         $user = Auth::user();
         $tenant = tenant();
@@ -91,5 +93,20 @@ class AuthController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    public function getUsersForTenant(): JsonResponse
+    {
+        $tenant = tenant();
+
+        if (!$tenant) {
+            return response()->json([
+                'message' => 'Aucun tenant associé à l’utilisateur.'
+            ], 403);
+        }
+
+        return response()->json([
+            'data' => UserResource::collection($tenant->users()->get())
+        ]);
     }
 }

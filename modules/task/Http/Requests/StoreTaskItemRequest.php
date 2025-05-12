@@ -21,6 +21,9 @@ class StoreTaskItemRequest extends FormRequest
             'priority' => 'sometimes|integer|min:1|max:5',
             'position' => 'sometimes|integer',
             'tracked_time' => 'sometimes|integer',
+            'position' => 'sometimes|integer',
+            'assigned_user_ids' => 'sometimes|array',
+            'assigned_user_ids.*' => 'integer',
         ];
     }
 
@@ -45,6 +48,10 @@ class StoreTaskItemRequest extends FormRequest
 
             'order.integer' => 'L’ordre doit être un nombre entier.',
             'tracked_time.integer' => 'Le temps suivi doit être un nombre entier.',
+            'position.integer' => 'La position doit être un nombre entier.',
+
+            'assigned_user_ids.array' => 'Les utilisateurs assignés doivent être un tableau.',
+            'assigned_user_ids.*.integer' => 'Chaque ID utilisateur doit être un nombre entier.',
         ];
     }
 }
