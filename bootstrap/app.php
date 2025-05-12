@@ -20,7 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\CustomAuthenticate::class,
             'auth.tenant' => \App\Http\Middleware\AuthTenantRequest::class,
-            'Pdf' => Barryvdh\DomPDF\Facade\Pdf::class
+            'Pdf' => Barryvdh\DomPDF\Facade\Pdf::class,
+            'auth.cookie.to.header' => \App\Http\Middleware\ConvertAuthCookieToHeader::class
+        ]);
+
+        $middleware->priority([
+            \App\Http\Middleware\ConvertAuthCookieToHeader::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Requests\GetModelUpload;
+use App\Http\Requests\PostUpload;
 use App\Http\Requests\StoreMetaRequest;
-use App\Models\Meta;
 use App\Models\Tenant;
 use App\Models\Upload;
 use App\Resources\MetaResource;
+use App\Services\UploadService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -16,58 +19,74 @@ use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
-    public function store(Request $request)
+    private UploadService $uploadService;
+
+    public function __construct()
     {
-        $request->validate([
-            'file' => 'required|file'
-        ]);
-
-        $tenant = tenant();
-
-        $file = $request->file('file');
-        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $fileName_hashed = sha1($filename) . '.' . $file->getClientOriginalExtension();
-        $year = Carbon::now()->year;
-        $month = Carbon::now()->month;
-
-        $path = Storage::disk('uploads')->putFileAs("/{$tenant->id}/uploads/{$year}/{$month}", $file, $fileName_hashed);
-
-        $upload = Upload::create([
-            'filename' => $filename,
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
-        ]);
-
-        return response()->json([
-            "data" => $upload
-        ]);
+        $this->uploadService = new UploadService();
     }
 
-    public function show(string $tenant, string $year, string $month, string $filename)
+    public function store(PostUpload $request): JsonResponse
     {
-       /* $user = Auth::user();
+        $data = $request->validated();
 
-        if(!$user){
-            return response()->json([
-                "message" => "Vous n'êtes pas autorisé à accéder a ce fichier !",
-                "user" => $user
-            ]);
-        }*/
+        $tenant = tenant();
+        $model = $data['model'];
+        $modelId = $data['model_id'];
 
-        $path = storage_path("app/private/{$tenant}/uploads");
-
-        if (!file_exists("{$path}/{$year}/{$month}/{$filename}")) {
-            return response()->json(['error' => "Le fichier n'existe pas"], 404);
+        $files = $data['files'] ?? [];
+        foreach ($files as $file) {
+            $this->uploadService->save($file, $tenant->id, $model, $modelId, $data['name'] ?? null);
         }
 
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => $path,
-            'visibility' => 'private',
-        ]);
+        return response()->json([
+            "message" => "Les fichiers ont été téléchargés avec succès",
+        ], 201);
+    }
 
-        $filePath = $disk->path("{$year}/{$month}/{$filename}");
+    public function show(string $model, string $modelId): JsonResponse
+    {
+        $tenant = tenant();
 
-        return response()->file($filePath);
+        $files = $this->uploadService->getFiles($model, $modelId);
+
+        return response()->json(
+            $files
+        );
+    }
+
+    public function preview(Request $request, $model, $year, $month, $filename)
+    {
+        $tenantId = tenant()->id;
+        $path = "{$tenantId}/uploads/{$model}/{$year}/{$month}/{$filename}";
+
+        if (!Storage::disk('uploads')->exists($path)) {
+            abort(404, "Fichier introuvable");
+        }
+
+        $disposition = $request->header('X-Disposition') ?? 'inline';
+        if ($disposition !== 'inline' && $disposition !== 'attachment') {
+            abort(400, 'X-Disposition header must be either "inline" or "attachment".');
+        }
+
+        $file = Storage::disk('uploads')->get($path);
+        $mimeType = Storage::disk('uploads')->mimeType($path);
+
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', "{$disposition}; filename=\"{$filename}\"");
+    }
+
+
+    public function destroy(string $uploadId)
+    {
+        try {
+            $this->uploadService->delete($uploadId);
+            return response()->noContent();
+        } catch (\Exception $exception) {
+            return response()->json([
+                "message" => "Erreur lors de la suppression du fichier : " . $exception->getMessage(),
+            ], 500);
+        }
     }
 }

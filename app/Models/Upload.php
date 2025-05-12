@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Upload extends Model
 {
@@ -12,6 +13,6 @@ class Upload extends Model
 
     public function getUrlAttribute()
     {
-        return env('APP_URL') . "/" . $this->path;
+        return env('APP_URL') . "/api/" . Str::after($this->path, '/');
     }
 }
