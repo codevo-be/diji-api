@@ -15,6 +15,7 @@ class UploadService
         $models = [
             'expense' => \Diji\Billing\Models\Transaction::class,
             'invoice' => \Diji\Billing\Models\Invoice::class,
+            'metas' => \App\Models\Meta::class,
         ];
 
         return $models[$modelType] ?? null;

@@ -44,6 +44,11 @@ class Meta extends Model
         }
     }
 
+    public static function findByKey(string $key)
+    {
+        return self::where('key', $key)->first();
+    }
+
     public static function getValue(string $key)
     {
         $meta = self::where('key', $key)->first();

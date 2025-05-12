@@ -35,6 +35,11 @@ class UploadController extends Controller
         $model = $data['model'];
         $modelId = $data['model_id'];
 
+        if ($model === 'metas')
+        {
+            $modelId = Meta::findByKey($data['model_id'])->id;
+        }
+
         $files = $data['files'] ?? [];
         foreach ($files as $file) {
             $this->uploadService->save($file, $tenant->id, $model, $modelId);
