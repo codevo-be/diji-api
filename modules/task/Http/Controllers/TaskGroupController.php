@@ -7,6 +7,7 @@ use Diji\Task\Http\Requests\StoreTaskGroupRequest;
 use Diji\Task\Http\Requests\UpdateTaskGroupRequest;
 use Diji\Task\Models\TaskGroup;
 use Diji\Task\Resources\TaskGroupResource;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class TaskGroupController extends Controller
@@ -66,10 +67,20 @@ class TaskGroupController extends Controller
 
     public function destroy(int $project, int $group_id)
     {
-        $group = TaskGroup::findOrFail($group_id);
+        try {
+            TaskGroup::findOrFail($group_id)->delete();
 
-        $group->delete();
+            return response()->json([
+                'message' => 'Colonne supprimée avec succès.'
+            ]);
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json([
+                    'message' => 'Impossible de supprimer cette colonne car elle contient encore des éléments.'
+                ], 409);
+            }
 
-        return response()->noContent();
+            throw $e;
+        }
     }
 }
