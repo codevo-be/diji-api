@@ -37,29 +37,48 @@ class UploadService
             ->toArray();
     }
 
-    public function save($file, string $tenantId, string $model, $modelId)
+    public function save($file, string $tenantId, string $model, $modelId, ?string $name = null)
     {
-        //Suppression de toutes les anciennes occurrences
+        // Date actuelle pour le chemin
         $year = Carbon::now()->year;
         $month = Carbon::now()->month;
 
-        //Enregistrer le fichier sur le disque
+        // Nom du fichier (sans extension)
+        $filename = $name ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        // Type MIME
+        $mimeType = $file->getMimeType();
+
+        // Résolution du model class
+        $modelClass = $this->getModelClass($model);
+
+        // Spécial pour les metas
+        if ($model === 'metas') {
+            $modelId = Meta::findByKey($modelId)?->id;
+        }
+
+        // Suppression de l'ancien fichier (si existe)
+        $existing = Upload::where('model_type', $modelClass)
+            ->where('model_id', $modelId)
+            ->where('filename', $filename)
+            ->first();
+
+        if ($existing) {
+            // Supprimer physiquement l'ancien fichier si besoin
+            Storage::disk('uploads')->delete($existing->path);
+
+            // Supprimer la ligne en db
+            $existing->delete();
+        }
+
+        // Enregistrer le fichier avec un nom unique (par hash)
         $path = Storage::disk('uploads')->putFileAs(
             "/{$tenantId}/uploads/{$model}/{$year}/{$month}",
             $file,
             sha1($file->getClientOriginalName()) . '.' . $file->getClientOriginalExtension()
         );
 
-        // Variables du fichier
-        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $mimeType = $file->getMimeType();
-        $modelClass = $this->getModelClass($model);
-        if ($model === 'metas')
-        {
-            $modelId = Meta::findByKey($modelId)->id;
-        }
-
-        //Retourner le modèle créé
+        // Retourner le nouvel enregistrement
         return Upload::create([
             'model_type' => $modelClass,
             'model_id' => $modelId,
@@ -68,6 +87,7 @@ class UploadService
             'mime_type' => $mimeType,
         ]);
     }
+
 
     /**
      * @throws Exception

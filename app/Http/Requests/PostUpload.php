@@ -25,6 +25,7 @@ class PostUpload extends FormRequest
         return [
             'model' => ["required", "string", Rule::in($acceptedTypes)],
             'model_id' => 'required|string',
+            'name' => 'sometimes|string|max:255',
             'files' => "nullable|array",
             'files.*' => "file|mimes:pdf,jpeg,png",
         ];
