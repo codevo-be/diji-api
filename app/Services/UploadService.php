@@ -120,25 +120,37 @@ class UploadService
             $upload = Upload::findOrFail($uploadId);
             $path = $upload->path;
             $folderPath = dirname($path);
+            $diskName = $upload->disk;
 
             // Supprimer la ligne de la base de données
             $upload->delete();
+
             // Supprimer le fichier du disque
-            Storage::disk('private')->delete($path);
-            $this->deleteEmptyParentDirectories($folderPath);
+            Storage::disk($diskName)->delete($path);
+            $this->deleteEmptyParentDirectories($diskName, $folderPath);
         } catch (ModelNotFoundException $exception) {
             throw new Exception("Impossible de trouver le fichier avec l'ID {$uploadId}.");
         }
     }
 
-    private function deleteEmptyParentDirectories(string $path): void
+    private function deleteEmptyParentDirectories(string $diskName, string $path): void
     {
-        $disk = Storage::disk('private');
+        $disk = Storage::disk($diskName);
 
         // Tant que le dossier est vide et qu'on n'est pas à la racine
-        while ($path && empty($disk->files($path)) && empty($disk->directories($path))) {
+        while ($path && $path !== '.' && $path !== '/' && $path !== '') {
+            if (!empty($disk->files($path)) || !empty($disk->directories($path))) {
+                break;
+            }
+
             $disk->deleteDirectory($path);
-            $path = dirname($path); // remonter d'un niveau
+
+            $newPath = dirname($path);
+            if ($newPath === $path) {
+                break;
+            }
+
+            $path = $newPath;
         }
     }
 }
