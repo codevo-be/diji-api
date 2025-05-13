@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Upload;
 
 use App\Models\Meta;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +23,7 @@ class PostUpload extends FormRequest
         );
 
         return [
+            'public' => 'sometimes|boolean',
             'model' => ["required", "string", Rule::in($acceptedTypes)],
             'model_id' => 'required|string',
             'name' => 'sometimes|string|max:255',

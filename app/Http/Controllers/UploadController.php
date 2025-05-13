@@ -4,18 +4,10 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Requests\GetModelUpload;
-use App\Http\Requests\PostUpload;
-use App\Http\Requests\StoreMetaRequest;
-use App\Models\Tenant;
-use App\Models\Upload;
-use App\Resources\MetaResource;
+use App\Http\Requests\Upload\PostUpload;
 use App\Services\UploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
@@ -31,7 +23,7 @@ class UploadController extends Controller
     public function publicPreview(Request $request, string $tenantId, string $model, string $year, string $month, string $filename)
     {
         try {
-            $data = $this->uploadService->getUploadFile('public', $tenantId, $model, $year, $month, $filename);
+            $data = $this->uploadService->getUploadFile('public', $model, $year, $month, $filename);
         } catch (\Exception $e) {
             abort(404, $e->getMessage());
         }
@@ -55,10 +47,13 @@ class UploadController extends Controller
         $tenant = tenant();
         $model = $data['model'];
         $modelId = $data['model_id'];
+        $public = $data['public'] ?? false;
+
+        $disk = $public ? 'public' : 'private';
 
         $files = $data['files'] ?? [];
         foreach ($files as $file) {
-            $this->uploadService->save($file, $tenant->id, $model, $modelId, $data['name'] ?? null);
+            $this->uploadService->save($disk, $file, $tenant->id, $model, $modelId, $data['name'] ?? null);
         }
 
         return response()->json([
@@ -82,7 +77,7 @@ class UploadController extends Controller
         $tenantId = tenant()->id;
 
         try {
-            $data = $this->uploadService->getUploadFile('uploads', $tenantId, $model, $year, $month, $filename);
+            $data = $this->uploadService->getUploadFile('private', $model, $year, $month, $filename);
         } catch (\Exception $e) {
             abort(404, $e->getMessage());
         }

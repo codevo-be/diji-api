@@ -45,7 +45,7 @@ return [
             'throw' => false,
         ],
 
-        'uploads' => [
+        'private' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
             'visibility' => 'private'

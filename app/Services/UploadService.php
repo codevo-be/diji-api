@@ -40,9 +40,9 @@ class UploadService
     /**
      * @throws Exception
      */
-    public function getUploadFile(string $diskName, string $tenantId, string $model, string $year, string $month, string $filename): array
+    public function getUploadFile(string $diskName, string $model, string $year, string $month, string $filename): array
     {
-        $path = "{$tenantId}/uploads/{$model}/{$year}/{$month}/{$filename}";
+        $path = "uploads/{$model}/{$year}/{$month}/{$filename}";
         $disk = Storage::disk($diskName);
 
         if (!$disk->exists($path)) {
@@ -56,8 +56,10 @@ class UploadService
         ];
     }
 
-    public function save($file, string $tenantId, string $model, $modelId, ?string $name = null)
+    public function save(string $diskName, $file, string $tenantId, string $model, $modelId, ?string $name = null)
     {
+        $disk = Storage::disk($diskName);
+
         // Date actuelle pour le chemin
         $year = Carbon::now()->year;
         $month = Carbon::now()->month;
@@ -84,21 +86,22 @@ class UploadService
 
         if ($existing) {
             // Supprimer physiquement l'ancien fichier si besoin
-            Storage::disk('uploads')->delete($existing->path);
+            $disk->delete($existing->path);
 
             // Supprimer la ligne en db
             $existing->delete();
         }
 
         // Enregistrer le fichier avec un nom unique (par hash)
-        $path = Storage::disk('uploads')->putFileAs(
-            "/{$tenantId}/uploads/{$model}/{$year}/{$month}",
+        $path = $disk->putFileAs(
+            "/uploads/{$model}/{$year}/{$month}",
             $file,
             sha1($file->getClientOriginalName()) . '.' . $file->getClientOriginalExtension()
         );
 
         // Retourner le nouvel enregistrement
         return Upload::create([
+            'disk' => $diskName,
             'model_type' => $modelClass,
             'model_id' => $modelId,
             'filename' => $filename,
@@ -121,7 +124,7 @@ class UploadService
             // Supprimer la ligne de la base de données
             $upload->delete();
             // Supprimer le fichier du disque
-            Storage::disk('uploads')->delete($path);
+            Storage::disk('private')->delete($path);
             $this->deleteEmptyParentDirectories($folderPath);
         } catch (ModelNotFoundException $exception) {
             throw new Exception("Impossible de trouver le fichier avec l'ID {$uploadId}.");
@@ -130,7 +133,7 @@ class UploadService
 
     private function deleteEmptyParentDirectories(string $path): void
     {
-        $disk = Storage::disk('uploads');
+        $disk = Storage::disk('private');
 
         // Tant que le dossier est vide et qu'on n'est pas à la racine
         while ($path && empty($disk->files($path)) && empty($disk->directories($path))) {
