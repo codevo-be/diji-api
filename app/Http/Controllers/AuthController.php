@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tenant;
+use App\Models\Upload;
 use App\Models\User;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Http\Request;
@@ -46,6 +47,22 @@ class AuthController extends Controller
             }
 
             $user = User::where('email', $request->email)->firstOrFail();
+            $rawTenants = $user->tenants;
+            $tenants = [];
+
+            foreach ($rawTenants as $rawTenant) {
+                tenancy()->initialize($rawTenant->id);
+                $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
+                tenancy()->end();
+
+                $logoPath = $relativePath ?? '';
+                $tenant = array(
+                    'id' => $rawTenant->id,
+                    'name' => $rawTenant->name,
+                    'logo' => $logoPath
+                );
+                $tenants[] = $tenant;
+            }
 
             return response()->json([
                 "data" => [
@@ -53,7 +70,7 @@ class AuthController extends Controller
                     'access_token' => $content['access_token'],
                     'expires_in' => $content['expires_in'] ?? null,
                     'user' => $user,
-                    'tenants' => $user->tenants
+                    'tenants' => $tenants
                 ]
             ]);
 
@@ -79,8 +96,8 @@ class AuthController extends Controller
         return response()->json([
             "data" => [
                 "user" => $user,
-                "tenants" => $tenants,
                 "tenant" => $tenant,
+                "tenants" => $tenants,
                 "modules" => $tenant->modules
             ]
         ]);
