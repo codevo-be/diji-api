@@ -26,6 +26,28 @@ class UploadController extends Controller
         $this->uploadService = new UploadService();
     }
 
+    //region Public Endpoints
+
+    public function publicPreview(Request $request, string $tenantId, string $model, string $year, string $month, string $filename)
+    {
+        try {
+            $data = $this->uploadService->getUploadFile('public', $tenantId, $model, $year, $month, $filename);
+        } catch (\Exception $e) {
+            abort(404, $e->getMessage());
+        }
+
+        $disposition = $request->header('X-Disposition') ?? 'inline';
+        if (!in_array($disposition, ['inline', 'attachment'])) {
+            abort(400, 'X-Disposition header must be either "inline" or "attachment".');
+        }
+
+        return response($data['file'], 200)
+            ->header('Content-Type', $data['mime'])
+            ->header('Content-Disposition', "{$disposition}; filename=\"{$data['filename']}\"");
+    }
+    //endregion
+
+    //region Private Endpoints
     public function store(PostUpload $request): JsonResponse
     {
         $data = $request->validated();
@@ -58,25 +80,22 @@ class UploadController extends Controller
     public function preview(Request $request, $model, $year, $month, $filename)
     {
         $tenantId = tenant()->id;
-        $path = "{$tenantId}/uploads/{$model}/{$year}/{$month}/{$filename}";
 
-        if (!Storage::disk('uploads')->exists($path)) {
-            abort(404, "Fichier introuvable");
+        try {
+            $data = $this->uploadService->getUploadFile('uploads', $tenantId, $model, $year, $month, $filename);
+        } catch (\Exception $e) {
+            abort(404, $e->getMessage());
         }
 
         $disposition = $request->header('X-Disposition') ?? 'inline';
-        if ($disposition !== 'inline' && $disposition !== 'attachment') {
+        if (!in_array($disposition, ['inline', 'attachment'])) {
             abort(400, 'X-Disposition header must be either "inline" or "attachment".');
         }
 
-        $file = Storage::disk('uploads')->get($path);
-        $mimeType = Storage::disk('uploads')->mimeType($path);
-
-        return response($file, 200)
-            ->header('Content-Type', $mimeType)
-            ->header('Content-Disposition', "{$disposition}; filename=\"{$filename}\"");
+        return response($data['file'], 200)
+            ->header('Content-Type', $data['mime'])
+            ->header('Content-Disposition', "{$disposition}; filename=\"{$data['filename']}\"");
     }
-
 
     public function destroy(string $uploadId)
     {
@@ -89,4 +108,5 @@ class UploadController extends Controller
             ], 500);
         }
     }
+    //endregion
 }

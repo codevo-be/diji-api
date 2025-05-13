@@ -37,6 +37,25 @@ class UploadService
             ->toArray();
     }
 
+    /**
+     * @throws Exception
+     */
+    public function getUploadFile(string $diskName, string $tenantId, string $model, string $year, string $month, string $filename): array
+    {
+        $path = "{$tenantId}/uploads/{$model}/{$year}/{$month}/{$filename}";
+        $disk = Storage::disk($diskName);
+
+        if (!$disk->exists($path)) {
+            throw new \Exception("Fichier introuvable", 404);
+        }
+
+        return [
+            'file' => $disk->get($path),
+            'mime' => $disk->mimeType($path),
+            'filename' => $filename,
+        ];
+    }
+
     public function save($file, string $tenantId, string $model, $modelId, ?string $name = null)
     {
         // Date actuelle pour le chemin

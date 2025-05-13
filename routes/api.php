@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/login', [\App\Http\Controllers\AuthController::class, 'login']);
-
+Route::get('/public/{tenantId}/uploads/{model}/{year}/{month}/{filename}', [\App\Http\Controllers\UploadController::class, 'publicPreview']);
 
 Route::middleware(['auth:api','auth.tenant'])->prefix('auth')->group(function () {
     Route::get('/user', [\App\Http\Controllers\AuthController::class, 'getAuthenticatedUser']);
