@@ -55,7 +55,7 @@ class AuthController extends Controller
                 $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
                 tenancy()->end();
 
-                $logoUrl = $relativePath ? '/api/public/' . $relativePath : '';
+                $logoUrl = $relativePath ? '/api/public/' . $rawTenant->id . '/' . $relativePath : '';
                 $tenant = array(
                     'id' => $rawTenant->id,
                     'name' => $rawTenant->name,
@@ -99,7 +99,7 @@ class AuthController extends Controller
         $tenants = [];
 
         $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
-        $logoUrl = $relativePath ? '/api/public/' . $relativePath : '';
+        $logoUrl = $relativePath ? '/api/public/' . $rawTenant->id . '/' . $relativePath : '';
         $tenant = array(
             'id' => $rawTenant->id,
             'name' => $rawTenant->name,
@@ -111,7 +111,7 @@ class AuthController extends Controller
             $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
             tenancy()->end();
 
-            $logoUrl = $relativePath ? '/api/public/' . $relativePath : '';
+            $logoUrl = $relativePath ? '/api/public/' . $item->id . '/' . $relativePath : '';
             $newTenant = array(
                 'id' => $item->id,
                 'name' => $item->name,
