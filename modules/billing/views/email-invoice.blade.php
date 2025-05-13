@@ -5,19 +5,19 @@
     <link rel="profile" href="https://gmpg.org/xfn/11">
 
     <style>
-        body{
+        body {
             margin: 0;
             font-family: sans-serif;
         }
 
-        .subtitle{
+        .subtitle {
             text-align: center;
             font-size: 14px;
             color: #7A7A7A;
             margin: 0;
         }
 
-        .title{
+        .title {
             text-align: center;
             font-size: 18px;
             font-weight: bold;
@@ -25,7 +25,7 @@
             margin: 10px 0 0 0;
         }
 
-        .item{
+        .item {
             margin-bottom: 30px;
         }
     </style>
@@ -35,7 +35,9 @@
     <div style="background-color: white; max-width: 640px; margin: 0 auto; padding:50px; border-radius: 12px;">
 
         @if($logo)
-            <img style="width:220px; display: block; margin: 0 auto 40px auto; object-position: center; object-fit: contain;" src={!! $logo !!} />
+            <img
+                style="width:220px; display: block; margin: 0 auto 40px auto; object-position: center; object-fit: contain;"
+                src={!! $logo !!} />
         @endif
 
         <div style="text-align: center; font-size: 14px; margin-bottom:50px;">
@@ -48,7 +50,8 @@
 
             @if($qrcode)
                 <p style="text-align: center;margin:0; color: #7A7A7A;">Scannez, payez.</p>
-                <img style="display:block; margin: 0 auto 40px auto; width: 220px; height: 220px;" src="{!! $qrcode !!}"/>
+                <img style="display:block; margin: 0 auto 40px auto; width: 220px; height: 220px;"
+                     src="{!! $qrcode !!}"/>
             @endif
 
             <div class="item">

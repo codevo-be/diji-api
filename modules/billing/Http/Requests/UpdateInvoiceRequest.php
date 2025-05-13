@@ -43,6 +43,7 @@ class UpdateInvoiceRequest extends FormRequest
 
             'date' => 'sometimes|date',
             'due_date' => 'sometimes|nullable|date',
+            'check_paid_notification' => 'sometimes|boolean',
             'payment_date' => 'sometimes|nullable|date',
             'subtotal' => 'sometimes|nullable|numeric',
             'taxes' => 'sometimes|nullable|array',
