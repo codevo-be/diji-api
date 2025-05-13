@@ -89,16 +89,43 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         $userId = $user->getAuthIdentifier();
-        $tenants = User::on('mysql')->findOrFail($userId)->tenants;
+        $rawTenant = tenant();
+        $modules = $rawTenant->modules;
 
-        $tenant = tenant();
+        $rawTenants = User::on('mysql')->findOrFail($userId)->tenants
+            ->reject(function ($tenant) use ($rawTenant) {
+                return $tenant->id === $rawTenant->id;
+            })->values();
+        $tenants = [];
+
+        $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
+        $logoUrl = $relativePath ? '/api/public/' . $relativePath : '';
+        $tenant = array(
+            'id' => $rawTenant->id,
+            'name' => $rawTenant->name,
+            'logoUrl' => $logoUrl
+        );
+
+        foreach ($rawTenants as $item) {
+            tenancy()->initialize($item->id);
+            $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
+            tenancy()->end();
+
+            $logoUrl = $relativePath ? '/api/public/' . $relativePath : '';
+            $newTenant = array(
+                'id' => $item->id,
+                'name' => $item->name,
+                'logoUrl' => $logoUrl
+            );
+            $tenants[] = $newTenant;
+        }
 
         return response()->json([
             "data" => [
                 "user" => $user,
                 "tenant" => $tenant,
                 "tenants" => $tenants,
-                "modules" => $tenant->modules
+                "modules" => $modules
             ]
         ]);
     }
