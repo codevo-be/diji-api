@@ -1,6 +1,6 @@
 <?php
 
-namespace Diji\project;
+namespace Diji\Project;
 
 use Illuminate\Support\ServiceProvider;
 
