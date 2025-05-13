@@ -55,11 +55,11 @@ class AuthController extends Controller
                 $relativePath = Upload::where('filename', 'tenantLogo')->value('path');
                 tenancy()->end();
 
-                $logoPath = $relativePath ?? '';
+                $logoUrl = $relativePath ? 'http://localhost:8000/api/public/' . $relativePath : '';
                 $tenant = array(
                     'id' => $rawTenant->id,
                     'name' => $rawTenant->name,
-                    'logo' => $logoPath
+                    'logoUrl' => $logoUrl
                 );
                 $tenants[] = $tenant;
             }
