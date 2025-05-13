@@ -23,6 +23,7 @@ class UploadController extends Controller
     public function publicPreview(Request $request, string $tenantId, string $model, string $year, string $month, string $filename)
     {
         try {
+            tenancy()->initialize($tenantId);
             $data = $this->uploadService->getUploadFile('public', $model, $year, $month, $filename);
         } catch (\Exception $e) {
             abort(404, $e->getMessage());
@@ -75,7 +76,6 @@ class UploadController extends Controller
     public function preview(Request $request, $model, $year, $month, $filename)
     {
         $tenantId = tenant()->id;
-
         try {
             $data = $this->uploadService->getUploadFile('private', $model, $year, $month, $filename);
         } catch (\Exception $e) {

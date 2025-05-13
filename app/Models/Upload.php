@@ -13,6 +13,9 @@ class Upload extends Model
 
     public function getUrlAttribute()
     {
-        return env('APP_URL') . "/api/" . Str::after($this->path, '/'); //TODO
+        if ($this->disk === 'public') {
+            return env('APP_URL') . "/api/public/" . tenant()->id . "/" . $this->path;
+        }
+        return env('APP_URL') . "/api/" . $this->path; //TODO
     }
 }

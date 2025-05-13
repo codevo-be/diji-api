@@ -33,7 +33,7 @@ class UploadService
         // Récupérer tous les fichiers liés à ce modèle
         return Upload::where('model_type', $modelClass)
             ->where('model_id', $modelId)
-            ->get(['id', 'filename', 'mime_type', 'path'])
+            ->get(['id', 'filename', 'mime_type', 'path', 'disk'])
             ->toArray();
     }
 
@@ -46,6 +46,7 @@ class UploadService
         $disk = Storage::disk($diskName);
 
         if (!$disk->exists($path)) {
+            dd("what");
             throw new \Exception("Fichier introuvable", 404);
         }
 
