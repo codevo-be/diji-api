@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRegistrationRequest;
+use App\Models\RegistrationLink;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserTenant;
@@ -44,6 +45,11 @@ class TenantController extends Controller
             'tenant_id' => $tenant->id,
             'role' => 'admin',
         ]);
+
+        // Marquer le lien comme utilisé
+        RegistrationLink::on('mysql')
+            ->where('token', $data['token'])
+            ->update(['used_at' => now()]);
 
         return response()->json([
             'message' => 'Tenant et utilisateur admin créés avec succès.',
