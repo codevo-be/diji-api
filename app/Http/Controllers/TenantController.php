@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreRegistrationRequest;
 
 class TenantController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(StoreRegistrationRequest $request)
     {
-        $data = $request->only(['email', 'password', 'company']);
+        $data = $request->validated();
 
         return response()->json([
-            'message' => 'Données reçues avec succès',
+            'message' => 'Données validées',
             'data' => $data,
         ]);
     }
