@@ -36,9 +36,7 @@ class CreateTenant extends Command
             return 0;
         }
 
-
         DB::beginTransaction();
-
 
         try {
             $tenant = \App\Models\Tenant::create([
