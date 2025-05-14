@@ -30,8 +30,6 @@ class RegistrationLinkController extends Controller
         }
 
         return response()->json([
-            'message' => 'Lien d’inscription valide.',
-            'token' => $token,
             'email' => $link->email,
         ], 200);
     }
