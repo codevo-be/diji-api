@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MetaController;
+use App\Http\Controllers\RegistrationLinkController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post("/auth/forgot-password", [AuthController::class, 'forgotPassword']);
 Route::post("/auth/reset-password", [AuthController::class, 'resetPassword']);
-
+Route::get('/auth/registration-link/{token}', [RegistrationLinkController::class, 'check']);
 
 Route::middleware(['auth:api','auth.tenant'])->prefix('auth')->group(function () {
     Route::get('/user', [AuthController::class, 'getAuthenticatedUser']);
