@@ -14,8 +14,8 @@ class StoreRegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'company' => 'required|string|max:255|unique:tenants,name',
-            'email' => 'required|email|max:255|unique:users,email',
+            'company' => 'required|string|max:255|unique:mysql.tenants,name',
+            'email' => 'required|email|max:255|unique:mysql.users,email',
             'password' => 'required|string|min:8',
         ];
     }
@@ -23,8 +23,13 @@ class StoreRegistrationRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'company.required' => 'Le nom de la société est requis.',
             'company.unique' => 'Ce nom de société est déjà utilisé.',
+            'email.required' => 'L’adresse email est requise.',
+            'email.email' => 'L’adresse email n’est pas valide.',
             'email.unique' => 'Cette adresse email est déjà enregistrée.',
+            'password.required' => 'Le mot de passe est requis.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
         ];
     }
 }
