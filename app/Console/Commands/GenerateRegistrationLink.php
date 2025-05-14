@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\RegistrationLink;
+use App\Services\Brevo;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -16,7 +17,7 @@ class GenerateRegistrationLink extends Command
     /**
      * The console command description.
      */
-    protected $description = 'Génère un lien d’inscription et l’enregistre en base';
+    protected $description = 'Génère un lien d’inscription, l’enregistre en base et l’envoie par email';
 
     /**
      * Execute the console command.
@@ -37,6 +38,20 @@ class GenerateRegistrationLink extends Command
 
         $this->info("Lien d’inscription généré pour $email");
         $this->line($url);
+
+        try {
+            $mailService = new Brevo();
+
+            $mailService
+                ->to($email)
+                ->subject("Votre lien d’inscription à Diji")
+                ->content(nl2br("Bonjour,\n\nVoici votre lien d’inscription :\n{$url}\n\nCe lien est valable pendant 7 jours."))
+                ->send();
+
+            $this->info("Email envoyé à $email");
+        } catch (\Exception $e) {
+            $this->error("Échec de l’envoi de l’email : " . $e->getMessage());
+        }
 
         return 0;
     }
