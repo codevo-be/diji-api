@@ -35,12 +35,13 @@ class GenerateRegistrationLink extends Command
         ]);
 
         $url = env('FRONTEND_URLS') . '/register?token=' . $link->token;
+        $settings = json_decode(env('BREVO_SETTINGS', '{}'), true);
 
         $this->info("Lien d’inscription généré pour $email");
         $this->line($url);
 
         try {
-            $mailService = new Brevo();
+            $mailService = new Brevo($settings);
 
             $mailService
                 ->to($email)
