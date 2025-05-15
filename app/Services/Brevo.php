@@ -20,9 +20,10 @@ class Brevo {
     protected array $sender = [];
     protected array $headers = [];
 
-    public function __construct()
+    public function __construct(?array $settings = null)
     {
-        $settings = Meta::getValue("brevo_settings");
+        // Si aucun settings passé, on va les chercher dans les metas
+        $settings = $settings ?? Meta::getValue("brevo_settings");
 
         if (!$settings || !isset($settings['api_key'], $settings['sender']['email'])) {
             throw new \Exception('Brevo configuration is missing or invalid.');
@@ -32,6 +33,7 @@ class Brevo {
         $this->apiInstance = new TransactionalEmailsApi(new Client(), $config);
         $this->sender = $settings["sender"];
     }
+
 
     public function to(string $email): self
     {
