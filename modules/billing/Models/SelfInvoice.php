@@ -82,21 +82,24 @@ class SelfInvoice extends Model
                 if (empty($invoice->identifier_number)) {
                     $year = now()->year;
 
-                    $lastOffer = self::whereYear('date', $year)
+                    $lastInvoice = self::whereYear('date', $year)
                         ->whereNotNull('identifier_number')
                         ->orderBy('identifier_number', 'desc')
                         ->first();
 
-                    $nextNumber = $lastOffer ? $lastOffer->identifier_number + 1 : 1;
+                    $start = Meta::getValue('tenant_billing_details')['self_invoice_start_number'] ?? 1;
+
+                    $nextNumber = $lastInvoice
+                        ? max($start, $lastInvoice->identifier_number + 1)
+                        : $start;
 
                     $invoice->identifier_number = $nextNumber;
                     $invoice->identifier = sprintf('%d/%03d', $year, $nextNumber);
                 }
 
-                if(empty($invoice->structured_communication)){
+                if (empty($invoice->structured_communication)) {
                     $invoice->structured_communication = \Diji\Billing\Helpers\Invoice::generateStructuredCommunication($invoice->identifier_number);
                 }
-
             }
         });
 

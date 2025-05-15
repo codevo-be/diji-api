@@ -80,7 +80,11 @@ class CreditNote extends Model
                         ->orderBy('identifier_number', 'desc')
                         ->first();
 
-                    $nextNumber = $lastOffer ? $lastOffer->identifier_number + 1 : 1;
+                    $start = Meta::getValue('tenant_billing_details')['credit_note_start_number'] ?? 1;
+
+                    $nextNumber = $lastOffer
+                        ? max($start, $lastOffer->identifier_number + 1)
+                        : $start;
 
                     $credit_note->identifier_number = $nextNumber;
                     $credit_note->identifier = sprintf('%d/%03d', $year, $nextNumber);
