@@ -188,7 +188,7 @@ class InvoiceController extends Controller
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);
-        }*/
+        }
     }
 
     public function pdf(Request $request, int $invoice_id)
