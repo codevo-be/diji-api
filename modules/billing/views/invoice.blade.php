@@ -18,7 +18,7 @@
                         {!! $issuer["zipcode"] !!} {!! $issuer["city"] !!}
                     </p>
 
-                    @if($issuer["country"])
+                    @if(isset($issuer["country"]))
                         <p style=" font-size: 14px;">
                             {!! $issuer["country"] !!}
                         </p>
@@ -50,7 +50,7 @@
                         {!! $recipient["zipcode"] !!} {!! $recipient["city"] !!}
                     </p>
 
-                    @if($recipient["country"])
+                    @if(isset($recipient["country"]))
                         <p style=" font-size: 14px;">
                             {!! $recipient["country"] !!}
                         </p>
