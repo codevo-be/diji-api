@@ -33,10 +33,10 @@ class Brevo {
         $this->sender = $settings["sender"];
     }
 
-    public function to(string $email): self
+    public function to(string $email, string $name): self
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->to[] = ['email' => $email, "name" => "test"];
+            $this->to[] = ['email' => $email, "name" => $name];
         }
         return $this;
     }

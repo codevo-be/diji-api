@@ -35,7 +35,9 @@ class LinkBillingToTransactions extends Command
         foreach ($tenants as $tenant){
             tenancy()->initialize($tenant->id);
 
-            $transactions = Transaction::whereNull('model_id')->get();
+            $transactions = Transaction::whereNull('model_id')
+                ->whereNotNull('structured_communication')
+                ->get();
 
             foreach ($transactions as $transaction){
                 $invoice = Invoice::where('structured_communication', $transaction->structured_communication)->first();

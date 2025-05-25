@@ -125,7 +125,7 @@ class CreditNoteController extends Controller
             ]);
 
             $instanceBrevo
-                ->to($request->to)
+                ->to($request->to, $credit_note->recipient["name"])
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["body" => $request->body])

@@ -55,7 +55,7 @@ class VerifyDailyBankAccounts extends Command
 
                     $brevo = new Brevo();
 
-                    $brevo->to(Meta::getValue("nordigen_admin_email"));
+                    $brevo->to(Meta::getValue("nordigen_admin_email"), $tenant->name);
                     $brevo->subject($subject);
                     $brevo->content(`<p>Bonjour,</p><p>Votre connexion bancaire avec Gocardless expire dans <strong>$daysLeft jours**</strong>.</p><p>Pour continuer à utiliser ce service, veuillez renouveler votre connexion bancaire.</p><a href="$link">Renouveler ma connexion</a>`);
 

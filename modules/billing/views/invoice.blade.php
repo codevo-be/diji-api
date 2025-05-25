@@ -101,7 +101,7 @@
                 <tbody>
                 <tr>
                     <td style="padding-right: 20px;">Total HTVA</td>
-                    <td style="text-align: right;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($subtotal ?? 0) !!}</td>
+                    <td style="text-align: right;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($subtotal) ?? 0) !!}</td>
                 </tr>
 
                 @foreach($taxes ?? [] as $tax => $value)
@@ -113,7 +113,7 @@
                     @else
                         <tr>
                             <td>TVA {!! $tax !!}%</td>
-                            <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($value ?? 0) !!}</td>
+                            <td style="text-align: right">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($value) ?? 0) !!}</td>
                         </tr>
                     @endif
 
@@ -121,7 +121,7 @@
 
                 <tr style="font-size: 16px; font-weight: 700;">
                     <td style="padding-top:15px;">Total</td>
-                    <td style="padding-top:15px;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total ?? 0) !!}</td>
+                    <td style="padding-top:15px;">{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($total) ?? 0) !!}</td>
                 </tr>
                 </tbody>
             </table>
@@ -133,7 +133,7 @@
             @endif
             @if($issuer)
                 <p style="margin-top:10px; font-size: 14px;">
-                    Veuillez payer le montant de <strong>{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency($total) !!}</strong> sur le compte <strong>{!! $issuer['iban'] !!}</strong> avant le <strong>{!! \Illuminate\Support\Carbon::parse($due_date)->format('d/m/Y') !!}</strong> en mentionnant la référence <strong>{!! \Diji\Billing\Helpers\Invoice::formatStructuredCommunication($structured_communication) !!}</strong>
+                    Veuillez payer le montant de <strong>{!! \Diji\Billing\Helpers\PricingHelper::formatCurrency(floatval($total)) !!}</strong> sur le compte <strong>{!! $issuer['iban'] !!}</strong> avant le <strong>{!! \Illuminate\Support\Carbon::parse($due_date)->format('d/m/Y') !!}</strong> en mentionnant la référence <strong>{!! \Diji\Billing\Helpers\Invoice::formatStructuredCommunication($structured_communication) !!}</strong>
                 </p>
             @endif
             <p  style="margin-top:10px; font-size: 14px;">Merci pour votre confiance !</p>
