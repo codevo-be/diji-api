@@ -18,9 +18,11 @@
                         {!! $issuer["zipcode"] !!} {!! $issuer["city"] !!}
                     </p>
 
-                    <p style=" font-size: 14px;">
-                        {!! $issuer["country"] !!}
-                    </p>
+                    @if($issuer["country"])
+                        <p style=" font-size: 14px;">
+                            {!! $issuer["country"] !!}
+                        </p>
+                    @endif
 
                     @if(isset($issuer["vat_number"]))
                         <p style="margin-top: 10px; font-size: 14px;">TVA {!! $issuer["vat_number"] !!}</p>
@@ -48,9 +50,11 @@
                         {!! $recipient["zipcode"] !!} {!! $recipient["city"] !!}
                     </p>
 
-                    <p style=" font-size: 14px;">
-                        {!! $recipient["country"] !!}
-                    </p>
+                    @if($recipient["country"])
+                        <p style=" font-size: 14px;">
+                            {!! $recipient["country"] !!}
+                        </p>
+                    @endif
 
                     @if(isset($recipient["vat_number"]))
                         <p style="margin-top: 10px; font-size: 14px;">TVA {!! $recipient["vat_number"] !!}</p>
