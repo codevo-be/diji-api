@@ -9,6 +9,7 @@ use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
+use Diji\Billing\Jobs\ProcessBatchInvoiceEmail;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Diji\Billing\Services\PdfService;
@@ -155,52 +156,32 @@ class InvoiceController extends Controller
         set_time_limit(300);
 
         $ids = $request->input('ids');
+        $email = $request->input('email');
 
         if (!is_array($ids) || empty($ids)) {
             return response()->json(['error' => 'Invalid or empty ID list.'], 400);
         }
 
-        $pdfFiles = array();
-        $badStatusFiles = array();
+        try {
+            $badStatusFiles = Invoice::whereIn('id', $ids)
+                ->where('status', 'draft')
+                ->get('id')
+                ->mapWithKeys(function ($item) {
+                    return [
+                        $item->id => "Impossible de print le document avec le statut courant."
+                    ];
+                })
+                ->toArray();
 
-        foreach ($ids as $id) {
-            try {
-                $invoice = Invoice::findOrFail($id)->load('items');
+            $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
 
-                if ($invoice->status === 'draft') {
-                    $badStatusFiles[] = $invoice->identifier;
-                    continue;
-                }
+            ProcessBatchInvoiceEmail::dispatch($goodStatusFiles, $email);
 
-                $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
-
-                $pdfString = PdfService::generate('billing::invoice', [
-                    ...$invoice->toArray(),
-                    "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-                    "qrcode" => false
-                ]);
-
-                $pdfFiles[$fileName] = $pdfString;
-
-            } catch (\Exception $e) {
-                Log::info("Zip");
-                Log::info($e->getMessage());
-                continue;
-            }
-        }
-
-        Log::info(json_encode($pdfFiles));
-
-        /*try {
-            if(collect($pdfFiles)->count() <= 0){
-                return response()->json([
-                    "message" => "Le zip est vide !"
-                ], 422);
-            }
-
-            $zipPath = ZipService::createTempZip($pdfFiles);
-
-            return response()->download($zipPath)->deleteFileAfterSend(true);
+            return response()->json([
+                'sent' => $goodStatusFiles,
+                'errors' => $badStatusFiles,
+                'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
+            ]);
         } catch (\Exception $e) {
             Log::info("Zip");
             Log::info($e->getMessage());

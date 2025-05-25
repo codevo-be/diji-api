@@ -33,6 +33,7 @@ class Invoice extends Model
         "recipient",
         "date",
         "due_date",
+        "check_paid_notification",
         "payment_date",
         "subtotal",
         "taxes",
