@@ -135,13 +135,10 @@ class AuthController extends Controller
             'password' => 'required|confirmed',
         ]);
 
-        Log::info($request->email);
-
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->password = Hash::make($password);
-                $user->setRememberToken(Str::random(60));
                 $user->save();
             }
         );
