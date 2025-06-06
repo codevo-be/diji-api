@@ -22,7 +22,7 @@ class AuthController extends Controller
         $clientId = config('services.passport.password_grant_client.id');
         $clientSecret = config('services.passport.password_grant_client.secret');
 
-        if(!$clientId || !$clientSecret){
+        if (!$clientId || !$clientSecret) {
             return response()->json([
                 'message' => "Erreur de configuration serveur. Veuillez contacter l'administrateur."
             ], 500);
@@ -61,7 +61,6 @@ class AuthController extends Controller
                     'tenant' => $user->tenants->first()
                 ]
             ]);
-
         } catch (OAuthServerException $e) {
             return response()->json([
                 'message' => $e->getMessage()
@@ -91,7 +90,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        if($user){
+        if ($user) {
             $request->user()->token()->revoke();
         }
 
@@ -104,7 +103,7 @@ class AuthController extends Controller
 
         $user = User::where("email", $request->email)->first();
 
-        if(!$user){
+        if (!$user) {
             return response(['message' => "L'adresse email n'existe pas !"], 403);
         }
 
@@ -114,7 +113,7 @@ class AuthController extends Controller
 
         $brevo = new Brevo();
 
-        $brevo->to($user->email);
+        $brevo->to($user->email, "Diji");
         $brevo->subject("Réinitialisation de mot de passe");
         $brevo->content("
             <h1>Diji</h1>
@@ -136,15 +135,17 @@ class AuthController extends Controller
         ]);
 
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $request->only('email', 'password', 'token'),
             function ($user, $password) {
                 $user->password = Hash::make($password);
                 $user->save();
             }
         );
 
-        return $status === Password::PASSWORD_RESET
-            ? response()->json(['message' => 'Mot de passe réinitialisé avec succès.'])
-            : response()->json(['message' => 'Erreur lors de la réinitialisation.'], 400);
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->noContent();
+        }
+
+        return response()->json(['message' => 'Erreur lors de la réinitialisation.'], 400);
     }
 }

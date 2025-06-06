@@ -9,7 +9,8 @@ use SendinBlue\Client\Configuration;
 use GuzzleHttp\Client;
 use SendinBlue\Client\Model\SendSmtpEmail;
 
-class Brevo {
+class Brevo
+{
     protected TransactionalEmailsApi $apiInstance;
     protected array $to = [];
     protected array $cc = [];
@@ -22,7 +23,17 @@ class Brevo {
 
     public function __construct()
     {
-        $settings = Meta::getValue("brevo_settings");
+        try {
+            $settings = Meta::getValue("brevo_settings");
+        } catch (\Exception $e) {
+            $settings = [
+                "api_key" => env('BREVO_API_KEY'),
+                "sender" => [
+                    "email" => env('BREVO_SENDER_EMAIL'),
+                    "name" => env('BREVO_SENDER_NAME'),
+                ]
+            ];
+        }
 
         if (!$settings || !isset($settings['api_key'], $settings['sender']['email'])) {
             throw new \Exception('Brevo configuration is missing or invalid.');
