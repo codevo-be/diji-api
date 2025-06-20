@@ -89,7 +89,11 @@ class Estimate extends Model
                         ->orderBy('identifier_number', 'desc')
                         ->first();
 
-                    $nextNumber = $lastOffer ? $lastOffer->identifier_number + 1 : 1;
+                    $start = Meta::getValue('tenant_billing_details')['estimate_start_number'] ?? 1;
+
+                    $nextNumber = $lastOffer
+                        ? max($start, $lastOffer->identifier_number + 1)
+                        : $start;
 
                     $estimate->identifier_number = $nextNumber;
                     $estimate->identifier = sprintf('%d/%03d', $year, $nextNumber);
