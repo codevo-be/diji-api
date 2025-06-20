@@ -63,6 +63,10 @@ class Invoice {
 
     public static function isIntracommunity(array $issuer, array $recipient): bool
     {
+        if(!isset($issuer['country']) || !isset($recipient['country'])){
+            return false;
+        }
+
         $euCountries = [
             'at', 'be', 'bg', 'hr', 'cy', 'cz', 'dk', 'ee', 'fi', 'fr', 'de', 'gr',
             'hu', 'ie', 'it', 'lv', 'lt', 'lu', 'mt', 'nl', 'pl', 'pt', 'ro', 'sk',

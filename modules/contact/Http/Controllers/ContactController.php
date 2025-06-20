@@ -8,7 +8,6 @@ use Diji\Contact\Http\Requests\UpdateContactRequest;
 use Diji\Contact\Resources\ContactResource;
 use Diji\Contact\Models\Contact;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
