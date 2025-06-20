@@ -3,7 +3,6 @@
 
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\MetaController;
-use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +20,4 @@ Route::middleware(['auth:api', 'auth.tenant'])->group(function () {
     Route::resource('/metas', MetaController::class)->only(["show", "update"]);
     Route::resource('/uploads', UploadController::class)->only('store');
     Route::post('/csv', [FileController::class, 'csv']);
-
-    Route::put('/tenant', [TenantController::class, 'update']);
-    Route::get('/tenant', [TenantController::class, 'show']);
 });
