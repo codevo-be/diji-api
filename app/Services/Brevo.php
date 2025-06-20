@@ -9,7 +9,8 @@ use SendinBlue\Client\Configuration;
 use GuzzleHttp\Client;
 use SendinBlue\Client\Model\SendSmtpEmail;
 
-class Brevo {
+class Brevo
+{
     protected TransactionalEmailsApi $apiInstance;
     protected array $to = [];
     protected array $cc = [];
@@ -36,7 +37,7 @@ class Brevo {
     public function to(string $email): self
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->to[] = ['email' => $email, "name" => "test"];
+            $this->to[] = ['email' => $email, "name" => $email];
         }
         return $this;
     }
