@@ -44,7 +44,7 @@ class FetchDailyTransactions extends Command
                         "transaction_id" => $item["transactionId"],
                         "structured_communication" => isset($item["remittanceInformationStructured"]) ? $item["remittanceInformationStructured"] : null,
                         "creditor_name" => isset($item["creditorName"]) ? strtolower($item["creditorName"]) : null,
-                        "creditor_account" => str_replace("BE", '', $item["creditorAccount"]["iban"]),
+                        "creditor_account" => str_replace("BE", '', isset($item["creditorAccount"]) ? $item["creditorAccount"]["iban"] : ""),
                         "debtor_name" => strtolower($item["debtorName"]),
                         "debtor_account" => str_replace("BE", '', $item["debtorAccount"]["iban"]),
                         "amount" => floatval($item["transactionAmount"]["amount"]),

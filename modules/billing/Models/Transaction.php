@@ -11,7 +11,17 @@ class Transaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'model_type', 'model_id', 'structured_communication', 'creditor_name', "creditor_account", "debtor_name", "debtor_account", "amount", "response", "transaction_id"];
+    public const STATUS_PENDING = "pending";
+    public const STATUS_RECONCILED = "reconciled";
+    public const STATUS_MISSING = "missing";
+
+    public const STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_RECONCILED,
+        self::STATUS_MISSING
+    ];
+
+    protected $fillable = ['status', 'date', 'model_type', 'model_id', 'structured_communication', 'creditor_name', "creditor_account", "debtor_name", "debtor_account", "amount", "response", "transaction_id"];
 
     protected $casts = [
         "response" => "array",

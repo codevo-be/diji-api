@@ -31,6 +31,10 @@ class Invoice {
 
     public static function generateQrCode(string $recipient, string $iban, float $amount, string $structured_communication): string
     {
+        if(!$structured_communication){
+            return "";
+        }
+
         $structured_communication = self::formatStructuredCommunication($structured_communication);
 
         $data = implode("\n", [

@@ -34,7 +34,9 @@
             "Diji\\Team\\": "modules/team",
             "Diji\\Module\\": "modules/module",
             "Diji\\Expense\\": "modules/expense",
-            "Diji\\Peppol\\": "modules/peppol"
+            "Diji\\Peppol\\": "modules/peppol",
+            "Diji\\Task\\": "modules/task",
+            "Diji\\Project\\": "modules/project"
         }
     },
     "autoload-dev": {

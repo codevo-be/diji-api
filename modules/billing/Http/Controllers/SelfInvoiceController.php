@@ -5,20 +5,16 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\StoreSelfInvoiceRequest;
-use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateSelfInvoiceRequest;
+use Diji\Billing\Jobs\ProcessBatchSelfInvoiceEmail;
 use Diji\Billing\Models\SelfInvoice;
-use Diji\Billing\Resources\InvoiceResource;
-use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\SelfInvoiceResource;
+use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-use Stancl\Tenancy\Tenancy;
 
 class SelfInvoiceController extends Controller
 {
@@ -33,6 +29,13 @@ class SelfInvoiceController extends Controller
                 trim($request->month) !== '' &&
                 strtolower($request->month) !== 'undefined', function ($query) use($request){
                 return $query->whereMonth('date', $request->month);
+            })
+            ->when(isset($request->date_from) &&
+                isset($request->date_to), function ($query) use($request){
+                return $query->whereBetween('date', [
+                    $request->date_from,
+                    $request->date_to
+                ]);
             })
             ->orderByDesc('id');
 
@@ -97,12 +100,9 @@ class SelfInvoiceController extends Controller
     {
         $self_invoice = SelfInvoice::findOrFail($self_invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::self-invoice', [
-            ...$self_invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateSelfInvoice($self_invoice);
 
-        return response($pdf->output(), 200, [
+        return response($pdfString, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=autofacturation-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf",
         ]);
@@ -112,10 +112,7 @@ class SelfInvoiceController extends Controller
     {
         $self_invoice = SelfInvoice::findOrFail($self_invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::self-invoice', [
-            ...$self_invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateSelfInvoice($self_invoice);
 
         try {
             $instanceBrevo = new Brevo();
@@ -123,7 +120,7 @@ class SelfInvoiceController extends Controller
             $instanceBrevo->attachments([
                 [
                     "filename" => "autofacture-" . str_replace("/", "-", $self_invoice->identifier) . ".pdf",
-                    "output" => $pdf->output()
+                    "output" => $pdfString
                 ]
             ]);
 
@@ -133,7 +130,7 @@ class SelfInvoiceController extends Controller
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["body" => $request->body])
                 ->send();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ]);
@@ -152,14 +149,50 @@ class SelfInvoiceController extends Controller
         $self_invoices = SelfInvoice::whereIn('id', $request->self_invoice_ids)->get();
 
         foreach ($self_invoices as $self_invoice) {
-            try{
+            try {
                 $self_invoice->delete();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
         }
 
         return response()->noContent();
+    }
+
+    public function batchPdf(Request $request)
+    {
+        $ids = $request->input('ids');
+        $email = $request->input('email');
+
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json(['error' => 'Invalid or empty ID list.'], 400);
+        }
+
+        try {
+            $badStatusFiles = SelfInvoice::whereIn('id', $ids)
+                ->where('status', 'draft')
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    return [
+                        $item->id => "Impossible de print le document avec le statut courant."
+                    ];
+                })
+                ->toArray();
+
+            $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
+
+            ProcessBatchSelfInvoiceEmail::dispatch($goodStatusFiles, $email);
+
+            return response()->json([
+                'sent' => $goodStatusFiles,
+                'errors' => $badStatusFiles,
+                'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 422);
+        }
     }
 
     public function batchUpdate(Request $request)

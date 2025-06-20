@@ -43,6 +43,9 @@
     39 => 'Diji\\Module\\ModuleServiceProvider',
     40 => 'Diji\\Peppol\\PeppolServiceProvider',
     41 => 'Diji\\Expense\\ExpenseServiceProvider',
+    39 => 'Diji\\Task\\TaskServiceProvider',
+    40 => 'Diji\\Project\\ProjectServiceProvider',
+    41 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'eager' => 
   array (

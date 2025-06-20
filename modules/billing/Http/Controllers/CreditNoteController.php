@@ -5,14 +5,19 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
+use Diji\Billing\Jobs\ProcessBatchCreditNotesEmail;
 use Diji\Billing\Models\CreditNote;
 use Diji\Billing\Resources\CreditNoteResource;
+
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Services\PeppolService;
+use Diji\Billing\Services\PdfService;
+
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -29,6 +34,13 @@ class CreditNoteController extends Controller
                 trim($request->month) !== '' &&
                 strtolower($request->month) !== 'undefined', function ($query) use ($request) {
                 return $query->whereMonth('date', $request->month);
+            })
+            ->when(isset($request->date_from) &&
+                isset($request->date_to), function ($query) use ($request) {
+                return $query->whereBetween('date', [
+                    $request->date_from,
+                    $request->date_to
+                ]);
             })
             ->orderByDesc('id');
 
@@ -93,12 +105,9 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', [
-            ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateCreditNote($credit_note);
 
-        return response($pdf->output(), 200, [
+        return response($pdfString, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=note-de-credit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
         ]);
@@ -108,10 +117,7 @@ class CreditNoteController extends Controller
     {
         $credit_note = CreditNote::findOrFail($credit_note_id)->load('items');
 
-        $pdf = PDF::loadView('billing::credit-note', [
-            ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
-        ]);
+        $pdfString = PdfService::generateCreditNote($credit_note);
 
         try {
             $instanceBrevo = new Brevo();
@@ -119,7 +125,7 @@ class CreditNoteController extends Controller
             $instanceBrevo->attachments([
                 [
                     "filename" => "note-de-crédit-" . str_replace("/", "-", $credit_note->identifier) . ".pdf",
-                    "output" => $pdf->output()
+                    "output" => $pdfString
                 ]
             ]);
 
@@ -236,5 +242,39 @@ class CreditNoteController extends Controller
             'message' => 'Aucun identifiant Peppol n’a permis d’envoyer la note de crédit.',
             'digiteal_response' => $result ?? null,
         ], 400);
+    }
+
+    public function batchPdf(Request $request)
+    {
+        $ids = $request->input('ids');
+        $email = $request->input('email');
+
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json(['error' => 'Invalid or empty ID list.'], 400);
+        }
+
+        try {
+            $badStatusFiles = CreditNote::whereIn('id', $ids)
+                ->where('status', 'draft')
+                ->get(['id'])
+                ->mapWithKeys(function ($item) {
+                    return [$item->id => "Impossible de print le document avec le statut courant."];
+                })
+                ->toArray();
+
+            $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
+
+            ProcessBatchCreditNotesEmail::dispatch($goodStatusFiles, $email);
+
+            return response()->json([
+                'sent' => $goodStatusFiles,
+                'errors' => $badStatusFiles,
+                'message' => 'Traitement lancé, vous recevrez un email avec les notes de crédits valides.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 422);
+        }
     }
 }

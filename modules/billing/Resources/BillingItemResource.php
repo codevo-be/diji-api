@@ -18,6 +18,7 @@ class BillingItemResource extends JsonResource
         return [
             'id'       => $this->id,
             'position' => $this->position,
+            'type'     => $this->type,
             'name'     => $this->name,
             'quantity' => $this->quantity,
             'vat'      => $this->vat,

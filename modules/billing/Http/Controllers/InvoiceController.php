@@ -5,18 +5,19 @@ namespace Diji\Billing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Meta;
 use App\Services\Brevo;
+use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
+use Diji\Billing\Jobs\ProcessBatchInvoiceEmail;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Services\PeppolService;
+use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use ZipArchive;
 
 class InvoiceController extends Controller
 {
@@ -29,8 +30,15 @@ class InvoiceController extends Controller
             ->when(isset($request->month) &&
                 is_string($request->month) &&
                 trim($request->month) !== '' &&
-                strtolower($request->month) !== 'undefined', function ($query) use($request){
+                strtolower($request->month) !== 'undefined', function ($query) use ($request) {
                 return $query->whereMonth('date', $request->month);
+            })
+            ->when(isset($request->date_from) &&
+                isset($request->date_to), function ($query) use ($request) {
+                return $query->whereBetween('date', [
+                    $request->date_from,
+                    $request->date_to
+                ]);
             })
             ->orderByDesc('id');
 
@@ -101,9 +109,9 @@ class InvoiceController extends Controller
         $invoices = Invoice::whereIn('id', $request->invoice_ids)->get();
 
         foreach ($invoices as $invoice) {
-            try{
+            try {
                 $invoice->delete();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
         }
@@ -147,62 +155,46 @@ class InvoiceController extends Controller
     public function batchPdf(Request $request)
     {
         $ids = $request->input('ids');
+        $email = $request->input('email');
 
         if (!is_array($ids) || empty($ids)) {
             return response()->json(['error' => 'Invalid or empty ID list.'], 400);
         }
 
-        $zipFileName = 'invoices_' . now()->format('Ymd_His') . '.zip';
-        $zipPath = storage_path("app/tmp/{$zipFileName}");
+        try {
+            $badStatusFiles = Invoice::whereIn('id', $ids)
+                ->where('status', 'draft')
+                ->get('id')
+                ->mapWithKeys(function ($item) {
+                    return [
+                        $item->id => "Impossible de print le document avec le statut courant."
+                    ];
+                })
+                ->toArray();
 
-        Storage::makeDirectory('tmp');
+            $goodStatusFiles = array_diff($ids, array_keys($badStatusFiles));
 
-        $zip = new ZipArchive;
+            ProcessBatchInvoiceEmail::dispatch($goodStatusFiles, $email);
 
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
-            return response()->json(['error' => 'Could not create ZIP file.'], 500);
+            return response()->json([
+                'sent' => $goodStatusFiles,
+                'errors' => $badStatusFiles,
+                'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 422);
         }
-
-        foreach ($ids as $id) {
-            try {
-                $invoice = \Diji\Billing\Models\Invoice::findOrFail($id)->load('items');
-
-                $pdf = PDF::loadView('billing::invoice', [
-                    ...$invoice->toArray(),
-                    "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-                    "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode(
-                        $invoice->issuer["name"],
-                        $invoice->issuer["iban"],
-                        $invoice->total,
-                        $invoice->structured_communication
-                    )
-                ]);
-
-                $fileName = 'facture-' . str_replace("/", "-", $invoice->identifier) . '.pdf';
-                $zip->addFromString($fileName, $pdf->output());
-            } catch (\Exception $e) {
-                return response()->json([
-                    "message" => $e->getMessage()
-                ], 422);
-            }
-        }
-
-        $zip->close();
-
-        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 
     public function pdf(Request $request, int $invoice_id)
     {
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
-        $pdf = PDF::loadView('billing::invoice', [
-            ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
-            "qrcode" => \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication)
-        ]);
+        $pdfString = PdfService::generateInvoice($invoice);
 
-        return response($pdf->output(), 200, [
+        return response($pdfString, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => "attachment; filename=facture-" . str_replace("/", "-", $invoice->identifier) . ".pdf",
         ]);
@@ -237,7 +229,7 @@ class InvoiceController extends Controller
                 ->subject($request->subject ?? '')
                 ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $request->body])
                 ->send();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);

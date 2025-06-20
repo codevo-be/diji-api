@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Brevo;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Laravel\Passport\Exceptions\OAuthServerException;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
 
@@ -91,5 +96,58 @@ class AuthController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where("email", $request->email)->first();
+
+        if(!$user){
+            return response(['message' => "L'adresse email n'existe pas !"], 403);
+        }
+
+        $token = Password::createToken($user);
+
+        $resetLink = env('FRONTEND_URLS') . "/reset-password?token={$token}&email=" . urlencode($user->email);
+
+        $brevo = new Brevo();
+
+        $brevo->to($user->email);
+        $brevo->subject("Réinitialisation de mot de passe");
+        $brevo->content("
+            <h1>Diji</h1>
+            <h2>Réinitialisation de mot de passe</h2>
+            <p>Veuillez cliquer sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
+            <a href='{$resetLink}'>Réinitialiser le mot de passe</a>");
+
+        $brevo->send();
+
+        return response()->noContent();
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed',
+        ]);
+
+        Log::info($request->email);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = Hash::make($password);
+                $user->setRememberToken(Str::random(60));
+                $user->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Mot de passe réinitialisé avec succès.'])
+            : response()->json(['message' => 'Erreur lors de la réinitialisation.'], 400);
     }
 }
