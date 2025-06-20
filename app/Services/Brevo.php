@@ -23,7 +23,17 @@ class Brevo
 
     public function __construct()
     {
-        $settings = Meta::getValue("brevo_settings");
+        try {
+            $settings = Meta::getValue("brevo_settings");
+        } catch (\Exception $e) {
+            $settings = [
+                "api_key" => env('BREVO_API_KEY'),
+                "sender" => [
+                    "email" => env('BREVO_SENDER_EMAIL'),
+                    "name" => env('BREVO_SENDER_NAME'),
+                ]
+            ];
+        }
 
         if (!$settings || !isset($settings['api_key'], $settings['sender']['email'])) {
             throw new \Exception('Brevo configuration is missing or invalid.');
@@ -34,10 +44,10 @@ class Brevo
         $this->sender = $settings["sender"];
     }
 
-    public function to(string $email): self
+    public function to(string $email, string $name): self
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->to[] = ['email' => $email, "name" => $email];
+            $this->to[] = ['email' => $email, "name" => $name];
         }
         return $this;
     }

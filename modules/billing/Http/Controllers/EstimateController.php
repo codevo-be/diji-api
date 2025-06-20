@@ -126,7 +126,7 @@ class EstimateController extends Controller
             ]);
 
             $instanceBrevo
-                ->to($request->to)
+                ->to($request->to, $estimate->recipient["name"])
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["estimate" => $estimate, "logo" => $logo, "body" => $request->body])

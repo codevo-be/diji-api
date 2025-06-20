@@ -14,6 +14,7 @@ use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
 use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class InvoiceController extends Controller
@@ -151,6 +152,9 @@ class InvoiceController extends Controller
 
     public function batchPdf(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        set_time_limit(300);
+
         $ids = $request->input('ids');
         $email = $request->input('email');
 
@@ -179,6 +183,8 @@ class InvoiceController extends Controller
                 'message' => 'Traitement lancé, vous recevrez un email avec les factures valides.'
             ]);
         } catch (\Exception $e) {
+            Log::info("Zip");
+            Log::info($e->getMessage());
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);
@@ -221,7 +227,7 @@ class InvoiceController extends Controller
             ]);
 
             $instanceBrevo
-                ->to($request->to)
+                ->to($request->to, $invoice->recipient["name"])
                 ->cc($request->cc ?? null)
                 ->subject($request->subject ?? '')
                 ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $request->body])
