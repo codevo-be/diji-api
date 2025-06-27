@@ -27,6 +27,7 @@ class ContactResource extends JsonResource
             'iban'                      => $this->iban,
             'billing_address'           => $this->billing_address,
             'peppol_identifier'         => $this->peppol_identifier,
+            'peppol_type'               => str_starts_with($this->peppol_identifier, '9925:') ? 'vat' : 'enterprise',
         ];
     }
 }

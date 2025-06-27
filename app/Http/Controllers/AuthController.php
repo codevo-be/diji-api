@@ -63,7 +63,7 @@ class AuthController extends Controller
             ]);
         } catch (OAuthServerException $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => "Les informations d'identification sont incorrectes."
             ], 401);
         } catch (\Exception $e) {
             return response()->json([
