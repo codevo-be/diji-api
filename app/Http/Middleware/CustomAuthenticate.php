@@ -23,7 +23,7 @@ class CustomAuthenticate extends Middleware
             $publicKey = file_get_contents(storage_path('oauth-public.key'));
             $decoded = JWT::decode($bearer, new Key($publicKey, 'RS256'));
 
-            if (isset($decoded->aud)) {
+            if (isset($decoded) && isset($decoded->aud)) {
                 return;
             }
         } catch (\Exception $e) {
