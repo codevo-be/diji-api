@@ -8,6 +8,8 @@ use Laravel\Passport\Token;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\Client;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
 class AuthTenantRequest
@@ -44,14 +46,11 @@ class AuthTenantRequest
                 return response()->json(['message' => 'No access token'], 401);
             }
 
-            $accessToken = Token::where('id', explode('|', $bearer)[0])->first();
-
-            if (!$accessToken || !$accessToken->client_id) {
-                return response()->json(['message' => 'Invalid or expired token'], 401);
-            }
+            $publicKey = file_get_contents(storage_path('oauth-public.key'));
+            $decoded = JWT::decode($bearer, new Key($publicKey, 'RS256'));
 
             $authorized = Client::where('name', $tenant_id)
-                ->where('id', $accessToken->client_id)
+                ->where('id', $decoded->aud)
                 ->exists();
 
             if (!$authorized) {
