@@ -16,6 +16,12 @@ class CustomAuthenticate extends Middleware
 
     protected function unauthenticated($request, array $guards)
     {
+        $bearer = $request->bearerToken();
+
+        if ($bearer && \Laravel\Passport\Token::where('id', explode('|', $bearer)[0])->exists()) {
+            return;
+        }
+
         throw new AuthenticationException(
             "Échec de l'authentification : vous devez être connecté pour accéder à cette ressource.",
             $guards
