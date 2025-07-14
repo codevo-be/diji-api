@@ -68,9 +68,13 @@ class ImportController extends \App\Http\Controllers\Controller
                 ];
                 continue;
             } else {
-                $contact = Contact::firstOrCreate([
-                    "email" => $data['email'],
-                ], $data);
+                if (empty($data['email'])) {
+                    $contact = Contact::create($data);
+                } else {
+                    $contact = Contact::firstOrCreate([
+                        "email" => $data['email'],
+                    ], $data);
+                }
 
                 if ($contact->wasRecentlyCreated) {
                     $logs[] = [
