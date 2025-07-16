@@ -44,7 +44,7 @@ class Brevo
         $this->sender = $settings["sender"];
     }
 
-    public function to(string $email, string $name): self
+    public function to(string $email, string $name = "Diji"): self
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->to[] = ['email' => $email, "name" => $name];

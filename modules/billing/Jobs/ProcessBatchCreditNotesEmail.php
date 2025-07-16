@@ -27,10 +27,10 @@ class ProcessBatchCreditNotesEmail implements ShouldQueue
     {
         $pdfFiles = [];
 
-        foreach($this->validIds as $id) { //TODO Faire une gestion d'erreur
+        foreach ($this->validIds as $id) { //TODO Faire une gestion d'erreur
             $credit_note = CreditNote::findOrFail($id)->load('items');
 
-            $fileName = 'credit-note-' . str_replace("/", "-", $credit_note->identifier .'.pdf');
+            $fileName = 'credit-note-' . str_replace("/", "-", $credit_note->identifier . '.pdf');
             $pdfString = PdfService::generateCreditNote($credit_note);
 
             $pdfFiles[$fileName] = $pdfString;
@@ -42,7 +42,7 @@ class ProcessBatchCreditNotesEmail implements ShouldQueue
 
         $mailService = new Brevo();
 
-        $mailService->to($this->email)
+        $mailService->to($this->email, "Diji")
             ->subject('Notes de crédit')
             ->content('Voici vos notes de crédit')
             ->attachments([

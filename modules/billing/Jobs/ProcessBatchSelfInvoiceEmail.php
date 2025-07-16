@@ -39,7 +39,7 @@ class ProcessBatchSelfInvoiceEmail implements ShouldQueue
         $zipContent = file_get_contents($zipPath);
 
         $mailService = new Brevo();
-        $mailService->to($this->email)
+        $mailService->to($this->email, "Diji")
             ->subject('Auto-facturations')
             ->content('Voici vos auto-facturations')
             ->attachments([
