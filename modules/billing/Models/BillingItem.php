@@ -156,12 +156,12 @@ class BillingItem extends Model
             $subtotal = floatval($item->retail["subtotal"]) * $item->quantity;
 
             if (HelperInvoice::isIntracommunity($parentModel->issuer, $parentModel->recipient)) {
+                $carry['taxes']["intracommunautaire"] += 0;
+
                 return [
-                    "subtotal" => $subtotal,
-                    "taxes" => [
-                        "intracommunautaire" => 0,
-                    ],
-                    "total" => $subtotal
+                    "subtotal" => ($carry['subtotal'] ?? 0) + ($subtotal ?? 0),
+                    "taxes" => $carry['taxes'],
+                    "total" => ($carry['total'] ?? 0) + ($subtotal ?? 0)
                 ];
             }
 
