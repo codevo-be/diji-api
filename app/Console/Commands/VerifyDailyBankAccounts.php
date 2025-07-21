@@ -36,7 +36,7 @@ class VerifyDailyBankAccounts extends Command
         $alertDays = [30, 15, 7, 1];
         $tenants = \App\Models\Tenant::all();
 
-        foreach ($tenants as $tenant){
+        foreach ($tenants as $tenant) {
             tenancy()->initialize($tenant->id);
 
             $account = NordigenAccount::latest()->first();
@@ -55,15 +55,11 @@ class VerifyDailyBankAccounts extends Command
 
                     $brevo = new Brevo();
 
-                    $brevo->to(Meta::getValue("nordigen_admin_email"), $tenant->name);
-                    $brevo->subject($subject);
-                    $brevo->content(`<p>Bonjour,</p><p>Votre connexion bancaire avec Gocardless expire dans <strong>$daysLeft jours**</strong>.</p><p>Pour continuer à utiliser ce service, veuillez renouveler votre connexion bancaire.</p><a href="$link">Renouveler ma connexion</a>`);
-
-                    $brevo->send();
+                    $brevo->to(Meta::getValue("nordigen_admin_email"), $tenant->name)->subject($subject)->content(utf8_encode("<p>Bonjour,</p><p>Votre connexion bancaire avec Gocardless expire dans <strong>" . $daysLeft . " jours**</strong>.</p><p>Pour continuer à utiliser ce service, veuillez renouveler votre connexion bancaire.</p><a href='" . $link . "'>Renouveler ma connexion</a>"))->send();
 
                     Log::channel('transaction')->info("verify-bank-account - Tenant : $tenant->name");
                     Log::channel('transaction')->info("Account disabled : " . $daysLeft . "Email send !");
-                }catch (\Exception $e){
+                } catch (\Exception $e) {
                     continue;
                 }
             }

@@ -112,7 +112,7 @@
 
                 @foreach($taxes ?? [] as $tax => $value)
 
-                @if(\Diji\Billing\Helpers\Invoice::isIntracommunity($issuer, $recipient) && $tax === 0)
+                @if(\Diji\Billing\Helpers\Invoice::isIntracommunity($issuer, $recipient))
                 <tr>
                     <td>TVA intracommunautaire</td>
                 </tr>
