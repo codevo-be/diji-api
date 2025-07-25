@@ -2,6 +2,8 @@
 
 namespace Diji\Billing\Models;
 
+use Diji\Billing\Helpers\Invoice as HelperInvoice;
+use Diji\Billing\Models\Invoice;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -40,20 +42,20 @@ class BillingItem extends Model
         parent::boot();
 
         static::creating(function (BillingItem $item) {
-            if(!$item->position){
+            if (!$item->position) {
                 $item->position = BillingItem::where('model_type', $item->model_type)
-                        ->where('model_id', $item->model_id)
-                        ->count() + 1;
+                    ->where('model_id', $item->model_id)
+                    ->count() + 1;
             }
 
-            if($item->type !== "product"){
+            if ($item->type !== "product") {
                 $item->retail = null;
                 $item->cost = null;
                 $item->vat = null;
                 $item->quantity = 0;
             }
 
-            if($item->type === "product" && $item->retail) {
+            if ($item->type === "product" && $item->retail) {
                 $retail_tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
                 $item->retail = [
                     "subtotal" => floatval($item->retail["subtotal"]),
@@ -62,7 +64,7 @@ class BillingItem extends Model
                 ];
             }
 
-            if($item->type === "product" && $item->cost) {
+            if ($item->type === "product" && $item->cost) {
                 $cost_tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
                 $item->cost = [
                     "subtotal" => floatval($item->cost["subtotal"]),
@@ -76,14 +78,14 @@ class BillingItem extends Model
             $oldOrder = $item->getOriginal('position');
             $newOrder = $item->position;
 
-            if($item->type !== "product"){
+            if ($item->type !== "product") {
                 $item->retail = null;
                 $item->cost = null;
                 $item->vat = null;
                 $item->quantity = 0;
             }
 
-            if($item->type === "product" && $item->retail) {
+            if ($item->type === "product" && $item->retail) {
                 $retail_tax = (floatval($item->retail["subtotal"]) * $item->vat) / 100;
                 $item->retail = [
                     "subtotal" => floatval($item->retail["subtotal"]),
@@ -92,7 +94,7 @@ class BillingItem extends Model
                 ];
             }
 
-            if($item->type === "product" && $item->cost) {
+            if ($item->type === "product" && $item->cost) {
                 $cost_tax = (floatval($item->cost["subtotal"]) * $item->vat) / 100;
                 $item->cost = [
                     "subtotal" => floatval($item->cost["subtotal"]),
@@ -134,24 +136,38 @@ class BillingItem extends Model
 
     private static function recalculateModelTotals($model): void
     {
-        if(!$model->retail | $model->type !== "product"){
+        if (!$model->retail | $model->type !== "product") {
             return;
         }
 
         $parentModel = $model->model;
 
-        if(!$parentModel){
+        if (!$parentModel) {
             throw new \Error("Une erreur est survenue avec le devis !");
         }
 
         $items = $parentModel->items;
 
-        $amount = $items->reduce(function ($carry, $item) {
-            if(!$item->retail){
+        $amount = $items->reduce(function ($carry, $item) use ($parentModel) {
+            if (!$item->retail) {
                 return $carry;
             }
 
             $subtotal = floatval($item->retail["subtotal"]) * $item->quantity;
+
+            if (HelperInvoice::isIntracommunity($parentModel->issuer, $parentModel->recipient)) {
+
+                if (!isset($carry['taxes']['intracommunautaire'])) {
+                    $carry['taxes']['intracommunautaire'] = 0;
+                }
+
+                return [
+                    "subtotal" => ($carry['subtotal'] ?? 0) + ($subtotal ?? 0),
+                    "taxes" => $carry['taxes'],
+                    "total" => ($carry['total'] ?? 0) + ($subtotal ?? 0)
+                ];
+            }
+
             $tax = $subtotal * (floatval($item->vat) / 100);
 
             $result = [

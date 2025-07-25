@@ -28,6 +28,7 @@ class StoreContactRequest extends FormRequest
             'billing_address.zipcode' => 'string|nullable',
             'billing_address.country' => 'string|nullable',
             'peppol_identifier' => 'string|nullable',
+            'percentage' => 'sometimes|integer|min:0|max:100',
         ];
     }
 
@@ -41,6 +42,9 @@ class StoreContactRequest extends FormRequest
             'email.unique' => 'Cette adresse email est déjà utilisée.',
             'phone.max' => 'Le numéro de téléphone ne peut pas dépasser 150 caractères.',
             'vat_number.max' => 'Le numéro de TVA ne peut pas dépasser 12 caractères.',
+            'percentage.min' => 'Le pourcentage ne peut pas être inférieur à 0.',
+            'percentage.max' => 'Le pourcentage ne peut pas dépasser 100.',
+            'percentage.integer' => 'Le pourcentage doit être un nombre entier.',
         ];
     }
 }

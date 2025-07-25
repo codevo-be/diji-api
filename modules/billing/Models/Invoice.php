@@ -56,20 +56,20 @@ class Invoice extends Model
         parent::boot();
 
         static::creating(function ($invoice) {
-            if (!$invoice->due_date) {
+            if (!isset($invoice->due_date)) {
                 $invoice->due_date = now()->addDays(30);
             }
 
-            if (!$invoice->date) {
+            if (!isset($invoice->date)) {
                 $invoice->date = now();
             }
 
-            if(!$invoice->issuer){
+            if (!isset($invoice->issuer)) {
                 $invoice->issuer = Meta::getValue('tenant_billing_details');
             }
         });
 
-        static::updating(function($invoice){
+        static::updating(function ($invoice) {
             if ($invoice->isDirty('status') && $invoice->getOriginal('status') === 'draft') {
                 $requiredFields = ['issuer', 'recipient', 'total'];
 
@@ -105,7 +105,9 @@ class Invoice extends Model
             }
 
             if ($invoice->isDirty('date')) {
-                $invoice->due_date = Carbon::parse($invoice->date)->addDays(30);
+                if (!isset($invoice->due_date)) {
+                    $invoice->due_date = Carbon::parse($invoice->date)->addDays(30);
+                }
             }
         });
 

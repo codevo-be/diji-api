@@ -18,7 +18,7 @@ class ContactController extends Controller
         $query->filter(['email'])->orderBy('display_name');
 
         $contacts = $request->has('page')
-            ? $query->paginate()
+            ? $query->paginate(50)
             : $query->get();
 
 

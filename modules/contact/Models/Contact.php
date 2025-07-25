@@ -21,6 +21,7 @@ class Contact extends Model
         "iban",
         "billing_address",
         "peppol_identifier"
+        "percentage"
     ];
 
     protected $casts = [
@@ -39,7 +40,7 @@ class Contact extends Model
             }
         });
 
-        static::updating(function($contact){
+        static::updating(function ($contact) {
             if ($contact->isDirty('firstname') || $contact->isDirty('lastname') || $contact->isDirty('company_name')) {
                 $contact->display_name = $contact->setDisplayName();
             }
@@ -48,7 +49,7 @@ class Contact extends Model
 
     private function setDisplayName()
     {
-        if(!empty($this->company_name)){
+        if (!empty($this->company_name)) {
             return $this->company_name;
         }
 
