@@ -20,6 +20,7 @@ class Contact extends Model
         "vat_number",
         "iban",
         "billing_address",
+        "peppol_identifier"
         "percentage"
     ];
 
