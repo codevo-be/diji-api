@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Diji\Module\Models\Module;
-use Diji\Module\Models\TenantModule;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;

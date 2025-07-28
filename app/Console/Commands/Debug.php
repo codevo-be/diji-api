@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Diji\Billing\Models\Invoice;
 use Illuminate\Console\Command;
 
 class Debug extends Command
@@ -23,5 +24,21 @@ class Debug extends Command
     /**
      * Execute the console command.
      */
-    public function handle() {}
+    public function handle()
+    {
+
+        tenancy()->initialize('codevo');
+
+        $invoices = Invoice::all();
+
+        foreach ($invoices as $invoice) {
+            $transaction_amount = $invoice->transactions()->sum('amount') ?? 0;
+
+            if (isset($invoice->total) && $invoice->total && $transaction_amount >= $invoice->total) {
+                $invoice->update([
+                    "status" => Invoice::STATUS_PAYED
+                ]);
+            }
+        }
+    }
 }
