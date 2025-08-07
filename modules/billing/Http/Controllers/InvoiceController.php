@@ -7,11 +7,14 @@ use App\Models\Meta;
 use App\Services\Brevo;
 use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreInvoiceRequest;
 use Diji\Billing\Http\Requests\UpdateInvoiceRequest;
 use Diji\Billing\Jobs\ProcessBatchInvoiceEmail;
 use Diji\Billing\Models\Invoice;
 use Diji\Billing\Resources\InvoiceResource;
+use Diji\Peppol\Helpers\PeppolBuilder;
+use Diji\Peppol\Services\PeppolService;
 use Diji\Billing\Services\PdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,11 +31,11 @@ class InvoiceController extends Controller
             ->when(isset($request->month) &&
                 is_string($request->month) &&
                 trim($request->month) !== '' &&
-                strtolower($request->month) !== 'undefined', function ($query) use($request){
+                strtolower($request->month) !== 'undefined', function ($query) use ($request) {
                 return $query->whereMonth('date', $request->month);
             })
             ->when(isset($request->date_from) &&
-                isset($request->date_to), function ($query) use($request){
+                isset($request->date_to), function ($query) use ($request) {
                 return $query->whereBetween('date', [
                     $request->date_from,
                     $request->date_to
@@ -107,9 +110,9 @@ class InvoiceController extends Controller
         $invoices = Invoice::whereIn('id', $request->invoice_ids)->get();
 
         foreach ($invoices as $invoice) {
-            try{
+            try {
                 $invoice->delete();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
         }
@@ -232,13 +235,55 @@ class InvoiceController extends Controller
                 ->subject($request->subject ?? '')
                 ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $request->body])
                 ->send();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);
         }
 
-
         return response()->noContent();
+    }
+
+    /**
+     * Envoie une facture au réseau Peppol via Digiteal.
+     * Plusieurs tentatives sont effectuées avec différents payloads si nécessaire.
+     */
+    public function sendToPeppol(int $invoice_id)
+    {
+        $invoice = Invoice::findOrFail($invoice_id)->load('items', 'contact');
+        $payloads = PeppolPayloadDTOBuilder::fromInvoice(new InvoiceResource($invoice));
+
+        foreach ($payloads as $index => $payload) {
+            $xml = (new PeppolBuilder())
+                ->withPayload($payload)
+                ->build();
+
+            $filename = "peppol_try_{$index}.xml";
+
+            $result = (new PeppolService())->sendInvoice($xml, $filename);
+            $internalResponse = json_decode($result['response'] ?? '', true);
+
+            if (isset($internalResponse['status']) && $internalResponse['status'] === 'OK') {
+                return response()->json([
+                    'message' => 'Document Peppol généré et envoyé avec succès.',
+                    'digiteal_response' => $result,
+                    'filename' => $filename,
+                ]);
+            }
+
+            if (!empty($internalResponse['status']) && $internalResponse['status'] !== 'RECIPIENT_NOT_IN_PEPPOL') {
+                return response()->json([
+                    'error' => true,
+                    'message' => $internalResponse['message'] ?? 'Erreur inconnue lors de l’envoi du document.',
+                    'digiteal_response' => $result,
+                ], 400);
+            }
+        }
+
+        return response()->json([
+            'error' => true,
+            'message' => 'Aucun identifiant Peppol n’a permis d’envoyer le document.',
+            'digiteal_response' => $result ?? null,
+        ], 400);
     }
 }

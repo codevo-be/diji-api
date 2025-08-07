@@ -7,12 +7,17 @@ use App\Models\Meta;
 use App\Services\Brevo;
 use App\Services\ZipService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Diji\Billing\Helpers\PeppolPayloadDTOBuilder;
 use Diji\Billing\Http\Requests\StoreCreditNoteRequest;
 use Diji\Billing\Http\Requests\UpdateCreditNoteRequest;
 use Diji\Billing\Jobs\ProcessBatchCreditNotesEmail;
 use Diji\Billing\Models\CreditNote;
 use Diji\Billing\Resources\CreditNoteResource;
+
+use Diji\Peppol\Helpers\PeppolBuilder;
+use Diji\Peppol\Services\PeppolService;
 use Diji\Billing\Services\PdfService;
+
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -27,11 +32,11 @@ class CreditNoteController extends Controller
             ->when(isset($request->month) &&
                 is_string($request->month) &&
                 trim($request->month) !== '' &&
-                strtolower($request->month) !== 'undefined', function ($query) use($request){
+                strtolower($request->month) !== 'undefined', function ($query) use ($request) {
                 return $query->whereMonth('date', $request->month);
             })
             ->when(isset($request->date_from) &&
-                isset($request->date_to), function ($query) use($request){
+                isset($request->date_to), function ($query) use ($request) {
                 return $query->whereBetween('date', [
                     $request->date_from,
                     $request->date_to
@@ -130,7 +135,7 @@ class CreditNoteController extends Controller
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["body" => $request->body])
                 ->send();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ]);
@@ -150,9 +155,9 @@ class CreditNoteController extends Controller
         $credit_notes = CreditNote::whereIn('id', $request->credit_note_ids)->get();
 
         foreach ($credit_notes as $credit_note) {
-            try{
+            try {
                 $credit_note->delete();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
         }
@@ -191,6 +196,52 @@ class CreditNoteController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    /**
+     * Envoie une note de crédit au réseau Peppol via Digiteal.
+     * Si la facture d’origine est liée, utilise son identifiant comme référence.
+     * Plusieurs tentatives sont effectuées avec différents payloads si nécessaire.
+     */
+    public function sendToPeppol(int $credit_note_id)
+    {
+        $creditNote = CreditNote::findOrFail($credit_note_id)->load('items', 'contact');
+        $invoiceIdentifier = $creditNote->invoice?->identifier ?? 'Invoice';
+        $payloads = PeppolPayloadDTOBuilder::fromCreditNote(new CreditNoteResource($creditNote), $invoiceIdentifier);
+
+        foreach ($payloads as $index => $payload) {
+            $xml = (new PeppolBuilder())
+                ->withPayload($payload)
+                ->build();
+
+            $filename = "peppol_credit_note_try_{$index}.xml";
+
+            $result = (new PeppolService())->sendInvoice($xml, $filename);
+
+            $internalResponse = json_decode($result['response'] ?? '', true);
+
+            if (isset($internalResponse['status']) && $internalResponse['status'] === 'OK') {
+                return response()->json([
+                    'message' => 'Note de crédit Peppol envoyée avec succès.',
+                    'digiteal_response' => $result,
+                    'filename' => $filename,
+                ]);
+            }
+
+            if (!empty($internalResponse['status']) && $internalResponse['status'] !== 'RECIPIENT_NOT_IN_PEPPOL') {
+                return response()->json([
+                    'error' => true,
+                    'message' => $internalResponse['message'] ?? 'Erreur inconnue lors de l’envoi de la note de crédit.',
+                    'digiteal_response' => $result,
+                ], 400);
+            }
+        }
+
+        return response()->json([
+            'error' => true,
+            'message' => 'Aucun identifiant Peppol n’a permis d’envoyer la note de crédit.',
+            'digiteal_response' => $result ?? null,
+        ], 400);
     }
 
     public function batchPdf(Request $request)

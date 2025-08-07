@@ -9,6 +9,9 @@ return [
     \Diji\Billing\BillingServiceProvider::class,
     \Diji\Contact\ContactServiceProvider::class,
     \Diji\Team\TeamServiceProvider::class,
+    \Diji\Module\ModuleServiceProvider::class,
+    \Diji\Peppol\PeppolServiceProvider::class,
+    \Diji\Expense\ExpenseServiceProvider::class,
     \Diji\Task\TaskServiceProvider::class,
     \Diji\Project\ProjectServiceProvider::class,
     \Diji\Module\ModuleServiceProvider::class

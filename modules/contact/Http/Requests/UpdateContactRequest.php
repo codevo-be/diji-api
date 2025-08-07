@@ -27,6 +27,7 @@ class UpdateContactRequest extends FormRequest
             'billing_address.city' => 'string|nullable',
             'billing_address.zipcode' => 'string|nullable',
             'billing_address.country' => 'string|nullable',
+            'peppol_identifier' => 'sometimes|string|nullable',
             'percentage' => 'sometimes|integer|min:0|max:100',
         ];
     }

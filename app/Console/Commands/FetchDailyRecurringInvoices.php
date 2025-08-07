@@ -34,19 +34,19 @@ class FetchDailyRecurringInvoices extends Command
     {
         $tenants = \App\Models\Tenant::all();
 
-        foreach ($tenants as $tenant){
+        foreach ($tenants as $tenant) {
 
             tenancy()->initialize($tenant->id);
 
             try {
                 $recurring_invoices = RecurringInvoice::where('status', RecurringInvoice::STATUS_ACTIVE)->get();
 
-                foreach ($recurring_invoices as $recurring_invoice){
+                foreach ($recurring_invoices as $recurring_invoice) {
                     if (Carbon::parse($recurring_invoice->next_run_at)->startOfDay()->lessThanOrEqualTo(Carbon::today())) {
 
                         DB::beginTransaction();
 
-                        try{
+                        try {
                             $invoice = new Invoice();
                             $invoice->issuer = $recurring_invoice->issuer;
                             $invoice->recipient = $recurring_invoice->recipient;
@@ -63,19 +63,18 @@ class FetchDailyRecurringInvoices extends Command
                                 $newItem->save();
                             }
 
-                            $recurring_invoice->next_date_at = self::generateNexRunDate($recurring_invoice);
+                            $recurring_invoice->next_date_at = RecurringInvoice::generateNexRunDate($recurring_invoice);
                             $recurring_invoice->save();
                             DB::commit();
-                        }catch (\Exception $e){
+                        } catch (\Exception $e) {
                             DB::rollBack();
                             Log::channel("recurring-invoice")->info("Erreur facture récurrente ($recurring_invoice->id)");
                             Log::channel("recurring-invoice")->info($e->getMessage());
                             continue;
                         }
-
                     }
                 }
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 continue;
             }
         }

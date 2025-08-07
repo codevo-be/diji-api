@@ -6,9 +6,6 @@ use App\Models\Meta;
 use App\Models\Tenant;
 use App\Services\Brevo;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use Diji\Billing\Models\Invoice;
-use Diji\Billing\Models\InvoiceEmailLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -73,7 +70,6 @@ class InvoiceCheckPaid extends Command
                         $body = "Bonjour,\n\nMalgré nos précédentes relances, la facture n°{$invoice->identifier} reste impayée depuis plus de 30 jours.\n\nNous vous invitons à régler cette facture sans délai afin d’éviter d’éventuelles pénalités.";
                     } else {
                         continue;
-
                     }
 
                     $qrcode = \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication);
@@ -93,8 +89,8 @@ class InvoiceCheckPaid extends Command
                     ]);
 
                     $mailService
-                        ->to($email)
-                        ->subject( $subject)
+                        ->to($email, $recipient['name'])
+                        ->subject($subject)
                         ->view("billing::email-invoice", ["invoice" => $invoice, "logo" => $logo,  "qrcode" => $qrcode,  "body" => $body])
                         ->send();
 
