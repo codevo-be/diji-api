@@ -46,6 +46,8 @@ class PeppolController extends Controller
             $tenant = Tenant::where('peppol_identifier', $receiverPeppolId)->first();
 
             if (!$tenant) {
+                // SEND EMAIL
+
                 return response()->json([
                     'error' => true,
                     'message' => "Aucun client ne correspond à l'identifiant Peppol reçu.",
@@ -60,6 +62,8 @@ class PeppolController extends Controller
                 'message' => 'Hook reçu et document Peppol enregistré avec succès.',
             ]);
         } catch (Throwable $e) {
+            // SEND EMAIL
+
             return response()->json([
                 'message' => 'Erreur lors du traitement du XML.',
                 'error' => $e->getMessage()
