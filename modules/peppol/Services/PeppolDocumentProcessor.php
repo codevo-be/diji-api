@@ -2,6 +2,7 @@
 
 namespace Diji\Peppol\Services;
 
+use Diji\History\Models\History;
 use DOMDocument;
 use DOMXPath;
 use Diji\Peppol\Models\PeppolDocument;
@@ -18,6 +19,7 @@ class PeppolDocumentProcessor
         $changeType = $request->input('changeType');
 
         match ($changeType) {
+            'INVOICE_PUBLISHED' => $this->handleInvoicePublished($request),
             'INVOICE_RECEIVED' => $this->handleInvoice($request),
             'CREDIT_NOTE_RECEIVED' => $this->handleCreditNote($request),
             default => throw new InvalidArgumentException("Type de document non supporté : $changeType")
@@ -46,6 +48,23 @@ class PeppolDocumentProcessor
         $data['lines'] = $this->handleCreditNoteLines($xpath);
 
         PeppolDocument::create($data);
+    }
+
+    private function handleInvoicePublished(Request $request): void
+    {
+        $xmlString = base64_decode($request->peppolFileContent);
+
+        $xpath = $this->getXpath($xmlString);
+
+        $data = $this->handleBaseData($request, $xpath, $xmlString);
+        $data['lines'] = $this->handleInvoiceLines($xpath);
+
+        History::create([
+            'model_type' => 'invoice',
+            'model_id' => $data['document_identifier'],
+            'message' => 'Facture publiée vers Peppol',
+            'type' => 'success',
+        ]);
     }
 
     private function handleBaseData(Request $request, DOMXPath $xpath, string $xmlString): array

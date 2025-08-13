@@ -14,5 +14,6 @@ return [
     \Diji\Expense\ExpenseServiceProvider::class,
     \Diji\Task\TaskServiceProvider::class,
     \Diji\Project\ProjectServiceProvider::class,
-    \Diji\Module\ModuleServiceProvider::class
+    \Diji\History\HistoryServiceProvider::class,
+    \Diji\Module\ModuleServiceProvider::class,
 ];
