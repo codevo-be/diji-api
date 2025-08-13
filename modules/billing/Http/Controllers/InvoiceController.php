@@ -212,7 +212,7 @@ class InvoiceController extends Controller
         $invoice = Invoice::findOrFail($invoice_id)->load('items');
 
         $qrcode = \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication);
-        $logo = Meta::getValue('tenant_billing_details')['logo'];
+        $logo = tenant()["settings"]['logo'];
 
         $pdf = PDF::loadView('billing::invoice', [
             ...$invoice->toArray(),

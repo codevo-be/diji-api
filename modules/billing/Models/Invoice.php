@@ -65,7 +65,7 @@ class Invoice extends Model
             }
 
             if (!isset($invoice->issuer)) {
-                $invoice->issuer = Meta::getValue('tenant_billing_details');
+                $invoice->issuer = tenant()["settings"];
             }
         });
 

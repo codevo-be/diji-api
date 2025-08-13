@@ -55,12 +55,12 @@ class CreditNote extends Model
                 $credit_note->date = now();
             }
 
-            if(!$credit_note->issuer){
-                $credit_note->issuer = Meta::getValue('tenant_billing_details');
+            if (!$credit_note->issuer) {
+                $credit_note->issuer = tenant()["settings"];
             }
         });
 
-        static::updating(function($credit_note){
+        static::updating(function ($credit_note) {
             if ($credit_note->isDirty('status') && $credit_note->getOriginal('status') === 'draft') {
                 $requiredFields = ['issuer', 'recipient', 'total'];
 
@@ -120,5 +120,4 @@ class CreditNote extends Model
     {
         return $this->belongsTo(Invoice::class);
     }
-
 }

@@ -12,7 +12,7 @@ class PdfService
     {
         return self::generate('billing::estimate', [
             ...$estimate->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null
+            "logo" => tenant()["settings"]['logo'] ?? null
         ]);
     }
 
@@ -20,7 +20,7 @@ class PdfService
     {
         return self::generate('billing::invoice', [
             ...$invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')['logo'] ?? null,
+            "logo" => tenant()["settings"]['logo'] ?? null,
             "qrcode" => $invoice->status !== Invoice::STATUS_DRAFT ?  \Diji\Billing\Helpers\Invoice::generateQrCode(
                 $invoice->issuer["name"],
                 $invoice->issuer["iban"],
@@ -34,7 +34,7 @@ class PdfService
     {
         return self::generate('billing::credit-note', [
             ...$credit_note->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
+            "logo" => tenant()["settings"]["logo"] ?? null
         ]);
     }
 
@@ -42,7 +42,7 @@ class PdfService
     {
         return self::generate('billing::self-invoice', [
             ...$self_invoice->toArray(),
-            "logo" => Meta::getValue('tenant_billing_details')["logo"] ?? null
+            "logo" => tenant()["settings"]["logo"] ?? null
         ]);
     }
 
@@ -51,5 +51,4 @@ class PdfService
     {
         return Pdf::loadView($view, $data)->output();
     }
-
 }

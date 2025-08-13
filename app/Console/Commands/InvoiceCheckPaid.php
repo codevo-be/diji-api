@@ -73,7 +73,7 @@ class InvoiceCheckPaid extends Command
                     }
 
                     $qrcode = \Diji\Billing\Helpers\Invoice::generateQrCode($invoice->issuer["name"], $invoice->issuer["iban"], $invoice->total, $invoice->structured_communication);
-                    $logo = Meta::getValue('tenant_billing_details')['logo'];
+                    $logo = tenant()["settings"]['logo'];
 
                     $pdf = PDF::loadView('billing::invoice', [
                         ...$invoice->toArray(), // TODO Vérifier si ceci fonctionne avec le select qui prend invoice + days_diff de sql

@@ -30,7 +30,7 @@ class EstimateController extends Controller
             ->when(isset($request->month) &&
                 is_string($request->month) &&
                 trim($request->month) !== '' &&
-                strtolower($request->month) !== 'undefined', function ($query) use($request){
+                strtolower($request->month) !== 'undefined', function ($query) use ($request) {
                 return $query->whereMonth('date', $request->month);
             })
             ->orderByDesc('id');
@@ -108,7 +108,7 @@ class EstimateController extends Controller
     {
         $estimate = Estimate::findOrFail($estimate_id)->load('items');
 
-        $logo = Meta::getValue('tenant_billing_details')['logo'];
+        $logo = tenant()["settings"]['logo'];
 
         $pdf = PDF::loadView('billing::estimate', [
             ...$estimate->toArray(),
@@ -131,7 +131,7 @@ class EstimateController extends Controller
                 ->subject($request->subject ?? '')
                 ->view("billing::email", ["estimate" => $estimate, "logo" => $logo, "body" => $request->body])
                 ->send();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => $e->getMessage()
             ], 422);

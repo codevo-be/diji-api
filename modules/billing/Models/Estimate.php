@@ -64,12 +64,12 @@ class Estimate extends Model
                 $invoice->date = now();
             }
 
-            if(!$invoice->issuer){
-                $invoice->issuer = Meta::getValue('tenant_billing_details');
+            if (!$invoice->issuer) {
+                $invoice->issuer = tenant()["settings"];
             }
         });
 
-        static::updating(function($estimate){
+        static::updating(function ($estimate) {
             if ($estimate->isDirty('status') && $estimate->getOriginal('status') === 'draft') {
                 $requiredFields = ['issuer', 'recipient', 'total'];
 

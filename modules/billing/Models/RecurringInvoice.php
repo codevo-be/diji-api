@@ -54,7 +54,7 @@ class RecurringInvoice extends Model
 
         static::creating(function ($invoice) {
             if (!$invoice->issuer) {
-                $invoice->issuer = Meta::getValue('tenant_billing_details');
+                $invoice->issuer = tenant()["settings"];
             }
         });
 
