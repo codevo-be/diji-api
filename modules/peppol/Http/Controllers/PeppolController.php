@@ -4,6 +4,7 @@ namespace Diji\Peppol\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use Diji\History\Models\History;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Helpers\PeppolPayloadBuilder;
 use Diji\Peppol\Requests\PeppolSendRequest;
@@ -62,8 +63,6 @@ class PeppolController extends Controller
                 'message' => 'Hook reçu et document Peppol enregistré avec succès.',
             ]);
         } catch (Throwable $e) {
-            // SEND EMAIL
-
             return response()->json([
                 'message' => 'Erreur lors du traitement du XML.',
                 'error' => $e->getMessage()

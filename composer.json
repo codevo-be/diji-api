@@ -18,8 +18,7 @@
         "league/csv": "^9.23",
         "sendinblue/api-v3-sdk": "^8.4",
         "stancl/tenancy": "^3.8",
-        "ext-zip": "*",
-        "ext-dom": "*"
+        "ext-zip": "*"
     },
     "require-dev": {
         "laravel/pint": "^1.13",
@@ -38,7 +37,8 @@
             "Diji\\Expense\\": "modules/expense",
             "Diji\\Peppol\\": "modules/peppol",
             "Diji\\Task\\": "modules/task",
-            "Diji\\Project\\": "modules/project"
+            "Diji\\Project\\": "modules/project",
+            "Diji\\History\\": "modules/history"
         }
     },
     "autoload-dev": {

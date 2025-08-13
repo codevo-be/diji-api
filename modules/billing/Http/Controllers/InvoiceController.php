@@ -16,6 +16,7 @@ use Diji\Billing\Resources\InvoiceResource;
 use Diji\Peppol\Helpers\PeppolBuilder;
 use Diji\Peppol\Services\PeppolService;
 use Diji\Billing\Services\PdfService;
+use Diji\History\Models\History;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -264,6 +265,14 @@ class InvoiceController extends Controller
             $internalResponse = json_decode($result['response'] ?? '', true);
 
             if (isset($internalResponse['status']) && $internalResponse['status'] === 'OK') {
+
+                History::create([
+                    'model_type' => 'invoice',
+                    'model_id' => $invoice->id,
+                    'message' => 'Facture envoyée vers Peppol',
+                    'type' => 'success',
+                ]);
+
                 return response()->json([
                     'message' => 'Document Peppol généré et envoyé avec succès.',
                     'digiteal_response' => $result,

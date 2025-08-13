@@ -45,7 +45,8 @@
     41 => 'Diji\\Expense\\ExpenseServiceProvider',
     42 => 'Diji\\Task\\TaskServiceProvider',
     43 => 'Diji\\Project\\ProjectServiceProvider',
-    44 => 'Diji\\Module\\ModuleServiceProvider',
+    44 => 'Diji\\History\\HistoryServiceProvider',
+    45 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'eager' => 
   array (
@@ -78,7 +79,8 @@
     26 => 'Diji\\Expense\\ExpenseServiceProvider',
     27 => 'Diji\\Task\\TaskServiceProvider',
     28 => 'Diji\\Project\\ProjectServiceProvider',
-    29 => 'Diji\\Module\\ModuleServiceProvider',
+    29 => 'Diji\\History\\HistoryServiceProvider',
+    30 => 'Diji\\Module\\ModuleServiceProvider',
   ),
   'deferred' => 
   array (

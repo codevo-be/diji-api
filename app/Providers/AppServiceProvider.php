@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Diji\Billing\Models\CreditNote;
+use Diji\Billing\Models\Invoice;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Relation::morphMap([
+            'invoice' => Invoice::class,
+            'credit_note' => CreditNote::class,
+        ]);
     }
 }
