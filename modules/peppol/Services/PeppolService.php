@@ -13,11 +13,11 @@ class PeppolService
 
     public function __construct()
     {
-        $this->username = env("PEPPOL_DIGITEAL_USERNAME");
-        $this->password = env("PEPPOL_DIGITEAL_PASSWORD");
+        $this->username = config("peppol.digiteal.username");
+        $this->password = config("peppol.digiteal.password");
 
         $this->client = new Client([
-            'base_uri' => env("PEPPOL_DIGITEAL_URL"),
+            'base_uri' => config("peppol.digiteal.url"),
         ]);
     }
 
