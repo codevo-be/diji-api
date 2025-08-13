@@ -8,7 +8,8 @@ use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Illuminate\Support\Facades\Log;
 
-class Invoice {
+class Invoice
+{
     public static function generateStructuredCommunication(int $invoice_identifier)
     {
         $currentDate = \Carbon\Carbon::now()->format('ymd');
@@ -31,7 +32,7 @@ class Invoice {
 
     public static function generateQrCode(string $recipient, string $iban, float $amount, string $structured_communication): string
     {
-        if(!$structured_communication){
+        if (!$structured_communication) {
             return "";
         }
 
@@ -61,16 +62,40 @@ class Invoice {
         return (new QRCode($options))->render($data);
     }
 
-    public static function isIntracommunity(array $issuer, array $recipient): bool
+    public static function isIntracommunity($issuer, $recipient): bool
     {
-        if(!isset($issuer['country']) || !isset($recipient['country'])){
+        if (!isset($issuer['country']) || !isset($recipient['country'])) {
             return false;
         }
 
         $euCountries = [
-            'at', 'be', 'bg', 'hr', 'cy', 'cz', 'dk', 'ee', 'fi', 'fr', 'de', 'gr',
-            'hu', 'ie', 'it', 'lv', 'lt', 'lu', 'mt', 'nl', 'pl', 'pt', 'ro', 'sk',
-            'si', 'es', 'se'
+            'at',
+            'be',
+            'bg',
+            'hr',
+            'cy',
+            'cz',
+            'dk',
+            'ee',
+            'fi',
+            'fr',
+            'de',
+            'gr',
+            'hu',
+            'ie',
+            'it',
+            'lv',
+            'lt',
+            'lu',
+            'mt',
+            'nl',
+            'pl',
+            'pt',
+            'ro',
+            'sk',
+            'si',
+            'es',
+            'se'
         ];
 
         if (

@@ -17,7 +17,7 @@ class PeppolService
         $this->password = env("PEPPOL_DIGITEAL_PASSWORD");
 
         $this->client = new Client([
-            'base_uri' => 'https://test.digiteal.eu/api/v1/peppol/',
+            'base_uri' => env("PEPPOL_DIGITEAL_URL"),
         ]);
     }
 

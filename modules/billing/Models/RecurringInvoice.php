@@ -46,19 +46,19 @@ class RecurringInvoice extends Model
         'recipient' => 'json'
     ];
 
-    protected array $searchable = ['identifier','subtotal', 'total', 'recipient->name', 'recipient->vat_number'];
+    protected array $searchable = ['identifier', 'subtotal', 'total', 'recipient->name', 'recipient->vat_number'];
 
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($invoice) {
-            if(!$invoice->issuer){
+            if (!$invoice->issuer) {
                 $invoice->issuer = Meta::getValue('tenant_billing_details');
             }
         });
 
-        static::updating(function($invoice){
+        static::updating(function ($invoice) {
             if ($invoice->isDirty('status') && $invoice->getOriginal('status') === 'draft') {
                 $requiredFields = ['issuer', 'recipient', 'total', 'next_run_at'];
 

@@ -63,7 +63,7 @@ class FetchDailyRecurringInvoices extends Command
                                 $newItem->save();
                             }
 
-                            $recurring_invoice->next_date_at = RecurringInvoice::generateNexRunDate($recurring_invoice);
+                            $recurring_invoice->next_run_at = RecurringInvoice::generateNexRunDate($recurring_invoice);
                             $recurring_invoice->save();
                             DB::commit();
                         } catch (\Exception $e) {
