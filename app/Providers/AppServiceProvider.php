@@ -20,11 +20,5 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
-    {
-        Relation::morphMap([
-            'invoice' => Invoice::class,
-            'credit_note' => CreditNote::class,
-        ]);
-    }
+    public function boot(): void {}
 }
