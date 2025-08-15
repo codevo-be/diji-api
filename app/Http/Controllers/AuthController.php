@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\UserTenant;
 use App\Services\Brevo;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Laravel\Passport\Exceptions\OAuthServerException;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
 
@@ -72,15 +71,17 @@ class AuthController extends Controller
         }
     }
 
-    public function getAuthenticatedUser(Request $request): \Illuminate\Http\JsonResponse
+    public function getAuthenticatedUser(): \Illuminate\Http\JsonResponse
     {
         $user = Auth::user();
         $tenant = tenant();
+        $tenants = Tenant::whereIn('id', UserTenant::on('mysql')->where('user_id', $user->id)->pluck('tenant_id'))->get();
 
         return response()->json([
             "data" => [
                 "user" => $user,
                 "tenant" => $tenant,
+                "tenants" => $tenants ?? [],
                 "modules" => $tenant->modules
             ]
         ]);

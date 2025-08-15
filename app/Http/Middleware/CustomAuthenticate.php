@@ -19,15 +19,18 @@ class CustomAuthenticate extends Middleware
     {
         $bearer = $request->bearerToken();
 
-        try {
-            $publicKey = file_get_contents(storage_path('oauth-public.key'));
-            $decoded = JWT::decode($bearer, new Key($publicKey, 'RS256'));
+        // Vérifier que le token existe avant de tenter de le décoder
+        if (!empty($bearer)) {
+            try {
+                $publicKey = file_get_contents(storage_path('oauth-public.key'));
+                $decoded = JWT::decode($bearer, new Key($publicKey, 'RS256'));
 
-            if (isset($decoded) && isset($decoded->aud)) {
-                return;
+                if (isset($decoded) && isset($decoded->aud)) {
+                    return;
+                }
+            } catch (\Exception $e) {
+                // Nothing
             }
-        } catch (\Exception $e) {
-            // Nothing
         }
 
         throw new AuthenticationException(
