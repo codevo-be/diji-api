@@ -33,9 +33,9 @@ class UpdateBillingItemRequest extends FormRequest
                 'quantity' => 'sometimes|numeric|min:0',
                 'vat' => 'sometimes|numeric|min:0|max:100',
                 'cost' => 'sometimes|array|nullable',
-                'cost.subtotal' => 'sometimes|numeric|min:0',
+                'cost.subtotal' => 'sometimes|numeric',
                 'retail' => 'sometimes|array',
-                'retail.subtotal' => 'sometimes|numeric|min:0',
+                'retail.subtotal' => 'sometimes|numeric',
             ]);
         }
 

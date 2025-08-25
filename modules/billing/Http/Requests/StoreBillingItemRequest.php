@@ -32,9 +32,9 @@ class StoreBillingItemRequest extends FormRequest
                 'quantity' => 'required|numeric|min:0',
                 'vat' => 'required|numeric|min:0|max:100',
                 'cost' => 'sometimes|array|nullable',
-                'cost.subtotal' => 'sometimes|numeric|min:0',
+                'cost.subtotal' => 'sometimes|numeric',
                 'retail' => 'required|array',
-                'retail.subtotal' => 'required|numeric|min:0',
+                'retail.subtotal' => 'required|numeric',
             ]);
         }
 

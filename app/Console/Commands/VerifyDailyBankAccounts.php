@@ -58,7 +58,7 @@ class VerifyDailyBankAccounts extends Command
                     $brevo->to(Meta::getValue("nordigen_admin_email"), $tenant->name)->subject($subject)->content(utf8_encode("<p>Bonjour,</p><p>Votre connexion bancaire avec Gocardless expire dans <strong>" . $daysLeft . " jours**</strong>.</p><p>Pour continuer à utiliser ce service, veuillez renouveler votre connexion bancaire.</p><a href='" . $link . "'>Renouveler ma connexion</a>"))->send();
 
                     Log::channel('transaction')->info("verify-bank-account - Tenant : $tenant->name");
-                    Log::channel('transaction')->info("Account disabled : " . $daysLeft . "Email send !");
+                    Log::channel('transaction')->info("Account disabled : " . $daysLeft . " - Email send !");
                 } catch (\Exception $e) {
                     continue;
                 }

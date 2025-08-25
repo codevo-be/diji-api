@@ -63,7 +63,7 @@ class SelfInvoice extends Model
             }
 
             if (!$invoice->issuer) {
-                $invoice->issuer = tenant()["settings"];
+                $invoice->recipient = tenant()["settings"];
             }
         });
 
