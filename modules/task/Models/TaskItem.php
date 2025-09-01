@@ -34,6 +34,7 @@ class TaskItem extends Model
         'status',
         'priority',
         'position',
+        'tracked_time'
     ];
 
     protected static function boot()
