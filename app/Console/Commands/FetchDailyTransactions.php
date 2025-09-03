@@ -31,7 +31,7 @@ class FetchDailyTransactions extends Command
     {
         $tenants = \App\Models\Tenant::all();
 
-        foreach ($tenants as $tenant){
+        foreach ($tenants as $tenant) {
 
             tenancy()->initialize($tenant->id);
 
@@ -39,20 +39,24 @@ class FetchDailyTransactions extends Command
                 $nordigen = new NordigenService();
                 $transaction = $nordigen->getTransactions();
 
-                foreach ($transaction["transactions"]["booked"] as $item){
-                    Transaction::create([
-                        "transaction_id" => $item["transactionId"],
-                        "structured_communication" => isset($item["remittanceInformationStructured"]) ? $item["remittanceInformationStructured"] : null,
-                        "creditor_name" => isset($item["creditorName"]) ? strtolower($item["creditorName"]) : null,
-                        "creditor_account" => str_replace("BE", '', isset($item["creditorAccount"]) ? $item["creditorAccount"]["iban"] : ""),
-                        "debtor_name" => strtolower($item["debtorName"]),
-                        "debtor_account" => str_replace("BE", '', $item["debtorAccount"]["iban"]),
-                        "amount" => floatval($item["transactionAmount"]["amount"]),
-                        "response" => $item,
-                        "date" => Carbon::now()->subDay()
-                    ]);
+                foreach ($transaction["transactions"]["booked"] as $item) {
+                    try {
+                        Transaction::create([
+                            "transaction_id" => $item["transactionId"],
+                            "structured_communication" => isset($item["remittanceInformationStructured"]) ? $item["remittanceInformationStructured"] : null,
+                            "creditor_name" => isset($item["creditorName"]) ? strtolower($item["creditorName"]) : null,
+                            "creditor_account" => str_replace("BE", '', isset($item["creditorAccount"]) ? $item["creditorAccount"]["iban"] : ""),
+                            "debtor_name" => isset($item["debtorName"]) ? strtolower($item["debtorName"]) : null,
+                            "debtor_account" => str_replace("BE", '', $item["debtorAccount"]["iban"]),
+                            "amount" => floatval($item["transactionAmount"]["amount"]),
+                            "response" => $item,
+                            "date" => Carbon::now()->subDay()
+                        ]);
+                    } catch (\Exception $e) {
+                        continue;
+                    }
                 }
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 Log::channel('transaction')->info("Tenant : $tenant->name");
                 Log::channel('transaction')->info($e->getMessage());
                 continue;
