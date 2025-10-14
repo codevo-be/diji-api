@@ -40,11 +40,11 @@ class downloadInvoice extends Command
         tenancy()->initialize($tenant);
 
         $invoices = Invoice::query()->whereBetween('date', [
-        "2025-01-01",
-        "2025-03-31"
-    ])->where('status', '!=', 'draft')->with(["items"])->get();
+            "2025-07-01",
+            "2025-09-30"
+        ])->where('status', '!=', 'draft')->with(["items"])->get();
 
-        foreach ($invoices as $invoice){
+        foreach ($invoices as $invoice) {
             try {
                 $pdfString = PdfService::generateInvoice($invoice);
 
@@ -55,18 +55,18 @@ class downloadInvoice extends Command
                 }
 
                 file_put_contents($path, $pdfString);
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 dump('error');
                 dump($e->getMessage());
             }
         }
 
         $credit_notes = CreditNote::query()->whereBetween('date', [
-            "2025-01-01",
-            "2025-03-31"
+            "2025-07-01",
+            "2025-09-30"
         ])->where('status', '!=', 'draft')->with(["items"])->get();
 
-        foreach ($credit_notes as $credit_note){
+        foreach ($credit_notes as $credit_note) {
             try {
                 $pdfString = PdfService::generateCreditNote($credit_note);
 
@@ -77,18 +77,18 @@ class downloadInvoice extends Command
                 }
 
                 file_put_contents($path, $pdfString);
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 dump('error');
                 dump($e->getMessage());
             }
         }
 
         $self_invoices = SelfInvoice::query()->whereBetween('date', [
-            "2025-01-01",
-            "2025-03-31"
+            "2025-07-01",
+            "2025-09-30"
         ])->where('status', '!=', 'draft')->with(["items"])->get();
 
-        foreach ($self_invoices as $self_invoice){
+        foreach ($self_invoices as $self_invoice) {
             dump($self_invoice->identifier);
             try {
                 $pdfString = PdfService::generateSelfInvoice($self_invoice);
@@ -100,7 +100,7 @@ class downloadInvoice extends Command
                 }
 
                 file_put_contents($path, $pdfString);
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 dump('error');
                 dump($e->getMessage());
             }
